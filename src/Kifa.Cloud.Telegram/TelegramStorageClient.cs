@@ -209,6 +209,21 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         }
     }
 
+    public static double PacingInterval { get; set; } = 0.05;
+    static DateTime lastRequestTime = DateTime.MinValue;
+
+    public static async Task WaitPacingAsync() {
+        using (await PriorityLock.EnterScopeAsync(1)) {
+            var now = DateTime.UtcNow;
+            var toSleep = lastRequestTime + TimeSpan.FromSeconds(PacingInterval) - now;
+            if (toSleep > TimeSpan.Zero) {
+                await Task.Delay(toSleep);
+            }
+
+            lastRequestTime = DateTime.UtcNow;
+        }
+    }
+
     async Task UploadOneBlock(TelegramCellClient cellClient, long fileId, int totalParts,
         int partIndex, Stream stream, long fromPosition, int length,
         ConcurrentBag<Exception> exceptions, SemaphoreSlim uploadInputStreamSemaphore,
@@ -275,8 +290,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
                 Logger.Trace(
                     $"Waiting for start semaphore to upload part {partIndex} of {totalParts} for {fileId}...");
-                using (await PriorityLock.EnterScopeAsync(1)) {
-                }
+                await WaitPacingAsync();
 
                 return await cellClient.Client.Upload_SaveBigFilePart(fileId, partIndex, totalParts,
                     buffer).WaitAsync(UploadTimeout);
@@ -339,6 +353,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                         }
 
                         await Task.Delay(toSleep);
+                        lastRequestTime = DateTime.UtcNow;
                     }
                 }
 
@@ -552,8 +567,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 }
 
                 Logger.Trace($"Waiting for start semaphore to download from {offset}...");
-                using (await PriorityLock.EnterScopeAsync(1)) {
-                }
+                await WaitPacingAsync();
 
                 try {
                     return await client.Upload_GetFile(location, offset: requestStart,

@@ -1,5 +1,9 @@
 using System;
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Kifa.Configs;
 using Kifa.IO;
@@ -16,6 +20,7 @@ public class TelegramStorageClientTests {
     [Fact]
     // This test is used to setup accounts to be used as the login process is hard to integrate into
     // the service.
+
     public void SetupSessionTest() {
         KifaConfigs.Init();
         var cell = TelegramStorageCell.Client.Get("test").Checked();
@@ -102,6 +107,45 @@ public class TelegramStorageClientTests {
         storageClient.Delete(fileName);
 
         storageClient.Exists(fileName).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task PacingGateTest() {
+        TelegramStorageClient.PacingInterval = 0.05;
+
+        var stopwatch = Stopwatch.StartNew();
+        var releaseTimes = new ConcurrentBag<TimeSpan>();
+
+        var tasks = Enumerable.Range(0, 4).Select(async _ => {
+            await TelegramStorageClient.WaitPacingAsync();
+            releaseTimes.Add(stopwatch.Elapsed);
+        }).ToArray();
+
+        await Task.WhenAll(tasks);
+
+        var sortedTimes = releaseTimes.OrderBy(t => t).ToList();
+        sortedTimes.Should().HaveCount(4);
+
+        sortedTimes.Last().Should().BeGreaterThan(TimeSpan.FromMilliseconds(130));
+
+        for (var i = 1; i < sortedTimes.Count; i++) {
+            (sortedTimes[i] - sortedTimes[i - 1]).Should().BeGreaterThan(TimeSpan.FromMilliseconds(35));
+        }
+
+        TelegramStorageClient.PacingInterval = 0;
+        stopwatch.Restart();
+        releaseTimes.Clear();
+
+        tasks = Enumerable.Range(0, 4).Select(async _ => {
+            await TelegramStorageClient.WaitPacingAsync();
+            releaseTimes.Add(stopwatch.Elapsed);
+        }).ToArray();
+
+        await Task.WhenAll(tasks);
+        releaseTimes.Should().HaveCount(4);
+        stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromMilliseconds(50));
+
+        TelegramStorageClient.PacingInterval = 0.05;
     }
 
     static (Client Client, InputPeer channel) GetClient() {
