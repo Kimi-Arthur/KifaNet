@@ -287,6 +287,14 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             ? Parent.GetFile($"{DefaultIgnoredPrefix}{BaseName}.{type}")
             : Parent.GetFile($"{DefaultIgnoredPrefix}{Name}");
 
+    public bool IsIgnoredFile
+        => Name.StartsWith(DefaultIgnoredPrefix) && Name.Length > DefaultIgnoredPrefix.Length;
+
+    public KifaFile GetPromotedFile()
+        => IsIgnoredFile
+            ? Parent.GetFile(Name[DefaultIgnoredPrefix.Length..])
+            : throw new InvalidOperationException($"File {this} is not an ignored file and cannot be promoted.");
+
     public override string ToString() => $"{Host}{Path}";
 
     public bool Exists(long? expectedLength = null) {

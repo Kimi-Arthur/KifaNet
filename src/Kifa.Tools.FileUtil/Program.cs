@@ -10,5 +10,5 @@ class Program {
             typeof(NormalizeCommand), typeof(ImportCommand), typeof(TrashCommand),
             typeof(RemoveEmptyCommand), typeof(DecodeCommand), typeof(DedupCommand),
             typeof(MigrateCommand), typeof(LinkCommand), typeof(ExtractCommand),
-            typeof(TruncateCommand), typeof(UniqCommand));
+            typeof(TruncateCommand), typeof(UniqCommand), typeof(PromoteCommand));
 }
