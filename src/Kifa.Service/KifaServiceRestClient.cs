@@ -16,15 +16,15 @@ public class KifaServiceRestClient {
     public static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public static HttpClient Client {
-        get => field ??= ClientCertPath != null
-            ? new HttpClient(new HttpClientHandler {
+        get => field ??= new HttpClient(ClientCertPath != null
+            ? new HttpClientHandler {
                 ClientCertificates = {
                     new X509Certificate2(ClientCertPath, ClientCertPassword)
                 }
-            }) {
-                Timeout = TimeSpan.FromMinutes(10)
             }
-            : new HttpClient();
+            : new HttpClientHandler()) {
+            Timeout = TimeSpan.FromMinutes(15)
+        };
         set => field = value;
     }
 
