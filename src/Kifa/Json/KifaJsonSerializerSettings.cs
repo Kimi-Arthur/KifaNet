@@ -20,7 +20,8 @@ public static class KifaJsonSerializerSettings {
             },
             Converters = new List<JsonConverter> {
                 new StringEnumConverter(new SnakeCaseNamingStrategy()),
-                new GenericJsonConverter()
+                new GenericJsonConverter(),
+                new DateTimeOffsetConverter()
             },
             MissingMemberHandling = MissingMemberHandling.Ignore,
             DefaultValueHandling =
