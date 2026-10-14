@@ -10,4 +10,6 @@ public class TelegramSession {
     public DateTimeOffset Reserved { get; set; } = Date.Zero;
 
     public DateTimeOffset Refreshed { get; set; } = Date.Zero;
+
+    public TelegramSessionType? Type { get; set; }
 }

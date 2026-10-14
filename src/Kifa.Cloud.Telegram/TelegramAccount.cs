@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Kifa.Service;
 using WTelegram;
 
@@ -16,7 +18,10 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
     public interface ServiceClient : KifaServiceClient<TelegramAccount> {
         KifaActionResult AddSession(string accountId, byte[] sessionData);
         public KifaActionResult<TelegramSession> ObtainSession(string accountId,
-            int? sessionId = null);
+            TelegramSessionType type, int? sessionId = null);
+        public Task<KifaActionResult<TelegramSession>> ObtainSessionAsync(string accountId,
+            TelegramSessionType type, int? sessionId = null,
+            CancellationToken cancellationToken = default);
         public KifaActionResult RenewSession(string accountId, int sessionId);
         public KifaActionResult ReleaseSession(string accountId, int sessionId);
         public KifaActionResult UpdateSession(string accountId, int sessionId, byte[] sessionData);
@@ -29,7 +34,8 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
 
     public class ObtainSessionRequest {
         public required string AccountId { get; set; }
-        public required int? SessionId { get; set; }
+        public required TelegramSessionType Type { get; set; }
+        public int? SessionId { get; set; }
     }
 
     public class RenewSessionRequest {
@@ -56,11 +62,17 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
             });
 
         public KifaActionResult<TelegramSession> ObtainSession(string accountId,
-            int? sessionId = null)
+            TelegramSessionType type, int? sessionId = null)
             => Call<TelegramSession>("obtain_session", new ObtainSessionRequest {
                 AccountId = accountId,
+                Type = type,
                 SessionId = sessionId
             }).Checked();
+
+        public Task<KifaActionResult<TelegramSession>> ObtainSessionAsync(string accountId,
+            TelegramSessionType type, int? sessionId = null,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult(ObtainSession(accountId, type, sessionId));
 
         public KifaActionResult RenewSession(string accountId, int sessionId)
             => Call("renew_session", new RenewSessionRequest {
@@ -100,6 +112,17 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
     }
 
     public List<TelegramSession> Sessions { get; set; } = new();
+    public int MaxUploadSessions { get; set; } = 2;
+    public int MaxDownloadSessions { get; set; } = 2;
+    public int MaxQuickSessions { get; set; } = 1;
+
+    public int GetSessionLimit(TelegramSessionType type)
+        => type switch {
+            TelegramSessionType.Upload => MaxUploadSessions,
+            TelegramSessionType.Download => MaxDownloadSessions,
+            TelegramSessionType.Quick => MaxQuickSessions,
+            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+        };
 
     public string? ConfigProvider(string configKey)
         => configKey switch {

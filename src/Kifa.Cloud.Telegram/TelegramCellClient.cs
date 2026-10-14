@@ -48,7 +48,8 @@ public class TelegramCellClient : IDisposable {
         }
     }
 
-    public TelegramCellClient(TelegramAccount account, string channelId, TelegramSession session) {
+    public TelegramCellClient(TelegramAccount account, string channelId, TelegramSession session,
+        TelegramSessionType type) {
         Logger.Trace($"Create client with session id {session.Id}.");
         Account = account;
         ChannelId = channelId;
@@ -68,7 +69,7 @@ public class TelegramCellClient : IDisposable {
             Helpers.Log = (_, message) => wTelegramLogger.Log(LogLevel.FromOrdinal(0), message);
         }
 
-        KeepSessionReserved(Session.Id);
+        KeepSessionReserved(Session.Id, type);
 
         CreateClient();
     }
@@ -99,10 +100,18 @@ public class TelegramCellClient : IDisposable {
         }
     }
 
+    static readonly TimeSpan LongKeepSessionInterval = TimeSpan.FromMinutes(5);
+    static readonly TimeSpan QuickKeepSessionInterval = TimeSpan.FromMinutes(1);
+
     // TODO: Find a better way to keep the session.
-    async Task KeepSessionReserved(int sessionId) {
+    async Task KeepSessionReserved(int sessionId, TelegramSessionType type) {
+        var interval = type switch {
+            TelegramSessionType.Quick => QuickKeepSessionInterval,
+            TelegramSessionType.Upload or TelegramSessionType.Download => LongKeepSessionInterval,
+            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+        };
         while (true) {
-            await Task.Delay(TimeSpan.FromMinutes(5));
+            await Task.Delay(interval);
 
             if (disposed || !Reserved) {
                 break;

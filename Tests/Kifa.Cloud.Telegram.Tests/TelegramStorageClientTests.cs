@@ -151,7 +151,7 @@ public class TelegramStorageClientTests {
     static (Client Client, InputPeer channel) GetClient() {
         KifaConfigs.Init();
         var client = (TelegramStorageClient.Create("test") as TelegramStorageClient).Checked().Cell
-            .CreateClient();
+            .CreateClient(TelegramSessionType.Upload);
 
         return (client.Client, client.Channel);
     }
