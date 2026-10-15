@@ -86,6 +86,10 @@ This style guide documents the formatting, syntax, structure, and design convent
     #endregion
     ```
 
+* **Testability and Surrogate Indirection**:
+  * Avoid introducing unnecessary setups or surrogate indirection purely for tests (such as `DefaultXxx` properties or methods paired with `XxxAction` delegates).
+  * Prefer clean, direct designs: use `virtual` methods that test subclasses can override, or direct properties with sensible default values that tests and configs can configure directly.
+
 ---
 
 ## 4. Null Handling and Modern C# Language Features
@@ -99,6 +103,8 @@ This style guide documents the formatting, syntax, structure, and design convent
 * **Target-Typed `new()` and Collection Expressions**:
   * Prefer target-typed new `new()` where the type is obvious from declaration.
   * Prefer collection expressions `[]` and spread `[..items]` for lists/arrays in modern code.
+* **Property Backing Fields and the `field` Keyword**:
+  * Prefer using the C# `field` keyword in property accessors when custom getter or setter logic is needed, rather than declaring manual private backing fields.
 * **Expression-Bodied Members**:
   * Use expression bodies (`=>`) for single-line methods, properties, getters, and operator overloads.
 

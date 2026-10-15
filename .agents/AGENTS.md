@@ -25,6 +25,8 @@
 - Common class utility statics (such as `Logger`, `HttpClient`, or service client instances) should remain at the top of the class.
 - Avoid using `IsNullOrEmpty` (or `IsNullOrWhiteSpace`) when `null` is the normal definition of a default/unset value (e.g., for hash fields like `Sha256` or string properties where `null` explicitly represents the missing or default state). Prefer explicit null checks (`== null` or `!= null`) instead.
 - Never use null-suppression member access (`!.`). Either use null-conditional access (`?.`) or `.Checked()`.
+- Prefer using the C# `field` keyword in property accessors when custom getter or setter logic is needed, rather than declaring manual private backing fields.
+- Avoid introducing unnecessary setups or surrogate indirection purely for tests (such as `DefaultXxx` properties/methods paired with `XxxAction` delegates). Instead, prefer clean, direct designs: use `virtual` methods that test subclasses can override, or direct properties with sensible default values that tests and configs can configure directly.
 
 ## Temporary Files Rules
 - Always place all temporary files, crawler state/progress files, local logs, intermediate scripts, or certificates generated during agent operations in the `.agent_temp/` directory.
