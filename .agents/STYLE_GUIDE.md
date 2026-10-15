@@ -86,6 +86,9 @@ This style guide documents the formatting, syntax, structure, and design convent
     #endregion
     ```
 
+* **Configurable Properties and Default Values**:
+  * For configurable properties, set the default value directly on the property instead of creating a separate default property or field (e.g., avoid having both `DefaultXxx` and `Xxx`). Configuration files and tests can override the property directly.
+
 * **Testability and Surrogate Indirection**:
   * Avoid introducing unnecessary setups or surrogate indirection purely for tests (such as `DefaultXxx` properties or methods paired with `XxxAction` delegates).
   * Prefer clean, direct designs: use `virtual` methods that test subclasses can override, or direct properties with sensible default values that tests and configs can configure directly.
