@@ -127,6 +127,14 @@ public partial class TelegramAccountJsonServiceClient {
                     Waiters.Remove(waiter);
                 }
 
+                if (result.Status == KifaActionStatus.OK) {
+                    Logger.Debug(
+                        $"Granted {waiter.Type} session {result.Value?.Id} to waiter for account {waiter.AccountId}.");
+                } else {
+                    Logger.Debug(
+                        $"Failed to obtain {waiter.Type} session for waiter for account {waiter.AccountId}: {result.Status} - {result.Message}");
+                }
+
                 if (!waiter.TaskCompletionSource.TrySetResult(result)) {
                     if (result.Status == KifaActionStatus.OK && result.Value != null) {
                         ReleaseSession(waiter.AccountId, result.Value.Id);
@@ -180,6 +188,9 @@ public partial class TelegramAccountJsonServiceClient {
             return initialResult;
         }
 
+        Logger.Debug(
+            $"No available {type} session for account {accountId} ({initialResult.Message}). Waiting for available session...");
+
         var waiter = new SessionWaiter {
             AccountId = accountId,
             SessionId = sessionId,
@@ -218,6 +229,9 @@ public partial class TelegramAccountJsonServiceClient {
             if (cancellationToken.IsCancellationRequested) {
                 throw;
             }
+
+            Logger.Warn(
+                $"Timed out waiting for {type} session for account {accountId}.");
 
             return new KifaActionResult<TelegramSession> {
                 Status = KifaActionStatus.Pending,

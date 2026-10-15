@@ -29,11 +29,14 @@ public class TelegramStorageCell : DataModel, WithModelId<TelegramStorageCell> {
     public TelegramCellClient CreateClient(TelegramSessionType type) {
         while (true) {
             try {
+                Logger.Debug($"Obtaining {type} session for account {Account.Id}...");
                 var response = TelegramAccount.Client.ObtainSession(Account.Id, type);
                 if (response.Status != KifaActionStatus.OK) {
                     throw new KifaActionFailedException(response);
                 }
 
+                Logger.Debug(
+                    $"Obtained {type} session {response.Value.Checked().Id} for account {Account.Id}.");
                 return new TelegramCellClient(Account.Data.Checked(), ChannelId,
                     response.Value.Checked(), type);
             } catch (KifaActionFailedException ex) {

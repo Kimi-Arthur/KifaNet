@@ -33,12 +33,21 @@ public class
         }
 
         try {
+            Logger.Debug($"Obtaining {request.Type} session for account {request.AccountId}...");
             var result = await Client.ObtainSessionAsync(request.AccountId, request.Type,
                 request.SessionId, cancellationToken: cancellationToken);
+            if (result.Status == KifaActionStatus.OK) {
+                Logger.Debug(
+                    $"Obtained {request.Type} session {result.Value?.Id} for account {request.AccountId}.");
+            } else {
+                Logger.Debug(
+                    $"Failed to obtain {request.Type} session for account {request.AccountId}: {result.Status} - {result.Message}");
+            }
+
             Logger.Trace($"Processed request: {result.Value?.ToJson()}");
             return result;
         } catch (OperationCanceledException) {
-            Logger.Trace($"Request obtain_session({request.AccountId}) cancelled by client.");
+            Logger.Debug($"Request obtain_session({request.AccountId}) cancelled by client.");
             throw;
         }
     }
