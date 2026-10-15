@@ -298,6 +298,7 @@ public abstract partial class KifaCommand {
 
             return 1;
         } finally {
+            KifaShutdown.RunCleanups();
             Console.CancelKeyPress -= cancelHandler;
             tstpRegistration?.Dispose();
             contRegistration?.Dispose();

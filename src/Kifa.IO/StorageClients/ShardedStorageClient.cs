@@ -51,9 +51,22 @@ public class ShardedStorageClient : StorageClient {
         throw new NotImplementedException();
     }
 
-    public override Stream OpenRead(string path)
-        => new MultiReadStream(GetShards(path).Select(shard => shard.client.OpenRead(shard.path))
-            .ToList());
+    public override Stream OpenRead(string path) {
+        var streams = new List<Stream>();
+        try {
+            foreach (var shard in GetShards(path)) {
+                streams.Add(shard.client.OpenRead(shard.path));
+            }
+
+            return new MultiReadStream(streams);
+        } catch {
+            foreach (var stream in streams) {
+                stream.Dispose();
+            }
+
+            throw;
+        }
+    }
 
     public override void Write(string path, Stream stream) {
         var length = stream.Length;

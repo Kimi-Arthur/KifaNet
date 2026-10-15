@@ -71,7 +71,12 @@ public class TelegramCellClient : IDisposable {
 
         KeepSessionReserved(Session.Id, type);
 
-        CreateClient();
+        try {
+            CreateClient();
+        } catch {
+            Release();
+            throw;
+        }
     }
 
     void CreateClient() {
@@ -94,8 +99,8 @@ public class TelegramCellClient : IDisposable {
                 .Run(() => Client.Messages_GetAllChats(),
                     TelegramStorageClient.HandleFloodExceptionFunc).GetAwaiter().GetResult()
                 .chats[long.Parse(ChannelId)].Checked();
-        } catch (WTException) {
-            Dispose();
+        } catch {
+            Client.Dispose();
             throw;
         }
     }

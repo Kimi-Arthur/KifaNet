@@ -350,12 +350,21 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         return !Exists() && Client.List(Path).Any();
     }
 
-    public Stream OpenRead()
-        => new VerifiableStream(
-            FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo?.EncryptionKey), FileInfo);
+    public Stream OpenRead() {
+        var stream = Client.OpenRead(Path);
+        try {
+            return new VerifiableStream(
+                FileFormat.GetDecodeStream(stream, FileInfo?.EncryptionKey), FileInfo);
+        } catch {
+            stream.Dispose();
+            throw;
+        }
+    }
 
-    public void Write(Stream stream)
-        => Client.Write(Path, FileFormat.GetEncodeStream(stream, FileInfo));
+    public void Write(Stream stream) {
+        using var encodeStream = FileFormat.GetEncodeStream(stream, FileInfo);
+        Client.Write(Path, encodeStream);
+    }
 
     public void Write(Func<Stream> getStream) {
         if (Exists()) {
@@ -363,7 +372,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             return;
         }
 
-        Write(getStream());
+        using var stream = getStream();
+        Write(stream);
     }
 
     public void Write(byte[] data) => Write(new MemoryStream(data));
@@ -1104,7 +1114,10 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         return streamReader.ReadToEnd();
     }
 
-    public byte[] ReadAsBytes() => OpenRead().ToByteArray();
+    public byte[] ReadAsBytes() {
+        using var stream = OpenRead();
+        return stream.ToByteArray();
+    }
 
     static StorageClient GetClient(string spec) {
         var specs = spec.Split(':');
