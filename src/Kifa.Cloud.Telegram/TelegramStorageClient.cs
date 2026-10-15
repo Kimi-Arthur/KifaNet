@@ -196,17 +196,21 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     }
 
     const int BlockSize = 1 << 19; // 512 KiB
+    const long QuickSessionThreshold = 1024; // 1 KiB
 
     public override void Write(string path, Stream stream) {
         if (Exists(path)) {
             return;
         }
 
-        var cellClient = ObtainCellClient(TelegramSessionType.Upload);
+        var size = stream.Length;
+        var sessionType = size <= QuickSessionThreshold
+            ? TelegramSessionType.Quick
+            : TelegramSessionType.Upload;
+
+        var cellClient = ObtainCellClient(sessionType);
 
         try {
-            var size = stream.Length;
-
             // This is to ensure we don't simultaneously read the input when uploading to avoid conflict.
             var uploadInputStreamSemaphore = new SemaphoreSlim(1);
 
@@ -260,7 +264,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                     $"Failed to upload {path} in the finalization step: {finalResult}.");
             }
         } finally {
-            ReturnCellClient(TelegramSessionType.Upload);
+            ReturnCellClient(sessionType);
         }
     }
 
@@ -495,9 +499,13 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     }
 
     public override Stream OpenRead(string path) {
-        var cellClient = ObtainCellClient(TelegramSessionType.Download);
+        var state = new DownloadState {
+            SessionType = TelegramSessionType.Quick,
+            CellClient = ObtainCellClient(TelegramSessionType.Quick)
+        };
+
         try {
-            var document = GetDocument(cellClient, path);
+            var document = GetDocument(state.CellClient, path);
             if (document == null) {
                 throw new FileNotFoundException(
                     $"{path} is not found in {this} because the document is not found in search.");
@@ -505,22 +513,53 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
             var fileSize = document.size;
             return new SeekableReadStream<DownloadState>(fileSize,
-                (buffer, bufferOffset, offset, count, state) => Download(cellClient, buffer, path,
-                    bufferOffset, offset, count, state), new DownloadState(),
-                disposer: () => ReturnCellClient(TelegramSessionType.Download));
+                (buffer, bufferOffset, offset, count, s) => Download(buffer, path,
+                    bufferOffset, offset, count, s), state,
+                disposer: () => {
+                    lock (state) {
+                        if (state.CellClient != null) {
+                            ReturnCellClient(state.SessionType);
+                            state.CellClient = null;
+                        }
+                    }
+                });
         } catch {
-            ReturnCellClient(TelegramSessionType.Download);
+            lock (state) {
+                if (state.CellClient != null) {
+                    ReturnCellClient(state.SessionType);
+                    state.CellClient = null;
+                }
+            }
+
             throw;
         }
     }
 
     class DownloadState {
+        public TelegramSessionType SessionType = TelegramSessionType.Quick;
+        public TelegramCellClient? CellClient;
+        public long BytesRead;
         public readonly byte[] LastBlock = new byte[BlockSize];
         public long LastBlockStart = -1;
         public Exception? LastException;
     }
 
-    int Download(TelegramCellClient cellClient, byte[] buffer, string path, int bufferOffset,
+    void UpgradeCellClient(DownloadState state, TelegramSessionType targetType) {
+        lock (state) {
+            if (state.SessionType == targetType || state.CellClient == null) {
+                return;
+            }
+
+            Logger.Debug(
+                $"Upgrading session from {state.SessionType} to {targetType} for cell {this}.");
+            ReturnCellClient(state.SessionType);
+            state.CellClient = null;
+            state.SessionType = targetType;
+            state.CellClient = ObtainCellClient(targetType);
+        }
+    }
+
+    int Download(byte[] buffer, string path, int bufferOffset,
         long offset, int count, DownloadState state) {
         if (state.LastException != null) {
             throw state.LastException;
@@ -529,6 +568,22 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         // TODO: When will this happen?
         if (count < 0) {
             count = buffer.Length - bufferOffset;
+        }
+
+        var requestedCount = count;
+
+        TelegramCellClient? cellClient;
+        lock (state) {
+            if (state.SessionType == TelegramSessionType.Quick &&
+                state.BytesRead + requestedCount > QuickSessionThreshold) {
+                UpgradeCellClient(state, TelegramSessionType.Download);
+            }
+
+            cellClient = state.CellClient;
+        }
+
+        if (cellClient == null) {
+            throw new ObjectDisposedException(nameof(SeekableReadStream));
         }
 
         var totalRead = 0;
@@ -547,6 +602,10 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
         if (count == 0) {
             // Even though the next loop can handle this, return early so we don't mess lastBlock.
+            lock (state) {
+                state.BytesRead += totalRead;
+            }
+
             return totalRead;
         }
 
@@ -584,6 +643,10 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         if (exceptions.TryPeek(out var ex)) {
             state.LastException = ex;
             throw ex;
+        }
+
+        lock (state) {
+            state.BytesRead += totalRead;
         }
 
         return totalRead;
