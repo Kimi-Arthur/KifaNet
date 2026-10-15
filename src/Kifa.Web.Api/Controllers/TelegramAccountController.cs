@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Kifa.Cloud.Telegram;
 using Kifa.Service;
 using Microsoft.AspNetCore.Mvc;
@@ -18,13 +21,26 @@ public class
         => Client.AddSession(request.AccountId, request.SessionData);
 
     [HttpPost("$obtain_session")]
-    public KifaApiActionResult<TelegramSession> ObtainSession(
-        [FromBody] TelegramAccount.ObtainSessionRequest request) {
+    public async Task<KifaApiActionResult<TelegramSession>> ObtainSession(
+        [FromBody] TelegramAccount.ObtainSessionRequest request,
+        CancellationToken cancellationToken) {
         Logger.Trace($"Got request: obtain_session({request.ToJson()})");
-        var result = Client.ObtainSession(request.AccountId, request.SessionId);
-        Logger.Trace($"Processed request: {result.Value.ToJson()}");
+        if (!Enum.IsDefined(request.Type)) {
+            return new KifaActionResult<TelegramSession> {
+                Status = KifaActionStatus.BadRequest,
+                Message = $"Invalid session type: {request.Type}."
+            };
+        }
 
-        return result;
+        try {
+            var result = await Client.ObtainSessionAsync(request.AccountId, request.Type,
+                request.SessionId, cancellationToken: cancellationToken);
+            Logger.Trace($"Processed request: {result.Value?.ToJson()}");
+            return result;
+        } catch (OperationCanceledException) {
+            Logger.Trace($"Request obtain_session({request.AccountId}) cancelled by client.");
+            throw;
+        }
     }
 
     [HttpPost("$renew_session")]
@@ -42,7 +58,7 @@ public class
         => Client.UpdateSession(request.AccountId, request.SessionId, request.SessionData);
 }
 
-public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAccount>,
+public partial class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAccount>,
     TelegramAccount.ServiceClient {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
@@ -54,13 +70,24 @@ public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAc
                 Data = sessionData,
                 Reserved = Date.Zero
             });
-            return Update(account);
+            var result = Update(account);
+            NotifyWaiters(accountId);
+            return result;
         }
     }
 
-    static readonly TimeSpan LeaseDuration = TimeSpan.FromMinutes(10);
+    static readonly TimeSpan LongLeaseDuration = TimeSpan.FromMinutes(10);
+    static readonly TimeSpan QuickLeaseDuration = TimeSpan.FromMinutes(2);
 
-    public KifaActionResult<TelegramSession> ObtainSession(string accountId, int? sessionId) {
+    static TimeSpan GetLeaseDuration(TelegramSessionType type)
+        => type switch {
+            TelegramSessionType.Quick => QuickLeaseDuration,
+            TelegramSessionType.Upload or TelegramSessionType.Download => LongLeaseDuration,
+            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+        };
+
+    public KifaActionResult<TelegramSession> ObtainSession(string accountId,
+        TelegramSessionType type, int? sessionId = null) {
         using (AcquireLock(accountId)) {
             var account = Get(accountId).Checked();
             if (sessionId != null) {
@@ -69,7 +96,8 @@ public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAc
                 if (matchedSession != null && matchedSession.Reserved <= DateTimeOffset.UtcNow) {
                     try {
                         account.RefreshIfNeeded(matchedSession);
-                        matchedSession.Reserved = DateTimeOffset.UtcNow + LeaseDuration;
+                        matchedSession.Reserved = DateTimeOffset.UtcNow + GetLeaseDuration(type);
+                        matchedSession.Type = type;
 
                         Update(account);
                         return matchedSession;
@@ -85,18 +113,30 @@ public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAc
                 }
             }
 
+            var limit = account.GetSessionLimit(type);
+            var activeTypeCount = account.Sessions.Count(s =>
+                s.Reserved > DateTimeOffset.UtcNow && s.Type == type);
+            if (activeTypeCount >= limit) {
+                return new KifaActionResult<TelegramSession> {
+                    Status = KifaActionStatus.Pending,
+                    Message = $"All {limit} {type} sessions are reserved."
+                };
+            }
+
             while (account.Sessions.Count > 0) {
-                var coldestSession = account.Sessions.MinBy(s => s.Reserved);
-                if (coldestSession == null || !(coldestSession.Reserved <= DateTimeOffset.UtcNow)) {
+                var coldestSession = account.Sessions.Where(s => s.Reserved <= DateTimeOffset.UtcNow)
+                    .MinBy(s => s.Reserved);
+                if (coldestSession == null) {
                     return new KifaActionResult<TelegramSession> {
-                        Status = KifaActionStatus.BadRequest,
+                        Status = KifaActionStatus.Pending,
                         Message = $"All {account.Sessions.Count} sessions are reserved."
                     };
                 }
 
                 try {
                     account.RefreshIfNeeded(coldestSession);
-                    coldestSession.Reserved = DateTimeOffset.UtcNow + LeaseDuration;
+                    coldestSession.Reserved = DateTimeOffset.UtcNow + GetLeaseDuration(type);
+                    coldestSession.Type = type;
                     coldestSession.Id = Random.Shared.Next();
 
                     Update(account);
@@ -134,8 +174,17 @@ public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAc
                 };
             }
 
-            session.Reserved = DateTimeOffset.UtcNow + TimeSpan.FromMinutes(10);
+            if (session.Type == null) {
+                return new KifaActionResult {
+                    Status = KifaActionStatus.BadRequest,
+                    Message = $"Session {sessionId} has no session type assigned."
+                };
+            }
+
+            session.Reserved = DateTimeOffset.UtcNow + GetLeaseDuration(session.Type.Value);
             Update(account);
+
+            NotifyWaiters(accountId);
 
             return new KifaActionResult {
                 Status = KifaActionStatus.OK,
@@ -158,7 +207,10 @@ public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAc
             // Set as now so that it will be least likely to be reserved again. So that we can
             // rotate accounts.
             session.Reserved = DateTimeOffset.UtcNow;
+            session.Type = null;
             Update(account);
+
+            NotifyWaiters(accountId);
 
             return new KifaActionResult {
                 Status = KifaActionStatus.OK,
