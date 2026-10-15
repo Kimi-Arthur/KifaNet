@@ -11,6 +11,13 @@ public class KifaCommandStopTests {
     class TestCommand : KifaCommand {
         public override int Execute(KifaTask? task = null) => 0;
 
+        public Action? OnImmediateCancel { get; set; }
+        public Action? OnSuspend { get; set; }
+
+        protected override void ImmediateCancel() => OnImmediateCancel?.Invoke();
+
+        protected override void Suspend() => OnSuspend?.Invoke();
+
         public void RunItemAction(string item, Action action) => ExecuteItem(item, action);
 
         public void RunItemFunc(string item, Func<KifaActionResult> action)
@@ -187,28 +194,33 @@ public class KifaCommandStopTests {
     }
 
     [Fact]
-    public void HandleCancelKeyPress_DoublePressWithin500Ms_TriggersImmediateCancel() {
+    public void DoublePressDuration_DefaultsTo2Seconds() {
+        Assert.Equal(2.0, KifaCommand.DoublePressDuration);
+    }
+
+    [Fact]
+    public void HandleCancelKeyPress_DoublePressWithinDuration_TriggersImmediateCancel() {
         var cancelCalled = false;
         var cmd = new TestCommand {
-            ImmediateCancelAction = () => cancelCalled = true
+            OnImmediateCancel = () => cancelCalled = true
         };
         var t0 = DateTimeOffset.UtcNow;
 
         cmd.HandleCancelKeyPress(t0);
-        cmd.HandleCancelKeyPress(t0.AddMilliseconds(200));
+        cmd.HandleCancelKeyPress(t0.AddSeconds(1));
 
         Assert.True(cancelCalled);
     }
 
     [Fact]
-    public void HandleCancelKeyPress_LaterPressAfter500Ms_CancelsStopRequest() {
+    public void HandleCancelKeyPress_LaterPressAfterDuration_CancelsStopRequest() {
         var cmd = new TestCommand();
         var t0 = DateTimeOffset.UtcNow;
 
         cmd.HandleCancelKeyPress(t0);
         Assert.True(cmd.StopRequested);
 
-        cmd.HandleCancelKeyPress(t0.AddMilliseconds(600));
+        cmd.HandleCancelKeyPress(t0.AddSeconds(3));
         Assert.False(cmd.StopRequested);
     }
 
@@ -216,7 +228,7 @@ public class KifaCommandStopTests {
     public void HandleCancelKeyPress_DoublePressAfterLaterPress_TriggersImmediateCancel() {
         var cancelCalled = false;
         var cmd = new TestCommand {
-            ImmediateCancelAction = () => cancelCalled = true
+            OnImmediateCancel = () => cancelCalled = true
         };
         var t0 = DateTimeOffset.UtcNow;
 
@@ -224,12 +236,39 @@ public class KifaCommandStopTests {
         Assert.True(cmd.StopRequested);
 
         // Later press cancels stop request
-        cmd.HandleCancelKeyPress(t0.AddMilliseconds(1000));
+        cmd.HandleCancelKeyPress(t0.AddSeconds(3));
         Assert.False(cmd.StopRequested);
 
-        // Quick second press within 500ms triggers immediate cancel
-        cmd.HandleCancelKeyPress(t0.AddMilliseconds(1200));
+        // Quick second press within 2s triggers immediate cancel
+        cmd.HandleCancelKeyPress(t0.AddSeconds(4));
         Assert.True(cancelCalled);
+    }
+
+    [Fact]
+    public void HandleCancelKeyPress_CustomDoublePressDuration_Respected() {
+        var cancelCalled = false;
+        var originalDuration = KifaCommand.DoublePressDuration;
+        try {
+            KifaCommand.DoublePressDuration = 0.5;
+            var cmd = new TestCommand {
+                OnImmediateCancel = () => cancelCalled = true
+            };
+            var t0 = DateTimeOffset.UtcNow;
+
+            cmd.HandleCancelKeyPress(t0);
+            Assert.True(cmd.StopRequested);
+
+            // Later press after 500ms cancels stop request
+            cmd.HandleCancelKeyPress(t0.AddMilliseconds(600));
+            Assert.False(cmd.StopRequested);
+            Assert.False(cancelCalled);
+
+            // Second press within 500ms triggers immediate cancel
+            cmd.HandleCancelKeyPress(t0.AddMilliseconds(800));
+            Assert.True(cancelCalled);
+        } finally {
+            KifaCommand.DoublePressDuration = originalDuration;
+        }
     }
 
     [Fact]
@@ -254,30 +293,57 @@ public class KifaCommandStopTests {
     }
 
     [Fact]
-    public void HandleSuspendSignal_DoublePressWithin500Ms_TriggersImmediateSuspend() {
+    public void HandleSuspendSignal_DoublePressWithinDuration_TriggersImmediateSuspend() {
         var suspendCalled = false;
         var cmd = new TestCommand {
-            SuspendAction = () => suspendCalled = true
+            OnSuspend = () => suspendCalled = true
         };
         var t0 = DateTimeOffset.UtcNow;
 
         cmd.HandleSuspendSignal(t0);
-        cmd.HandleSuspendSignal(t0.AddMilliseconds(300));
+        cmd.HandleSuspendSignal(t0.AddSeconds(1));
 
         Assert.True(suspendCalled);
         Assert.False(cmd.PauseRequested);
     }
 
     [Fact]
-    public void HandleSuspendSignal_LaterPressAfter500Ms_CancelsPauseRequest() {
+    public void HandleSuspendSignal_LaterPressAfterDuration_CancelsPauseRequest() {
         var cmd = new TestCommand();
         var t0 = DateTimeOffset.UtcNow;
 
         cmd.HandleSuspendSignal(t0);
         Assert.True(cmd.PauseRequested);
 
-        cmd.HandleSuspendSignal(t0.AddMilliseconds(600));
+        cmd.HandleSuspendSignal(t0.AddSeconds(3));
         Assert.False(cmd.PauseRequested);
+    }
+
+    [Fact]
+    public void HandleSuspendSignal_CustomDoublePressDuration_Respected() {
+        var suspendCalled = false;
+        var originalDuration = KifaCommand.DoublePressDuration;
+        try {
+            KifaCommand.DoublePressDuration = 0.5;
+            var cmd = new TestCommand {
+                OnSuspend = () => suspendCalled = true
+            };
+            var t0 = DateTimeOffset.UtcNow;
+
+            cmd.HandleSuspendSignal(t0);
+            Assert.True(cmd.PauseRequested);
+
+            // Later press after 500ms cancels pause request
+            cmd.HandleSuspendSignal(t0.AddMilliseconds(600));
+            Assert.False(cmd.PauseRequested);
+            Assert.False(suspendCalled);
+
+            // Second press within 500ms triggers immediate suspend
+            cmd.HandleSuspendSignal(t0.AddMilliseconds(800));
+            Assert.True(suspendCalled);
+        } finally {
+            KifaCommand.DoublePressDuration = originalDuration;
+        }
     }
 
     [Fact]
@@ -306,7 +372,7 @@ public class KifaCommandStopTests {
     public void HandleResumeSignal_ResetsLastCtrlZTime() {
         var suspendCalled = false;
         var cmd = new TestCommand {
-            SuspendAction = () => suspendCalled = true
+            OnSuspend = () => suspendCalled = true
         };
         var t0 = DateTimeOffset.UtcNow;
 

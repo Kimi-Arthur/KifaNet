@@ -12,15 +12,15 @@ Long-running CLI commands in KifaNet (such as `filex cp`, `filex rm`, and `subx`
 
 ## Signal Handling Semantics
 
-All control operations use a 500ms double-tap threshold (`DoublePressThresholdMs`):
+All control operations use a configurable double-press threshold duration (`KifaCommand.DoublePressDuration`, defaulting to 2s):
 
 ### 1. `Ctrl-C` (Stop / Cancellation)
 
 | Action | Timing / Condition | Behavior |
 |---|---|---|
-| **Single Press** | First press during normal run | **Graceful Stop**: Completes the currently executing item. Subsequent items in the batch are cancelled with `KifaActionStatus.Cancelled`. Logs a warning and prints cancellation notice. |
-| **Double Press** | Second press within 500ms | **Immediate Force Exit**: Immediately interrupts execution. Marks the active item as cancelled, logs the final summary report with `LogSummary()`, invokes registered `KifaShutdown` cleanup handlers, and exits the process (`Environment.Exit(130)`). |
-| **Subsequent Press** | Press after > 500ms while stop is pending | **Toggle / Resume**: Cancels the pending stop request and resumes normal execution of subsequent items. |
+| **Single Press** | First press during normal run | **Graceful Stop**: Completes the currently executing item. Subsequent items in the batch are cancelled with `KifaActionStatus.Cancelled`. Logs a warning prompting that double-pressing within the duration (e.g. 2s) cancels immediately. |
+| **Double Press** | Second press within duration (default 2s) | **Immediate Force Exit**: Immediately interrupts execution. Marks the active item as cancelled, logs the final summary report with `LogSummary()`, invokes registered `KifaShutdown` cleanup handlers, and exits the process (`Environment.Exit(130)`). |
+| **Subsequent Press** | Press after > duration (default 2s) while stop is pending | **Toggle / Resume**: Cancels the pending stop request and resumes normal execution of subsequent items. |
 | **During Prompt** | Press while awaiting user input | **Cancel Prompt**: Aborts the current interactive prompt without forcing immediate process exit. |
 | **While Paused** | Press while paused between items | **Cancel Remaining**: Unblocks the pause loop immediately and cancels remaining items. |
 
@@ -29,8 +29,8 @@ All control operations use a 500ms double-tap threshold (`DoublePressThresholdMs
 | Action | Timing / Condition | Behavior |
 |---|---|---|
 | **Single Press** | First press during normal run | **Graceful Pause**: Completes the currently executing item, then enters a non-busy wait loop (`WaitIfPaused`) before starting the next item. Execution can be resumed by pressing `Enter` or `Ctrl-Z`. |
-| **Double Press** | Second press within 500ms | **Immediate Suspend**: Bypasses deferred pause and immediately suspends the process at the OS kernel level via `SIGSTOP`. Shell job control takes over; typing `fg` in terminal resumes the process via `SIGCONT`. |
-| **Subsequent Press** | Press after > 500ms while pause is pending | **Toggle / Resume**: Cancels the pending pause request and resumes execution immediately. |
+| **Double Press** | Second press within duration (default 2s) | **Immediate Suspend**: Bypasses deferred pause and immediately suspends the process at the OS kernel level via `SIGSTOP`. Shell job control takes over; typing `fg` in terminal resumes the process via `SIGCONT`. |
+| **Subsequent Press** | Press after > duration (default 2s) while pause is pending | **Toggle / Resume**: Cancels the pending pause request and resumes execution immediately. |
 | **When Stop Pending**| Press while a graceful stop was requested | **Switch to Pause**: Overrides the stop request with a graceful pause request instead. |
 
 ---
@@ -61,12 +61,11 @@ Between items, [`ExecuteItem`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Tool
 Because signals are received asynchronously on CLR thread-pool threads:
 - Access to `Results` is synchronized with `lock (Results)`.
 - The currently executing item is tracked in [`CurrentItem`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Tools/KifaCommand.cs#L79-L82).
-- When a forced exit occurs, [`DefaultImmediateCancel()`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Tools/KifaCommand.cs#L151-L171) records `CurrentItem` as `KifaActionStatus.Cancelled` ("Interrupted by user forced exit"), prints the final [`LogSummary()`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Tools/KifaCommand.Execution.cs#L108-L203), runs registered shutdown hooks via `KifaShutdown.RunCleanups()`, and terminates cleanly.
+- When a forced exit occurs, [`ImmediateCancel()`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Tools/KifaCommand.cs#L147-L167) records `CurrentItem` as `KifaActionStatus.Cancelled` ("Interrupted by user forced exit"), prints the final [`LogSummary()`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Tools/KifaCommand.Execution.cs#L108-L203), runs registered shutdown hooks via `KifaShutdown.RunCleanups()`, and terminates cleanly.
 
 ### 5. Inversion of Control & Testability
 To allow thorough unit testing without killing the test runner or suspending test processes:
-- `ImmediateCancelAction` defaults to `DefaultImmediateCancel` (`Environment.Exit(130)`), but can be replaced by mock delegates in unit tests.
-- `SuspendAction` defaults to `DefaultSuspend` (`kill(pid, SIGSTOP)`), but can be replaced in unit tests.
+- `ImmediateCancel()` (`Environment.Exit(130)`) and `Suspend()` (`kill(pid, SIGSTOP)`) are `protected virtual` methods on `KifaCommand`, allowing test subclasses to override them without killing or suspending the test runner.
 - `IsKeyAvailableFunc` and `ReadKeyFunc` can be injected to simulate interactive terminal key inputs.
 
 ---
@@ -75,9 +74,10 @@ To allow thorough unit testing without killing the test runner or suspending tes
 
 Comprehensive test cases in [`KifaCommandStopTests`](file:///Users/kimi/Projects/KifaNet/Tests/Kifa.Tools.Tests/KifaCommandStopTests.cs) verify:
 - Graceful cancellation (`Ctrl-C` single press marks remaining items cancelled after current item finishes).
-- Double-tap `Ctrl-C` within 500ms triggers immediate forced exit and cancellation of the running item.
-- Subsequent `Ctrl-C` after 500ms toggles cancellation back to active execution.
+- Double-tap `Ctrl-C` within `DoublePressDuration` (default 2s) triggers immediate forced exit and cancellation of the running item.
+- Subsequent `Ctrl-C` after `DoublePressDuration` toggles cancellation back to active execution.
 - Graceful pause (`Ctrl-Z` single press pauses execution before next item and resumes on Enter or subsequent `Ctrl-Z`).
-- Double-tap `Ctrl-Z` within 500ms triggers `SuspendAction`.
+- Double-tap `Ctrl-Z` within `DoublePressDuration` triggers `Suspend()`.
+- Custom `DoublePressDuration` configured globally via `KifaCommand.DoublePressDuration` (or overridden via YAML configuration).
 - Transitioning from stop to pause when `Ctrl-Z` is pressed after `Ctrl-C`.
 - Cancelling while paused immediately unblocks pause loop and cancels remaining items.

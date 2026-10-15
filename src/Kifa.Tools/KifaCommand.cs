@@ -124,21 +124,8 @@ public abstract partial class KifaCommand {
     DateTimeOffset lastCtrlCTime = DateTimeOffset.MinValue;
     DateTimeOffset lastCtrlZTime = DateTimeOffset.MinValue;
 
-    Action? immediateCancelAction;
+    public static double DoublePressDuration { get; set; } = 2;
 
-    public Action ImmediateCancelAction {
-        get => immediateCancelAction ?? DefaultImmediateCancel;
-        set => immediateCancelAction = value;
-    }
-
-    Action? suspendAction;
-
-    public Action SuspendAction {
-        get => suspendAction ?? DefaultSuspend;
-        set => suspendAction = value;
-    }
-
-    const int DoublePressThresholdMs = 500;
     const int PosixSigStopMacOs = 17;
     const int PosixSigStopLinux = 19;
 
@@ -148,7 +135,7 @@ public abstract partial class KifaCommand {
     static readonly int SigStop =
         RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? PosixSigStopMacOs : PosixSigStopLinux;
 
-    void DefaultImmediateCancel() {
+    protected virtual void ImmediateCancel() {
         Logger.Warn("Forced exit requested. Cleaning up...");
         try {
             lock (Results) {
@@ -170,7 +157,7 @@ public abstract partial class KifaCommand {
         Environment.Exit(130);
     }
 
-    void DefaultSuspend() {
+    protected virtual void Suspend() {
         if (!OperatingSystem.IsWindows()) {
             kill(Environment.ProcessId, SigStop);
         }
@@ -179,8 +166,8 @@ public abstract partial class KifaCommand {
     public void HandleCancelKeyPress(DateTimeOffset? pressTime = null) {
         var now = pressTime ?? DateTimeOffset.UtcNow;
         lock (stateLock) {
-            if (now - lastCtrlCTime <= TimeSpan.FromMilliseconds(DoublePressThresholdMs)) {
-                ImmediateCancelAction();
+            if (now - lastCtrlCTime <= TimeSpan.FromSeconds(DoublePressDuration)) {
+                ImmediateCancel();
                 return;
             }
 
@@ -189,7 +176,7 @@ public abstract partial class KifaCommand {
             if (IsPrompting) {
                 StopRequested = true;
                 Logger.Warn(
-                    "Stop requested. Cancelling prompt... (Double-press Ctrl-C to cancel immediately)");
+                    $"Stop requested. Cancelling prompt... (Double-press Ctrl-C within {DoublePressDuration}s to cancel immediately)");
                 return;
             }
 
@@ -201,10 +188,10 @@ public abstract partial class KifaCommand {
                 PauseRequested = false;
                 if (IsPaused) {
                     Logger.Warn(
-                        "Stop requested. Cancelling remaining items... (Press Ctrl-C again to resume, double-press to cancel immediately)");
+                        $"Stop requested. Cancelling remaining items... (Press Ctrl-C again to resume, double-press within {DoublePressDuration}s to cancel immediately)");
                 } else {
                     Logger.Warn(
-                        "Stop requested. Completing current item before stopping... (Press Ctrl-C again to resume, double-press to cancel immediately)");
+                        $"Stop requested. Completing current item before stopping... (Press Ctrl-C again to resume, double-press within {DoublePressDuration}s to cancel immediately)");
                 }
             }
         }
@@ -213,13 +200,13 @@ public abstract partial class KifaCommand {
     public void HandleSuspendSignal(DateTimeOffset? pressTime = null) {
         var now = pressTime ?? DateTimeOffset.UtcNow;
         lock (stateLock) {
-            if (now - lastCtrlZTime <= TimeSpan.FromMilliseconds(DoublePressThresholdMs)) {
+            if (now - lastCtrlZTime <= TimeSpan.FromSeconds(DoublePressDuration)) {
                 Logger.Warn("Immediate pause requested. Suspending process... (Use 'fg' to resume)");
                 if (!isPaused) {
                     PauseRequested = false;
                 }
 
-                SuspendAction();
+                Suspend();
                 return;
             }
 
@@ -229,7 +216,7 @@ public abstract partial class KifaCommand {
                 StopRequested = false;
                 PauseRequested = true;
                 Logger.Warn(
-                    "Stop request replaced with pause. Completing current item before pausing... (Press Ctrl-Z to resume, double-press to pause now)");
+                    $"Stop request replaced with pause. Completing current item before pausing... (Press Ctrl-Z to resume, double-press within {DoublePressDuration}s to pause now)");
                 return;
             }
 
@@ -243,7 +230,7 @@ public abstract partial class KifaCommand {
             } else {
                 PauseRequested = true;
                 Logger.Warn(
-                    "Pause requested. Completing current item before pausing... (Press Ctrl-Z to resume, double-press to pause now)");
+                    $"Pause requested. Completing current item before pausing... (Press Ctrl-Z to resume, double-press within {DoublePressDuration}s to pause now)");
             }
         }
     }
