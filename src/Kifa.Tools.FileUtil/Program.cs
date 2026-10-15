@@ -6,7 +6,7 @@ class Program {
     static int Main(string[] args)
         => KifaCommand.Run(args, typeof(CleanCommand), typeof(RemoveCommand),
             typeof(CopyCommand), typeof(ListCommand), typeof(UploadCommand),
-            typeof(AddCommand), typeof(GetCommand), typeof(TouchCommand),
+            typeof(AddCommand), typeof(GetCommand), typeof(RetrieveCommand), typeof(TouchCommand),
             typeof(NormalizeCommand), typeof(ImportCommand), typeof(TrashCommand),
             typeof(RemoveEmptyCommand), typeof(DecodeCommand), typeof(DedupCommand),
             typeof(MigrateCommand), typeof(LinkCommand), typeof(ExtractCommand),

@@ -61,7 +61,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     public FileInformation? FileInfo { get; set; }
 
-    StorageClient Client { get; set; }
+    public StorageClient Client { get; set; }
 
     public KifaFile Parent => new($"{Host}{ParentPath}");
 
@@ -609,6 +609,13 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     // 3. Remote downloading (from cloud storage providers).
     public KifaActionResult GetFile(HashSet<string>? allowedClients = null,
         IEnumerable<string>? ignoreLocations = null, FileInformation? info = null) {
+        if (!IsLocal) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Error,
+                Message = $"Cannot get non-local file {this} directly. Use Retrieve instead."
+            };
+        }
+
         try {
             Add();
             return new KifaActionResult {
@@ -707,6 +714,86 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
                 Message = $"Successfully got file from {source}!"
             };
         } catch (IOException ex) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Error,
+                Message = $"Failed to get destination: {ex}"
+            };
+        }
+    }
+
+    public KifaActionResult Retrieve(bool noRegister = false,
+        Func<string, bool, bool>? confirmPrompt = null) {
+        if (IsLocal) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Error,
+                Message = $"Cannot retrieve local file {this}. Use GetFile instead."
+            };
+        }
+
+        if (!noRegister) {
+            if (Registered) {
+                return LocalMirrorFile.GetFile(info: FileInfo);
+            }
+
+            if (CheckedByFileId() || CheckedByQuickInfo(confirmPrompt)) {
+                Register(true);
+                RegisterFileIdInfo();
+                return LocalMirrorFile.GetFile(info: FileInfo);
+            }
+        }
+
+        var localFile = LocalMirrorFile;
+        if (localFile.Client.Exists(localFile.Path)) {
+            FileInfo ??= new FileInformation {
+                Id = Id
+            };
+            FileInfo.Size ??= FileFormat is RawFileFormat ? Client.Length(Path) : Length;
+            if (!localFile.Exists(FileInfo.Size)) {
+                return new KifaActionResult {
+                    Status = KifaActionStatus.Error,
+                    Message = "Target exists, but doesn't match size."
+                };
+            }
+
+            if (!noRegister) {
+                try {
+                    localFile.Add(confirmPrompt: confirmPrompt);
+                    Register(true);
+                } catch (FileCorruptedException ex) {
+                    return new KifaActionResult {
+                        Status = KifaActionStatus.Error,
+                        Message = $"Target exists, but doesn't match: {ex}"
+                    };
+                }
+            }
+
+            return new KifaActionResult {
+                Status = KifaActionStatus.Skipped,
+                Message = "Already got!"
+            };
+        }
+
+        Copy(localFile);
+
+        try {
+            Logger.Debug($"Verify destination {localFile}...");
+            if (noRegister) {
+                if (!localFile.Exists()) {
+                    return new KifaActionResult {
+                        Status = KifaActionStatus.Error,
+                        Message = $"Failed to verify downloaded file {localFile}."
+                    };
+                }
+            } else {
+                localFile.Add();
+                Register(true);
+            }
+
+            return new KifaActionResult {
+                Status = KifaActionStatus.OK,
+                Message = $"Successfully got file from {this}!"
+            };
+        } catch (Exception ex) when (ex is IOException or FileCorruptedException) {
             return new KifaActionResult {
                 Status = KifaActionStatus.Error,
                 Message = $"Failed to get destination: {ex}"
@@ -979,7 +1066,21 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             return false;
         }
 
-        var quickInfo = Client.GetQuickInfo(Path) ?? FileInfo;
+        var quickInfo = FileInfo?.Size != null &&
+                        (FileInfo.GetProperties() & FileProperties.AllHashes) != FileProperties.None
+            ? FileInfo
+            : Client.GetQuickInfo(Path);
+        if (quickInfo != null && !ReferenceEquals(quickInfo, FileInfo)) {
+            FileInfo ??= new FileInformation {
+                Id = Id
+            };
+            if (FileInfo.CompareProperties(quickInfo, FileProperties.AllVerifiable) ==
+                FileProperties.None) {
+                FileInfo.AddProperties(quickInfo);
+            }
+        }
+
+        quickInfo ??= FileInfo;
         if (quickInfo?.Md5 == null || quickInfo.Size == null) {
             return false;
         }
