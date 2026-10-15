@@ -19,24 +19,26 @@ public class TelegramAccountJsonServiceClientTests : IDisposable {
     public TelegramAccountJsonServiceClientTests() {
         folder = $"{Path.GetTempPath()}/{nameof(TelegramAccountJsonServiceClientTests)}_{DateTime.UtcNow:yyyyMMddHHmmss}_{Random.Shared.Next()}";
         client.DataFolder = folder;
+        TelegramAccount.MaxQuickSessions = 5;
+        TelegramAccount.MaxUploadSessions = 2;
+        TelegramAccount.MaxDownloadSessions = 2;
     }
 
     public void Dispose() {
+        TelegramAccount.MaxQuickSessions = 5;
+        TelegramAccount.MaxUploadSessions = 2;
+        TelegramAccount.MaxDownloadSessions = 2;
         if (Directory.Exists(folder)) {
             Directory.Delete(folder, true);
         }
     }
 
-    TelegramAccount CreateAccountWithSessions(string id, int sessionCount,
-        int maxUpload = 2, int maxDownload = 2, int maxQuick = 1) {
+    TelegramAccount CreateAccountWithSessions(string id, int sessionCount) {
         var account = new TelegramAccount {
             Id = id,
             Phone = "+1234567890",
             ApiId = 12345,
             ApiHash = "fake_hash",
-            MaxUploadSessions = maxUpload,
-            MaxDownloadSessions = maxDownload,
-            MaxQuickSessions = maxQuick,
             Sessions = new List<TelegramSession>()
         };
 
@@ -54,7 +56,109 @@ public class TelegramAccountJsonServiceClientTests : IDisposable {
     }
 
     [Fact]
+    public void AppConfig_DefaultSessionLimits() {
+        TelegramAccount.MaxQuickSessions.Should().Be(5);
+        TelegramAccount.MaxUploadSessions.Should().Be(2);
+        TelegramAccount.MaxDownloadSessions.Should().Be(2);
+    }
+
+    [Fact]
+    public void AccountSerialization_DoesNotStoreOrReadLimits() {
+        var account = new TelegramAccount {
+            Id = "no_limits_stored",
+            Phone = "+1234567890",
+            ApiId = 12345,
+            ApiHash = "fake_hash"
+        };
+
+        var json = account.ToJson();
+        json.Should().NotContain("max_quick_sessions");
+        json.Should().NotContain("max_upload_sessions");
+        json.Should().NotContain("max_download_sessions");
+    }
+
+    [Fact]
+    public void ObtainSession_AfterReload_ChecksTypeMarkedOnEachSessionExcludingExpired() {
+        var now = DateTimeOffset.UtcNow;
+        var rawJson = $$"""
+        {
+          "id": "reload_test",
+          "phone": "+1234567890",
+          "api_id": 12345,
+          "api_hash": "fake_hash",
+          "sessions": [
+            {
+              "id": 1,
+              "data": [1, 2, 3, 4],
+              "refreshed": "{{now:yyyy-MM-dd HH:mm:ss.ffffff}}",
+              "reserved": "{{now.AddMinutes(5):yyyy-MM-dd HH:mm:ss.ffffff}}",
+              "type": "Upload"
+            },
+            {
+              "id": 2,
+              "data": [1, 2, 3, 4],
+              "refreshed": "{{now:yyyy-MM-dd HH:mm:ss.ffffff}}",
+              "reserved": "{{now.AddMinutes(-5):yyyy-MM-dd HH:mm:ss.ffffff}}",
+              "type": "Upload"
+            },
+            {
+              "id": 3,
+              "data": [1, 2, 3, 4],
+              "refreshed": "{{now:yyyy-MM-dd HH:mm:ss.ffffff}}",
+              "reserved": "{{now.AddMinutes(-10):yyyy-MM-dd HH:mm:ss.ffffff}}",
+              "type": "Quick"
+            }
+          ]
+        }
+        """;
+        Directory.CreateDirectory($"{folder}/telegram/accounts");
+        File.WriteAllText($"{folder}/telegram/accounts/reload_test.json", rawJson);
+
+        // Upload limit is 2. Session 1 is active Upload (Reserved > now).
+        // Session 2 is expired Upload (Reserved <= now). Session 3 is expired Quick.
+        // Active Upload count is 1. We can obtain a second Upload session.
+        var secondUpload = client.ObtainSession("reload_test", TelegramSessionType.Upload);
+        secondUpload.Status.Should().Be(KifaActionStatus.OK);
+        secondUpload.Value.Checked().Type.Should().Be(TelegramSessionType.Upload);
+
+        // Now active Upload count is 2 (Session 1 + newly leased session).
+        // A third Upload request should be Pending because limit (2) is reached.
+        var thirdUpload = client.ObtainSession("reload_test", TelegramSessionType.Upload);
+        thirdUpload.Status.Should().Be(KifaActionStatus.Pending);
+        thirdUpload.Message.Should().Be("All 2 Upload sessions are reserved.");
+    }
+
+    [Fact]
+    public void ObtainSession_WhenLimitsMissingFromJson_CanObtainUpToDefaultLimit() {
+        var rawJson = """
+        {
+          "id": "missing_limits_file",
+          "phone": "+1234567890",
+          "api_id": 12345,
+          "api_hash": "fake_hash",
+          "sessions": [
+            {
+              "id": 1,
+              "data": [1, 2, 3, 4],
+              "refreshed": "2026-10-14 15:32:42.872525",
+              "reserved": "0001-01-01 00:00:00.000000"
+            }
+          ]
+        }
+        """;
+        // Write raw JSON directly to disk, simulating legacy storage file like Kimily.json on server
+        Directory.CreateDirectory($"{folder}/telegram/accounts");
+        File.WriteAllText($"{folder}/telegram/accounts/missing_limits_file.json", rawJson);
+
+        var result = client.ObtainSession("missing_limits_file", TelegramSessionType.Quick);
+        result.Status.Should().Be(KifaActionStatus.OK);
+        result.Value.Should().NotBeNull();
+        result.Value.Checked().Type.Should().Be(TelegramSessionType.Quick);
+    }
+
+    [Fact]
     public void ObtainSession_QuickLimit_EnforcesLimitAndPending() {
+        TelegramAccount.MaxQuickSessions = 1;
         var account = CreateAccountWithSessions("quick_test", 3);
 
         var first = client.ObtainSession(account.Id.Checked(), TelegramSessionType.Quick);
@@ -128,6 +232,7 @@ public class TelegramAccountJsonServiceClientTests : IDisposable {
 
     [Fact]
     public void ObtainSession_DifferentTypes_CanRunConcurrently() {
+        TelegramAccount.MaxQuickSessions = 1;
         var account = CreateAccountWithSessions("concurrent_types", 5);
 
         var quick = client.ObtainSession(account.Id.Checked(), TelegramSessionType.Quick);
@@ -155,7 +260,8 @@ public class TelegramAccountJsonServiceClientTests : IDisposable {
 
     [Fact]
     public void ObtainSession_AllSessionsReserved_ReturnsPending() {
-        var account = CreateAccountWithSessions("all_reserved", 2, maxUpload: 5);
+        TelegramAccount.MaxUploadSessions = 5;
+        var account = CreateAccountWithSessions("all_reserved", 2);
 
         var upload1 = client.ObtainSession(account.Id.Checked(), TelegramSessionType.Upload);
         upload1.Status.Should().Be(KifaActionStatus.OK);
@@ -170,7 +276,8 @@ public class TelegramAccountJsonServiceClientTests : IDisposable {
 
     [Fact]
     public void ObtainSession_CustomLimits_Respected() {
-        var account = CreateAccountWithSessions("custom_limits", 4, maxQuick: 2);
+        TelegramAccount.MaxQuickSessions = 2;
+        var account = CreateAccountWithSessions("custom_limits", 4);
 
         var quick1 = client.ObtainSession(account.Id.Checked(), TelegramSessionType.Quick);
         quick1.Status.Should().Be(KifaActionStatus.OK);
@@ -327,7 +434,9 @@ public class TelegramAccountJsonServiceClientTests : IDisposable {
 
     [Fact]
     public async Task ObtainSessionAsync_DifferentTypes_NonConflictingProceeds() {
-        var account = CreateAccountWithSessions("async_types", 2, maxQuick: 1, maxUpload: 2);
+        TelegramAccount.MaxQuickSessions = 1;
+        TelegramAccount.MaxUploadSessions = 2;
+        var account = CreateAccountWithSessions("async_types", 2);
 
         // Reserve quick slot (1/1 full)
         var quick = client.ObtainSession(account.Id.Checked(), TelegramSessionType.Quick);
@@ -375,7 +484,8 @@ public class TelegramAccountJsonServiceClientTests : IDisposable {
 
     [Fact]
     public async Task ObtainSessionAsync_WhenLeaseExpiresNaturally_WakesUpAndAllocatesSession() {
-        var account = CreateAccountWithSessions("lease_expire_test", 1, maxQuick: 1);
+        TelegramAccount.MaxQuickSessions = 1;
+        var account = CreateAccountWithSessions("lease_expire_test", 1);
 
         var session = account.Sessions[0];
         session.Type = TelegramSessionType.Quick;

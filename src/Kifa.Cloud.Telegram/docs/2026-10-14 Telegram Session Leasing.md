@@ -22,11 +22,11 @@ The session leasing state is stored within the [`TelegramAccount`](file:///Users
 public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
     public List<TelegramSession> Sessions { get; set; } = new();
 
-    public int MaxUploadSessions { get; set; } = 2;
-    public int MaxDownloadSessions { get; set; } = 2;
-    public int MaxQuickSessions { get; set; } = 1;
+    public static int MaxUploadSessions { get; set; } = 2;
+    public static int MaxDownloadSessions { get; set; } = 2;
+    public static int MaxQuickSessions { get; set; } = 5;
 
-    public int GetSessionLimit(TelegramSessionType type) => ...;
+    public static int GetSessionLimit(TelegramSessionType type) => ...;
 }
 
 public class TelegramSession {
@@ -38,12 +38,15 @@ public class TelegramSession {
 }
 ```
 
+> [!NOTE]
+> Session limits (`MaxUploadSessions`, `MaxDownloadSessions`, `MaxQuickSessions`) are configured as static properties on [`TelegramAccount`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Cloud.Telegram/TelegramAccount.cs) (configurable via `KifaConfigs`) rather than instance properties stored on disk or read from individual account JSON documents. When checking active capacity (including upon server reload), the system counts sessions where `Reserved > DateTimeOffset.UtcNow && Type == type`.
+
 ### Session Types & Server-Decided Lease Durations
 The [`TelegramSessionType`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Cloud.Telegram/TelegramSessionType.cs) specifies the operational role of a session lease:
 
 | Session Type | Purpose | Operations | Default Limit | Lease Duration |
 |---|---|---|---|---|
-| `Quick` (1) | Fast metadata calls | `List`, `Length`, `Delete`, `GetStatus` | 1 | 2 minutes (`QuickLeaseDuration`) |
+| `Quick` (1) | Fast metadata calls | `List`, `Length`, `Delete`, `GetStatus` | 5 | 2 minutes (`QuickLeaseDuration`) |
 | `Upload` (2) | File upload transfers | `Write`, `Upload` | 2 | 10 minutes (`LongLeaseDuration`) |
 | `Download` (3) | File download transfers | `Get`, `OpenRead`, `Download` | 2 | 10 minutes (`LongLeaseDuration`) |
 
@@ -59,8 +62,8 @@ The server-side implementation is split between the primary controller and servi
 ### 1. Synchronous Session Reservation (`ObtainSession`)
 When a session is requested via [`ObtainSession`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Web.Api/Controllers/TelegramAccountController.cs#L88-L164):
 1. **Account Locking**: Acquires a distributed file lock for the target account via `AcquireLock(accountId)` to guarantee atomicity.
-2. **Explicit Session Reuse**: If a `sessionId` is specified, checks if the session is currently idle/expired (`Reserved <= now`). If valid, refreshes MTProto credentials if expired, updates `Reserved = now + GetLeaseDuration(type)`, sets `Type = type`, persists to disk, and returns the session.
-3. **Type Quota Enforcement**: Calculates the active sessions of the requested type (`s.Reserved > now && s.Type == type`). If `count >= GetSessionLimit(type)`, returns `KifaActionStatus.Pending` (`"All {limit} {type} sessions are reserved."`).
+2. **Type Quota Enforcement**: Calculates the active sessions of the requested type (`s.Reserved > now && s.Type == type`). If `count >= GetSessionLimit(type)`, returns `KifaActionStatus.Pending` (`"All {limit} {type} sessions are reserved."`).
+3. **Explicit Session Reuse**: If a `sessionId` is specified, checks if the session is currently idle/expired (`Reserved <= now`). If valid, refreshes MTProto credentials if expired, updates `Reserved = now + GetLeaseDuration(type)`, sets `Type = type`, persists to disk, and returns the session.
 4. **LRU Allocation**: If type quota allows, filters available idle sessions (`Reserved <= now`) and selects the coldest session (minimum `Reserved`). If no sessions are available, returns `KifaActionStatus.Pending` (`"All {count} sessions are reserved."`).
 5. **ID Rotation & Lease Granting**:
    - Generates a new random session ID (`Random.Shared.Next()`) to invalidate any previous stale lease holders.
@@ -186,7 +189,7 @@ stateDiagram-v2
 
 | Component | Location | Description |
 |---|---|---|
-| [`TelegramAccount`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Cloud.Telegram/TelegramAccount.cs) | `src/Kifa.Cloud.Telegram/TelegramAccount.cs` | Data model, limits (`MaxUploadSessions`, etc.), RPC client interface |
+| [`TelegramAccount`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Cloud.Telegram/TelegramAccount.cs) | `src/Kifa.Cloud.Telegram/TelegramAccount.cs` | Data model, static session limits (`MaxUploadSessions`, etc.), RPC client interface |
 | [`TelegramSession`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Cloud.Telegram/TelegramSession.cs) | `src/Kifa.Cloud.Telegram/TelegramSession.cs` | Session model with `Reserved`, `Refreshed`, `Type` |
 | [`TelegramSessionType`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Cloud.Telegram/TelegramSessionType.cs) | `src/Kifa.Cloud.Telegram/TelegramSessionType.cs` | Enum defining `Quick`, `Upload`, and `Download` session modes |
 | [`TelegramStorageCell`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Cloud.Telegram/TelegramStorageCell.cs) | `src/Kifa.Cloud.Telegram/TelegramStorageCell.cs` | Cell client creation, retry handling, `InsufficientStorageException` |

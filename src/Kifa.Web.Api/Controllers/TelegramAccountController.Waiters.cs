@@ -35,7 +35,7 @@ public partial class TelegramAccountJsonServiceClient {
             }
         }
 
-        var limit = account.GetSessionLimit(type);
+        var limit = TelegramAccount.GetSessionLimit(type);
         var activeTypeSessions = account.Sessions.Where(s => s.Reserved > now && s.Type == type).ToList();
         if (activeTypeSessions.Count >= limit && activeTypeSessions.Count > 0) {
             expirations.Add(activeTypeSessions.Min(s => s.Reserved));

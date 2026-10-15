@@ -112,11 +112,12 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
     }
 
     public List<TelegramSession> Sessions { get; set; } = new();
-    public int MaxUploadSessions { get; set; } = 2;
-    public int MaxDownloadSessions { get; set; } = 2;
-    public int MaxQuickSessions { get; set; } = 1;
 
-    public int GetSessionLimit(TelegramSessionType type)
+    public static int MaxUploadSessions { get; set; } = 2;
+    public static int MaxDownloadSessions { get; set; } = 2;
+    public static int MaxQuickSessions { get; set; } = 5;
+
+    public static int GetSessionLimit(TelegramSessionType type)
         => type switch {
             TelegramSessionType.Upload => MaxUploadSessions,
             TelegramSessionType.Download => MaxDownloadSessions,

@@ -99,6 +99,17 @@ public partial class TelegramAccountJsonServiceClient : KifaServiceJsonClient<Te
         TelegramSessionType type, int? sessionId = null) {
         using (AcquireLock(accountId)) {
             var account = Get(accountId).Checked();
+
+            var limit = TelegramAccount.GetSessionLimit(type);
+            var activeTypeCount = account.Sessions.Count(s =>
+                s.Reserved > DateTimeOffset.UtcNow && s.Type == type);
+            if (activeTypeCount >= limit) {
+                return new KifaActionResult<TelegramSession> {
+                    Status = KifaActionStatus.Pending,
+                    Message = $"All {limit} {type} sessions are reserved."
+                };
+            }
+
             if (sessionId != null) {
                 var matchedSession = account.Sessions.FirstOrDefault(s => s.Id == sessionId);
                 // Session should already expire/be returned, otherwise RenewSession should be used.
@@ -120,16 +131,6 @@ public partial class TelegramAccountJsonServiceClient : KifaServiceJsonClient<Te
                             $"Failed to refresh requested session {sessionId} for account {accountId}. Retrying next available session.");
                     }
                 }
-            }
-
-            var limit = account.GetSessionLimit(type);
-            var activeTypeCount = account.Sessions.Count(s =>
-                s.Reserved > DateTimeOffset.UtcNow && s.Type == type);
-            if (activeTypeCount >= limit) {
-                return new KifaActionResult<TelegramSession> {
-                    Status = KifaActionStatus.Pending,
-                    Message = $"All {limit} {type} sessions are reserved."
-                };
             }
 
             while (account.Sessions.Count > 0) {
@@ -176,7 +177,7 @@ public partial class TelegramAccountJsonServiceClient : KifaServiceJsonClient<Te
         using (AcquireLock(accountId)) {
             var account = Get(accountId).Checked();
             var session = account.Sessions.FirstOrDefault(s => s.Id == sessionId);
-            if (session == null || session.Reserved < DateTimeOffset.UtcNow) {
+            if (session == null || session.Reserved <= DateTimeOffset.UtcNow) {
                 return new KifaActionResult {
                     Status = KifaActionStatus.BadRequest,
                     Message = $"Session {sessionId} is not found or has expired."
