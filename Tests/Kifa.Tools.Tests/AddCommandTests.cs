@@ -63,11 +63,21 @@ public class AddCommandTests : IDisposable {
     }
 
     [Fact]
-    public void FindFiles_WithoutIncludeAll_IgnoresFiles() {
+    public void FindFiles_WithoutIncludeAll_IgnoresUnregisteredAndIncludesRegisteredIgnoredFiles() {
         var subDir = $"{tempDir}/source";
         Directory.CreateDirectory(subDir);
         File.WriteAllText($"{subDir}/normal.txt", "normal");
         File.WriteAllText($"{subDir}/@ignored.txt", "ignored");
+        File.WriteAllText($"{subDir}/@registered_ignored.txt", "registered");
+
+        var testClient = (TestFileInformationServiceClient) FileInformation.Client;
+        testClient.Set(new FileInformation {
+            Id = "/source/@registered_ignored.txt",
+            Size = 10,
+            Locations = new() {
+                ["local:add_test_temp/source/@registered_ignored.txt"] = DateTime.UtcNow
+            }
+        });
 
         var cmd = new AddCommand {
             FileNames = [subDir],
@@ -75,7 +85,7 @@ public class AddCommandTests : IDisposable {
         };
 
         var files = KifaFile.FindExistingFiles(cmd.FileNames, shouldIgnoreFiles: !cmd.IncludeAll);
-        files.Select(f => f.Name).Should().Equal("normal.txt");
+        files.Select(f => f.Name).Should().BeEquivalentTo("@registered_ignored.txt", "normal.txt");
     }
 
     [Fact]

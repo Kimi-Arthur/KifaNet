@@ -36,6 +36,9 @@ public class GetCommand : KifaCommand {
     [Option('S', "show-size", HelpText = "Show size for each file and total size (can be slow).")]
     public bool ShowSize { get; set; } = false;
 
+    [Option('a', "include-all", HelpText = "Include all files already registered or ignored.")]
+    public bool IncludeAll { get; set; } = false;
+
     List<string>? ignoreLocations;
 
     IEnumerable<string> IgnoreLocations
@@ -44,7 +47,7 @@ public class GetCommand : KifaCommand {
             : IgnoreAlreadyThere.Split("|").ToList();
 
     public override int Execute(KifaTask? task = null) {
-        var files = KifaFile.FindPotentialFiles(FileNames);
+        var files = KifaFile.FindPotentialFiles(FileNames, shouldIgnoreFiles: !IncludeAll);
         var selected = SelectMany(files, file => ShowSize ? $"{file} ({file.FileInfo?.Size.ToSizeString()})" : file.ToString(),
             new Func<List<KifaFile>, string>(choices
                 => $"files{(ShowSize ? $" ({choices.Sum(c => c.FileInfo?.Size ?? 0).ToSizeString()})" : "")} to get"));

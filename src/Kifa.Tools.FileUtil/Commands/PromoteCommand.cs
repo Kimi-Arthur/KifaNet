@@ -21,7 +21,7 @@ public class PromoteCommand : KifaCommand {
     public bool ShowSize { get; set; } = false;
 
     public override int Execute(KifaTask? task = null) {
-        var files = KifaFile.FindExistingFiles(FileNames)
+        var files = KifaFile.FindExistingFiles(FileNames, shouldIgnoreFiles: false)
             .Where(f => f.IsIgnoredFile)
             .ToList();
 

@@ -315,6 +315,170 @@ public class CopyCommandTests : IDisposable {
         }
     }
 
+    [Fact]
+    public void GetLocalFileCopyPairs_FolderWithIgnoredFiles_ExcludesUnregisteredAndIncludesRegistered() {
+        var sourceDir = $"{tempDir}/source_ignored";
+        var subDir = $"{sourceDir}/sub";
+        Directory.CreateDirectory(subDir);
+        File.WriteAllText($"{sourceDir}/normal.txt", "normal");
+        File.WriteAllText($"{sourceDir}/@unregistered.txt", "unregistered");
+        File.WriteAllText($"{sourceDir}/@registered.txt", "registered");
+        File.WriteAllText($"{subDir}/@sub_ignored.txt", "sub_ignored");
+
+        var testClient = (TestFileInformationServiceClient) FileInformation.Client;
+        testClient.Set(new FileInformation {
+            Id = "/source_ignored/@registered.txt",
+            Size = 10,
+            Locations = new() {
+                ["local:copy_test_temp/source_ignored/@registered.txt"] = DateTime.UtcNow
+            }
+        });
+
+        var destDir = $"{tempDir}/dest_ignored";
+
+        var cmdDefault = new CopyCommand {
+            Files = [sourceDir, destDir]
+        };
+        var pairsDefault = cmdDefault.GetLocalFileCopyPairs();
+        Assert.Equal(2, pairsDefault.Count);
+        Assert.Contains(pairsDefault,
+            p => p.SourceFile.Path == "/source_ignored/normal.txt" &&
+                 p.DestinationFile.Path == "/dest_ignored/normal.txt");
+        Assert.Contains(pairsDefault,
+            p => p.SourceFile.Path == "/source_ignored/@registered.txt" &&
+                 p.DestinationFile.Path == "/dest_ignored/@registered.txt");
+
+        var cmdIncludeAll = new CopyCommand {
+            Files = [sourceDir, destDir],
+            IncludeAll = true
+        };
+        var pairsAll = cmdIncludeAll.GetLocalFileCopyPairs();
+        Assert.Equal(4, pairsAll.Count);
+    }
+
+    [Fact]
+    public void GetLocalFileCopyPairs_SingleIgnoredFile_RespectsRegisteredAndIncludeAll() {
+        var unregisteredFile = $"{tempDir}/@single_unregistered.txt";
+        var registeredFile = $"{tempDir}/@single_registered.txt";
+        File.WriteAllText(unregisteredFile, "unregistered");
+        File.WriteAllText(registeredFile, "registered");
+
+        var testClient = (TestFileInformationServiceClient) FileInformation.Client;
+        testClient.Set(new FileInformation {
+            Id = "/@single_registered.txt",
+            Size = 10,
+            Locations = new() {
+                ["local:copy_test_temp/@single_registered.txt"] = DateTime.UtcNow
+            }
+        });
+
+        var destDir = $"{tempDir}/dest_single/";
+
+        var cmdDefault = new CopyCommand {
+            Files = [unregisteredFile, registeredFile, destDir]
+        };
+        var pairsDefault = cmdDefault.GetLocalFileCopyPairs();
+        Assert.Single(pairsDefault);
+        Assert.Equal("/@single_registered.txt", pairsDefault[0].SourceFile.Path);
+        Assert.Equal("/dest_single/@single_registered.txt", pairsDefault[0].DestinationFile.Path);
+
+        var cmdIncludeAll = new CopyCommand {
+            Files = [unregisteredFile, registeredFile, destDir],
+            IncludeAll = true
+        };
+        var pairsAll = cmdIncludeAll.GetLocalFileCopyPairs();
+        Assert.Equal(2, pairsAll.Count);
+    }
+
+    [Fact]
+    public void GetLocalFileCopyPairs_FolderWithOnlyUnregisteredIgnoredFiles_ReturnsEmpty() {
+        var sourceDir = $"{tempDir}/only_ignored";
+        Directory.CreateDirectory(sourceDir);
+        File.WriteAllText($"{sourceDir}/@ignored.txt", "ignored");
+
+        var destDir = $"{tempDir}/dest_empty";
+
+        var cmd = new CopyCommand {
+            Files = [sourceDir, destDir]
+        };
+        var pairs = cmd.GetLocalFileCopyPairs();
+        Assert.Empty(pairs);
+    }
+
+    [Fact]
+    public void FindExistingFiles_DefaultsToIgnoringUnregisteredFiles_AndIncludesRegisteredIgnoredFiles() {
+        var originalExtensions = new HashSet<string>(KifaFile.IgnoredExtensions);
+        KifaFile.IgnoredExtensions = ["aria2"];
+        try {
+            var dir = $"{tempDir}/find_test";
+            Directory.CreateDirectory(dir);
+            var normalFile = $"{dir}/normal.txt";
+            var ignoredAtFile = $"{dir}/@hidden.txt";
+            var ignoredExtFile = $"{dir}/download.aria2";
+            var registeredIgnoredFile = $"{dir}/@registered.txt";
+            File.WriteAllText(normalFile, "1");
+            File.WriteAllText(ignoredAtFile, "2");
+            File.WriteAllText(ignoredExtFile, "3");
+            File.WriteAllText(registeredIgnoredFile, "4");
+
+            var testClient = (TestFileInformationServiceClient) FileInformation.Client;
+            testClient.Set(new FileInformation {
+                Id = "/find_test/@registered.txt",
+                Size = 1,
+                Locations = new() {
+                    ["local:copy_test_temp/find_test/@registered.txt"] = DateTime.UtcNow
+                }
+            });
+
+            var folderDefault = KifaFile.FindExistingFiles([dir]);
+            Assert.Equal(2, folderDefault.Count);
+            Assert.Contains(folderDefault, f => f.Path == "/find_test/normal.txt");
+            Assert.Contains(folderDefault, f => f.Path == "/find_test/@registered.txt");
+
+            var singleIgnoredDefault =
+                KifaFile.FindExistingFiles([ignoredAtFile, ignoredExtFile, registeredIgnoredFile]);
+            Assert.Single(singleIgnoredDefault);
+            Assert.Equal("/find_test/@registered.txt", singleIgnoredDefault[0].Path);
+
+            var singleIgnoredIncludeAll =
+                KifaFile.FindExistingFiles([ignoredAtFile, ignoredExtFile, registeredIgnoredFile],
+                    shouldIgnoreFiles: false);
+            Assert.Equal(3, singleIgnoredIncludeAll.Count);
+        } finally {
+            KifaFile.IgnoredExtensions = originalExtensions;
+        }
+    }
+
+    [Fact]
+    public void FindPotentialFiles_DefaultsToIgnoringUnregisteredFiles_AndIncludesRegisteredIgnoredFiles() {
+        var testClient = (TestFileInformationServiceClient) FileInformation.Client;
+        testClient.Set(new FileInformation {
+            Id = "/pot_test/normal.txt",
+            Locations = new()
+        });
+        testClient.Set(new FileInformation {
+            Id = "/pot_test/@unregistered_locally.txt",
+            Locations = new() {
+                ["other:server/pot_test/@unregistered_locally.txt"] = DateTime.UtcNow
+            }
+        });
+        testClient.Set(new FileInformation {
+            Id = "/pot_test/@registered_locally.txt",
+            Locations = new() {
+                ["local:copy_test_temp/pot_test/@registered_locally.txt"] = DateTime.UtcNow
+            }
+        });
+
+        var dir = $"{tempDir}/pot_test";
+        var potentialDefault = KifaFile.FindPotentialFiles([dir]);
+        Assert.Equal(2, potentialDefault.Count);
+        Assert.Contains(potentialDefault, f => f.Path == "/pot_test/normal.txt");
+        Assert.Contains(potentialDefault, f => f.Path == "/pot_test/@registered_locally.txt");
+
+        var potentialAll = KifaFile.FindPotentialFiles([dir], shouldIgnoreFiles: false);
+        Assert.Equal(3, potentialAll.Count);
+    }
+
     class TestFileInformationServiceClient : BaseKifaServiceClient<FileInformation>,
         FileInformationServiceClient {
         readonly Dictionary<string, FileInformation> data = new();

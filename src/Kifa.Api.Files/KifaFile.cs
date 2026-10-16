@@ -384,16 +384,17 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     public void Touch() => Client.Touch(Path);
 
-    public IEnumerable<KifaFile> List(bool recursive = false, bool shouldIgnoreFiles = false,
+    public IEnumerable<KifaFile> List(bool recursive = false, bool shouldIgnoreFiles = true,
         string pattern = "*") {
         Logger.Trace($"Listing files from {this}...");
         if (Exists()) {
             Logger.Trace($"{this} is a file itself.");
-            return Enumerable.Repeat(this, 1);
+            return IsMatch(Id, pattern) && (!shouldIgnoreFiles || !IsIgnored(Id))
+                ? Enumerable.Repeat(this, 1)
+                : [];
         }
 
-        var files = Client.List(Path, recursive).Where(f
-            => IsMatch(f.Id, pattern) && (!shouldIgnoreFiles || !IsIgnored(f.Id, Path))).ToList();
+        var files = Client.List(Path, recursive).Where(f => IsMatch(f.Id, pattern)).ToList();
         Logger.Trace($"Found {files.Count} files.");
         foreach (var file in files) {
             Logger.Trace($"\t{file}");
@@ -408,21 +409,30 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             }
 
             return new KifaFile(Host + item.First.Id, fileInfo: fileInfo);
-        });
+        }).Where(f => !shouldIgnoreFiles || !f.IsIgnored(Id));
     }
 
-    public bool IsIgnored() => IsIgnored(Id, Path);
+    public bool IsIgnored(string pathPrefix = "") {
+        if (Registered) {
+            return false;
+        }
 
-    public static bool IsIgnored(string logicalPath, string pathPrefix = "")
-        => IgnoredExtensions.Any(ext => logicalPath.EndsWith($".{ext}")) ||
-           (logicalPath.StartsWith(pathPrefix) && IgnoredPrefixes.Any(prefix
-               => logicalPath[pathPrefix.Length..].Split("/")
-                   .Any(segment => segment.StartsWith(prefix)))) ||
-           IgnoredFiles.IsMatch(logicalPath);
+        pathPrefix = pathPrefix.TrimEnd('/');
+        if (Id == pathPrefix) {
+            var lastSlash = pathPrefix.LastIndexOf('/');
+            pathPrefix = lastSlash >= 0 ? pathPrefix[..lastSlash] : "";
+        }
+
+        return IgnoredExtensions.Any(ext => Id.EndsWith($".{ext}")) ||
+               (Id.StartsWith(pathPrefix) && IgnoredPrefixes.Any(prefix
+                   => Id[pathPrefix.Length..].Split("/")
+                       .Any(segment => segment.StartsWith(prefix)))) ||
+               IgnoredFiles.IsMatch(Id);
+    }
 
     // KifaFile.FileInfo is filled for items returned.
     public static List<KifaFile> FindExistingFiles(IEnumerable<string> sources,
-        bool recursive = true, string pattern = "*", bool shouldIgnoreFiles = false) {
+        bool recursive = true, string pattern = "*", bool shouldIgnoreFiles = true) {
         var allFiles = new HashSet<KifaFile>();
         foreach (var source in GetKifaFiles(sources)) {
             var files = source.List(recursive, pattern: pattern, shouldIgnoreFiles: shouldIgnoreFiles).ToList();
@@ -439,15 +449,15 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     // KifaFile.FileInfo is filled for items returned.
     public static List<KifaFile> FindPhantomFiles(IEnumerable<string> sources,
-        bool recursive = true, bool shouldIgnoreFiles = false) {
+        bool recursive = true, bool shouldIgnoreFiles = true) {
         var files = FindPotentialFiles(sources, recursive: recursive, shouldIgnoreFiles: shouldIgnoreFiles);
         return files.Where(f => f.Registered && !f.Exists()).ToList();
     }
 
     // KifaFile.FileInfo is filled for items returned.
     public static List<KifaFile> FindPotentialFiles(IEnumerable<string> sources,
-        bool recursive = true, string pattern = "*", bool shouldIgnoreFiles = false) {
-        var files = new HashSet<string>();
+        bool recursive = true, string pattern = "*", bool shouldIgnoreFiles = true) {
+        var allFiles = new HashSet<KifaFile>();
         foreach (var source in GetKifaFiles(sources)) {
             var file = source;
 
@@ -455,18 +465,24 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             var host = file.Host;
 
             var thisFolder = FileInfoClient.ListFolder(path, recursive);
+            var matched = new List<string>();
             if (thisFolder.Count == 1 && thisFolder[0] == path) {
                 // This is a file.
-                files.Add(host + path);
+                if (MatchPattern(file.Name, pattern)) {
+                    matched.Add(host + path);
+                }
             }
 
-            files.UnionWith(thisFolder
-                .Where(f => (!shouldIgnoreFiles || !IsIgnored(f, file.Id)) &&
-                            f.StartsWith($"{path}/") &&
-                            MatchPattern(f[(path.Length + 1)..], pattern)).Select(f => host + f));
+            matched.AddRange(thisFolder
+                .Where(f => f.StartsWith($"{path}/") &&
+                            MatchPattern(f[(path.Length + 1)..], pattern))
+                .Select(f => host + f));
+
+            allFiles.UnionWith(GetKifaFiles(matched)
+                .Where(f => !shouldIgnoreFiles || !f.IsIgnored(file.Id)));
         }
 
-        return GetKifaFiles(files.OrderBy(f => f.GetNaturalSortKey())).ToList();
+        return allFiles.OrderBy(f => f.ToString().GetNaturalSortKey()).ToList();
     }
 
     static bool MatchPattern(string filename, string pattern)
@@ -485,7 +501,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     // KifaFile.FileInfo is filled for items returned.
     public static List<KifaFile> FindAllFiles(IEnumerable<string> sources, bool recursive = true,
-        string pattern = "*", bool shouldIgnoreFiles = false) {
+        string pattern = "*", bool shouldIgnoreFiles = true) {
         var sourceFiles = sources.ToList();
         var existingFiles = FindExistingFiles(sourceFiles, recursive: recursive, pattern: pattern,
             shouldIgnoreFiles: shouldIgnoreFiles);

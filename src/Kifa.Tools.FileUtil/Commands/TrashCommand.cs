@@ -29,6 +29,9 @@ public class TrashCommand : KifaCommand {
     [Option('r', "restore", HelpText = "Restore trashed files")]
     public bool Restore { get; set; } = false;
 
+    [Option('a', "include-all", HelpText = "Include all files already registered or ignored.")]
+    public bool IncludeAll { get; set; } = false;
+
     [Option('S', "show-size", HelpText = "Show size for each file and total size (can be slow).")]
     public bool ShowSize { get; set; } = false;
 
@@ -62,9 +65,7 @@ public class TrashCommand : KifaCommand {
 
     public override int Execute(KifaTask? task = null) {
         var fileNames = FileNames.ToList();
-        var foundFiles = KifaFile.FindAllFiles(fileNames)
-            .Where(f => !f.IsIgnored() || f.Registered)
-            .ToList();
+        var foundFiles = KifaFile.FindAllFiles(fileNames, shouldIgnoreFiles: !IncludeAll);
         DateString = DateTime.UtcNow.ToString("yyyy-MM-dd_HH.mm.ss.ffffff");
 
         if (Restore) {

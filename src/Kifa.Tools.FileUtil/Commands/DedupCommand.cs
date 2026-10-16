@@ -22,11 +22,15 @@ class DedupCommand : KifaCommand {
             "Files to be deleted don't need to have a name sequence containing the base file.")]
     public bool Unsafe { get; set; } = false;
 
+    [Option('a', "include-all", HelpText = "Include all files already registered or ignored.")]
+    public bool IncludeAll { get; set; } = false;
+
     [Option('S', "show-size", HelpText = "Show size for each file and total size (can be slow).")]
     public bool ShowSize { get; set; } = false;
 
     public override int Execute(KifaTask? task = null) {
-        var files = KifaFile.FindPotentialFiles(FileNames).Select(f => f.FileInfo);
+        var files = KifaFile.FindPotentialFiles(FileNames, shouldIgnoreFiles: !IncludeAll)
+            .Select(f => f.FileInfo);
         var filesToDelete = new List<(string truth, FileInformation toDelete)>();
         foreach (var sameFiles in files.GroupBy(f => f.Sha256)) {
             var target = sameFiles.Select(f => (f.Id.Length, f.Id, f)).Min().f;

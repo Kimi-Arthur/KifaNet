@@ -37,16 +37,19 @@ class ImportCommand : KifaFileCommand {
             "Version suffix, like DVDRip, 4K etc, will be appended after the top level folder like 'Friends (1994) [DVDRip]'.")]
     public string? VersionSuffix { get; set; }
 
+    [Option('a', "include-all", HelpText = "Include all files already registered or ignored.")]
+    public bool IncludeAll { get; set; } = false;
+
     [Option('S', "show-size", HelpText = "Show size for each file and total size (can be slow).")]
     public bool ShowSize { get; set; } = false;
 
     public override int Execute(KifaTask? task = null) {
         if (!ById) {
-            var localFiles = KifaFile.FindExistingFiles(FileNames);
+            var localFiles = KifaFile.FindExistingFiles(FileNames, shouldIgnoreFiles: !IncludeAll);
             RegisterUnregisteredFiles(localFiles, ShowSize, "importing");
         }
 
-        var foundFiles = FindFileInfos(FileNames, ById);
+        var foundFiles = FindFileInfos(FileNames, ById, shouldIgnoreFiles: !IncludeAll);
         if (foundFiles.Count == 0) {
             Logger.Error("No files found. Action cancelled.");
             return 1;

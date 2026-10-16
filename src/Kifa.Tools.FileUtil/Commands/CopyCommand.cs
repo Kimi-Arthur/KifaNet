@@ -44,10 +44,14 @@ public class CopyCommand : KifaCommand {
         var localFileCopyPairs = new List<(KifaFile SourceFile, KifaFile DestinationFile)>();
 
         foreach (var sourceItem in sourceItems) {
-            var childFiles = KifaFile.FindExistingFiles([sourceItem.ToString()], recursive: true)
-                .Where(f => IncludeAll || !f.IsIgnored() || f.Registered).ToList();
+            var childFiles = KifaFile.FindExistingFiles([sourceItem.ToString()], recursive: true,
+                shouldIgnoreFiles: !IncludeAll);
 
-            if (!sourceItem.Exists() && childFiles.Count > 0) {
+            if (childFiles.Count == 0) {
+                continue;
+            }
+
+            if (!sourceItem.Exists()) {
                 var sourceFolderId =
                     sourceItem.Id.EndsWith('/') ? sourceItem.Id : sourceItem.Id + "/";
                 var baseDestId = isDestFolder
@@ -62,7 +66,7 @@ public class CopyCommand : KifaCommand {
                 }
             } else {
                 var targetFile = isDestFolder ? destination.GetFile(sourceItem.Name) : destination;
-                localFileCopyPairs.Add((sourceItem, targetFile));
+                localFileCopyPairs.Add((childFiles[0], targetFile));
             }
         }
 
