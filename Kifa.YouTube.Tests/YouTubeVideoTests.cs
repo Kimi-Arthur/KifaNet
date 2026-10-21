@@ -315,4 +315,39 @@ public class YouTubeVideoTests {
 
         video.Invoking(v => v.Fill()).Should().Throw<DataNotFoundException>();
     }
+
+    [Theory]
+    [InlineData("_ox9gJZ8ENo", true)]
+    [InlineData("X_xk2QnZt5w", true)]
+    [InlineData("wAPLDpNQvRk", true)]
+    [InlineData("aFf_diTkg_M", true)]
+    [InlineData("ut_owWNGYcA", false)]
+    [InlineData("PfCu__f4So4", false)]
+    public void ExistsOnYouTubeTest(string id, bool expected) {
+        var video = new YouTubeVideo {
+            Id = id
+        };
+        video.ExistsOnYouTube().Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData("ERROR: [youtube] ut_owWNGYcA: This video is unavailable", true)]
+    [InlineData("ERROR: [youtube] uKDQPNzRubc: Video unavailable", true)]
+    [InlineData("ERROR: [youtube] PfCu__f4So4: Private video", true)]
+    [InlineData(
+        "ERROR: [youtube] abcdefghijk: This video has been removed for violating YouTube's Terms of Service",
+        true)]
+    [InlineData(
+        "WARNING: [youtube] No title found in player responses; falling back to title from initial data. Other metadata may also be missing\nERROR: [youtube] X_xk2QnZt5w: Sign in to confirm you’re not a bot. Use --cookies-from-browser or --cookies for the authentication.",
+        false)]
+    [InlineData(
+        "ERROR: [youtube] wAPLDpNQvRk: Sign in to confirm your age. Use --cookies-from-browser or --cookies for the authentication.",
+        false)]
+    [InlineData(
+        "ERROR: [youtube] X_xk2QnZt5w: This content isn't available, try again later. The current session has been rate-limited by YouTube",
+        false)]
+    [InlineData("ERROR: [youtube] X_xk2QnZt5w: Failed to extract any player response", false)]
+    public void IsVideoUnavailableErrorTest(string error, bool expected) {
+        YouTubeVideo.IsVideoUnavailableError(error).Should().Be(expected);
+    }
 }

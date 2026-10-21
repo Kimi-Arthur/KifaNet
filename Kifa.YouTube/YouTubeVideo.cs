@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -611,16 +612,22 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
     }
 
     public override void Fill(bool deep = false) {
-        try {
-            FillWithYoutubeDl();
-            return;
-        } catch (Exception e) {
-            Logger.Warn(e);
+        if (ExistsOnYouTube()) {
+            try {
+                FillWithYoutubeDl();
+                return;
+            } catch (FailedToFillException) {
+                throw;
+            } catch (Exception e) {
+                throw new FailedToFillException($"Failed to fill existing YouTube video {Id}", e);
+            }
         }
 
         try {
             FillWithFindYoutubeVideo();
             return;
+        } catch (FailedToFillException) {
+            throw;
         } catch (Exception e) {
             Logger.Warn(e);
         }
@@ -636,12 +643,48 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         throw new DataNotFoundException($"Failed to find info for {Id}");
     }
 
+    public bool ExistsOnYouTube() {
+        try {
+            using var response = HttpClient.Send(new HttpRequestMessage(HttpMethod.Head,
+                $"https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v={Id}&format=json"));
+            return response.StatusCode switch {
+                HttpStatusCode.OK or HttpStatusCode.Unauthorized => true,
+                HttpStatusCode.Forbidden or HttpStatusCode.NotFound or HttpStatusCode.BadRequest => false,
+                _ => throw new FailedToFillException(
+                    $"Unexpected status code {response.StatusCode} when checking if {Id} exists on YouTube.")
+            };
+        } catch (FailedToFillException) {
+            throw;
+        } catch (Exception e) {
+            throw new FailedToFillException($"Failed to check if {Id} exists on YouTube.", e);
+        }
+    }
+
+    static readonly string[] UnavailableErrorPatterns = [
+        "Video unavailable",
+        "This video is unavailable",
+        "This video is not available",
+        "This video is no longer available",
+        "This video has been removed",
+        "This video does not exist",
+        "Private video",
+        "This video is private"
+    ];
+
+    public static bool IsVideoUnavailableError(string error)
+        => UnavailableErrorPatterns.Any(pattern
+            => error.Contains(pattern, StringComparison.OrdinalIgnoreCase));
+
     void FillWithYoutubeDl() {
         var metadata = YoutubeDL.RunVideoDataFetch(Id, overrideOptions: OptionSet).GetAwaiter()
             .GetResult();
         if (!metadata.Success) {
-            throw new DataNotFoundException(
-                $"Cannot find video info for {Id}: {metadata.ErrorOutput.JoinBy("\n")}");
+            var error = metadata.ErrorOutput.JoinBy("\n");
+            if (!IsVideoUnavailableError(error)) {
+                throw new FailedToFillException($"Failed to fetch video info for {Id}: {error}");
+            }
+
+            throw new DataNotFoundException($"Cannot find video info for {Id}: {error}");
         }
 
         var videoData = metadata.Data;
@@ -680,6 +723,11 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
             fybResponse?.Keys.FirstOrDefault(key
                 => key.Archived && key.Name == "Archive.org Details");
         if (archiveItem == null) {
+            if (fybResponse?.Keys.Any(key => key.Archived && key.Name == "YouTube") == true) {
+                throw new FailedToFillException(
+                    $"Video {Id} is available on YouTube according to FindYoutubeVideo service, but could not be fetched: {fybResponse.ToJson()}");
+            }
+
             throw new DataNotFoundException(
                 $"Cannot find video history with FindYoutubeVideo service: {fybResponse.ToJson()}");
         }
