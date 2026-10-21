@@ -16,16 +16,43 @@ public class KifaServiceRestClient {
     public static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public static HttpClient Client {
-        get => field ??= new HttpClient(ClientCertPath != null
-            ? new HttpClientHandler {
-                ClientCertificates = {
-                    new X509Certificate2(ClientCertPath, ClientCertPassword)
-                }
-            }
-            : new HttpClientHandler()) {
+        get => field ??= new HttpClient(CreateHandler()) {
             Timeout = TimeSpan.FromMinutes(15)
         };
         set => field = value;
+    }
+
+    static SocketsHttpHandler CreateHandler() {
+        var handler = new SocketsHttpHandler {
+            ConnectCallback = async (context, cancellationToken) => {
+                var socket = new Socket(SocketType.Stream, ProtocolType.Tcp) {
+                    NoDelay = true
+                };
+                try {
+                    await socket.ConnectAsync(context.DnsEndPoint, cancellationToken);
+                    socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive,
+                        true);
+                    socket.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.TcpKeepAliveTime,
+                        60);
+                    socket.SetSocketOption(SocketOptionLevel.Tcp,
+                        SocketOptionName.TcpKeepAliveInterval, 15);
+                    socket.SetSocketOption(SocketOptionLevel.Tcp,
+                        SocketOptionName.TcpKeepAliveRetryCount, 5);
+                    return new NetworkStream(socket, ownsSocket: true);
+                } catch {
+                    socket.Dispose();
+                    throw;
+                }
+            }
+        };
+
+        if (ClientCertPath != null) {
+            handler.SslOptions.ClientCertificates = [
+                X509CertificateLoader.LoadPkcs12FromFile(ClientCertPath, ClientCertPassword)
+            ];
+        }
+
+        return handler;
     }
 
     // Should probably be ending with `/api`.
