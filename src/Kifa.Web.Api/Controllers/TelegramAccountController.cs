@@ -1,11 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Kifa.Cloud.Telegram;
 using Kifa.Service;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 using NLog;
 using TL;
 
@@ -23,7 +23,8 @@ public class
     [HttpPost("$obtain_session")]
     public async Task<KifaApiActionResult<TelegramSession>> ObtainSession(
         [FromBody] TelegramAccount.ObtainSessionRequest request,
-        CancellationToken cancellationToken) {
+        CancellationToken cancellationToken,
+        [FromServices] IHostApplicationLifetime? hostApplicationLifetime = null) {
         Logger.Trace($"Got request: obtain_session({request.ToJson()})");
         if (!Enum.IsDefined(request.Type)) {
             return new KifaActionResult<TelegramSession> {
@@ -35,7 +36,8 @@ public class
         try {
             Logger.Debug($"Obtaining {request.Type} session for account {request.AccountId}...");
             var result = await Client.ObtainSessionAsync(request.AccountId, request.Type,
-                request.SessionId, cancellationToken: cancellationToken);
+                request.SessionId, cancellationToken: cancellationToken,
+                stoppingToken: hostApplicationLifetime?.ApplicationStopping ?? default);
             if (result.Status == KifaActionStatus.OK) {
                 Logger.Debug(
                     $"Obtained {request.Type} session {result.Value?.Id} for account {request.AccountId}.");

@@ -171,10 +171,21 @@ public partial class TelegramAccountJsonServiceClient {
 
     public TimeSpan WaitTimeout { get; set; } = DefaultWaitTimeout;
 
-    public async Task<KifaActionResult<TelegramSession>> ObtainSessionAsync(string accountId,
+    public Task<KifaActionResult<TelegramSession>> ObtainSessionAsync(string accountId,
         TelegramSessionType type, int? sessionId = null,
-        CancellationToken cancellationToken = default) {
+        CancellationToken cancellationToken = default)
+        => ObtainSessionAsync(accountId, type, sessionId, cancellationToken, default);
+
+    public async Task<KifaActionResult<TelegramSession>> ObtainSessionAsync(string accountId,
+        TelegramSessionType type, int? sessionId, CancellationToken cancellationToken,
+        CancellationToken stoppingToken) {
         cancellationToken.ThrowIfCancellationRequested();
+        if (stoppingToken.IsCancellationRequested) {
+            return new KifaActionResult<TelegramSession> {
+                Status = KifaActionStatus.Pending,
+                Message = $"Server is stopping while obtaining {type} session for account {accountId}."
+            };
+        }
 
         NotifyWaiters(accountId);
 
@@ -210,7 +221,8 @@ public partial class TelegramAccountJsonServiceClient {
             return await waiter.TaskCompletionSource.Task;
         }
 
-        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        using var cts =
+            CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, stoppingToken);
         cts.CancelAfter(timeout);
 
         try {
@@ -228,6 +240,16 @@ public partial class TelegramAccountJsonServiceClient {
 
             if (cancellationToken.IsCancellationRequested) {
                 throw;
+            }
+
+            if (stoppingToken.IsCancellationRequested) {
+                Logger.Info(
+                    $"Server is stopping while waiting for {type} session for account {accountId}. Returning Pending so client retries.");
+                return new KifaActionResult<TelegramSession> {
+                    Status = KifaActionStatus.Pending,
+                    Message =
+                        $"Server is stopping while waiting for {type} session for account {accountId}: {initialResult.Message}"
+                };
             }
 
             Logger.Warn(

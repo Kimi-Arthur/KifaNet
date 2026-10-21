@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -64,6 +65,8 @@ public class Startup {
         app.UseMiddleware<RequestLoggingMiddleware>();
 
         app.UseMvc();
+        _ = app.ApplicationServices.GetRequiredService<IActionDescriptorCollectionProvider>()
+            .ActionDescriptors;
         app.UseStaticFiles(new StaticFileOptions {
             FileProvider = new KifaFileProvider(),
             RequestPath = "/resources"

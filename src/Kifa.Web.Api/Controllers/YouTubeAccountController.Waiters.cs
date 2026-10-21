@@ -172,10 +172,21 @@ public partial class YouTubeAccountJsonServiceClient {
 
     public TimeSpan WaitTimeout { get; set; } = TimeSpan.FromMinutes(10);
 
-    public async Task<KifaActionResult<YouTubeSession>> ObtainSessionAsync(string accountId,
+    public Task<KifaActionResult<YouTubeSession>> ObtainSessionAsync(string accountId,
         YouTubeSessionType type, string? sessionId = null,
-        CancellationToken cancellationToken = default) {
+        CancellationToken cancellationToken = default)
+        => ObtainSessionAsync(accountId, type, sessionId, cancellationToken, default);
+
+    public async Task<KifaActionResult<YouTubeSession>> ObtainSessionAsync(string accountId,
+        YouTubeSessionType type, string? sessionId, CancellationToken cancellationToken,
+        CancellationToken stoppingToken) {
         cancellationToken.ThrowIfCancellationRequested();
+        if (stoppingToken.IsCancellationRequested) {
+            return new KifaActionResult<YouTubeSession> {
+                Status = KifaActionStatus.Pending,
+                Message = $"Server is stopping while obtaining {type} session for account {accountId}."
+            };
+        }
 
         NotifyWaiters(accountId);
 
@@ -211,7 +222,8 @@ public partial class YouTubeAccountJsonServiceClient {
             return await waiter.TaskCompletionSource.Task;
         }
 
-        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        using var cts =
+            CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, stoppingToken);
         cts.CancelAfter(timeout);
 
         try {
@@ -229,6 +241,16 @@ public partial class YouTubeAccountJsonServiceClient {
 
             if (cancellationToken.IsCancellationRequested) {
                 throw;
+            }
+
+            if (stoppingToken.IsCancellationRequested) {
+                Logger.Info(
+                    $"Server is stopping while waiting for {type} session for account {accountId}. Returning Pending so client retries.");
+                return new KifaActionResult<YouTubeSession> {
+                    Status = KifaActionStatus.Pending,
+                    Message =
+                        $"Server is stopping while waiting for {type} session for account {accountId}: {initialResult.Message}"
+                };
             }
 
             Logger.Warn($"Timed out waiting for {type} session for account {accountId}.");

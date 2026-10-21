@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Kifa.Service;
 using Kifa.YouTube;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 using NLog;
 
 namespace Kifa.Web.Api.Controllers;
@@ -21,7 +22,8 @@ public class
     [HttpPost("$obtain_session")]
     public async Task<KifaApiActionResult<YouTubeSession>> ObtainSession(
         [FromBody] YouTubeAccount.ObtainSessionRequest request,
-        CancellationToken cancellationToken) {
+        CancellationToken cancellationToken,
+        [FromServices] IHostApplicationLifetime? hostApplicationLifetime = null) {
         Logger.Trace($"Got request: obtain_session({request.ToJson()})");
         if (!Enum.IsDefined(request.Type)) {
             return new KifaActionResult<YouTubeSession> {
@@ -33,7 +35,8 @@ public class
         try {
             Logger.Debug($"Obtaining {request.Type} session for account {request.AccountId}...");
             var result = await Client.ObtainSessionAsync(request.AccountId, request.Type,
-                request.SessionId, cancellationToken: cancellationToken);
+                request.SessionId, cancellationToken: cancellationToken,
+                stoppingToken: hostApplicationLifetime?.ApplicationStopping ?? default);
             if (result.Status == KifaActionStatus.OK) {
                 Logger.Debug(
                     $"Obtained {request.Type} session {result.Value?.Id} for account {request.AccountId}.");

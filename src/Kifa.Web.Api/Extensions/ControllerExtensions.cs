@@ -25,7 +25,6 @@ public static class ControllerExtensions {
 
     public static Type? GetDataControllerType(this Type type) {
         if (type.IsAbstract || type.ContainsGenericParameters) {
-            Logger.Debug($"{type} is abstract or contains generic parameters.");
             return null;
         }
 

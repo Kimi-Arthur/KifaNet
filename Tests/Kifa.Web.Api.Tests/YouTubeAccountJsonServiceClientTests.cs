@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Kifa.Service;
 using Kifa.Web.Api.Controllers;
@@ -125,5 +126,33 @@ public class YouTubeAccountJsonServiceClientTests : IDisposable {
             .Should().Be("rotated_cookie_v2");
         File.ReadAllText($"{folder}/youtube/sessions/RotateTest/0.json")
             .Should().NotContain("last_refreshed");
+    }
+
+    [Fact]
+    public async Task ObtainSessionAsync_WhenServerStopping_ReturnsPendingImmediatelyAndFreesWaiter() {
+        var account = new YouTubeAccount {
+            Id = "StoppingTest"
+        };
+        client.Set(account);
+        client.AddSession("StoppingTest", "initial_cookie");
+
+        var first = client.ObtainSession("StoppingTest", YouTubeSessionType.Quick);
+        first.Status.Should().Be(KifaActionStatus.OK);
+        var sessionId = first.Value.Checked().Id.Checked();
+
+        using var stoppingCts = new CancellationTokenSource();
+        var waitTask = client.ObtainSessionAsync("StoppingTest", YouTubeSessionType.Quick, null,
+            default, stoppingCts.Token);
+        waitTask.IsCompleted.Should().BeFalse();
+
+        stoppingCts.Cancel();
+
+        var stoppedResult = await waitTask;
+        stoppedResult.Status.Should().Be(KifaActionStatus.Pending);
+        stoppedResult.Message.Should().Contain("Server is stopping");
+
+        client.ReleaseSession("StoppingTest", sessionId).Status.Should().Be(KifaActionStatus.OK);
+        var next = client.ObtainSession("StoppingTest", YouTubeSessionType.Quick);
+        next.Status.Should().Be(KifaActionStatus.OK);
     }
 }
