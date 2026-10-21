@@ -13,15 +13,16 @@ public class DataMetadata {
     // Content version date (when the content was modified or ForceRefreshBefore applied).
     public DataVersion? Version { get; set; }
 
-    DataVersion? lastRefreshed;
-
     // When Fill() was last executed against remote sources.
     public DataVersion? LastRefreshed {
-        get => lastRefreshed ?? Version;
-        set => lastRefreshed = value;
+        get => field != null && (Version == null || field > Version)
+            ? field
+            : Version;
+        set;
     }
 
-    public bool ShouldSerializeLastRefreshed() => lastRefreshed != null && lastRefreshed != Version;
+    public bool ShouldSerializeLastRefreshed()
+        => LastRefreshed != null && (Version == null || LastRefreshed > Version);
 
     // Overrides that will apply after Fill() is called.
     public Dictionary<string, object> Overrides { get; set; } = new();

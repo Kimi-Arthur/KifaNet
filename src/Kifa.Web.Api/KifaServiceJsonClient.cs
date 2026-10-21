@@ -305,8 +305,12 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 Logger.Notice(() => data.ToString());
                 data = data.Clone();
                 // This is new data, we should Fill it.
+                var originalMetadata = data.Metadata?.Clone();
                 data.ResetRefreshDate();
-                Fill(ref data);
+                if (!Fill(ref data)) {
+                    data.Metadata = originalMetadata;
+                }
+
                 WriteTarget(data, Retrieve(data.Id)?.Metadata?.Linking?.VirtualLinks);
             }
         });
@@ -365,13 +369,16 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 // If it's new data, we should try Fill it.
                 var original = Retrieve(data.Id);
                 if (original == null) {
-                    data.Metadata = new DataMetadata();
+                    var originalMetadata = data.Metadata?.Clone();
                     data.ResetRefreshDate();
+                    if (!Fill(ref data)) {
+                        data.Metadata = originalMetadata;
+                    }
                 } else {
                     data = original.Merge(data);
+                    Fill(ref data);
                 }
 
-                Fill(ref data);
                 WriteTarget(data);
             }
         });
