@@ -33,7 +33,7 @@ public static class Assemblies {
             var fileName = file[(file.LastIndexOf("/") + 1)..];
             if (Namespaces.Any(ns => fileName.StartsWith(ns + "."))) {
                 Logger.Trace($"Loading assembly {file}...");
-                Assembly.LoadFile(file);
+                Assembly.LoadFrom(file);
             }
         }
     }
