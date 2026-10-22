@@ -69,10 +69,33 @@ public class YouTubeVideoTests {
         var flags = options.GetOptionFlags().ToList();
         flags.Should().ContainMatch("*--paths \"/tmp/test\"*");
         flags.Should().ContainMatch("*-o \"myprefix.%(format_id)s.%(ext)s\"*");
-        flags.Should().ContainMatch("*-o \"thumbnail:myprefix.c.%(ext)s\"*");
         flags.Should().ContainMatch("*-f \"395,251\"*");
-        flags.Should().Contain("--write-thumbnail");
-        flags.Should().ContainMatch("*--convert-thumbnails \"png\"*");
+        flags.Should().ContainMatch("*--fixup \"never\"*");
+        flags.Should().NotContain("--write-thumbnail");
+        flags.Should().NotContainMatch("*--convert-thumbnails*");
+    }
+
+    [Theory]
+    [InlineData("https://i.ytimg.com/vi_webp/_ox9gJZ8ENo/maxresdefault.webp",
+        "https://i.ytimg.com/vi/_ox9gJZ8ENo/maxresdefault.jpg")]
+    [InlineData("https://i9.ytimg.com/vi_webp/abc123XYZ/sddefault.webp?v=12345",
+        "https://i9.ytimg.com/vi/abc123XYZ/sddefault.jpg")]
+    [InlineData("https://i.ytimg.com/vi/_ox9gJZ8ENo/hqdefault.jpg",
+        "https://i.ytimg.com/vi/_ox9gJZ8ENo/hqdefault.jpg")]
+    [InlineData(null, null)]
+    public void NormalizeThumbnailUrlTest(string? input, string? expected) {
+        YouTubeVideo.NormalizeThumbnailUrl(input).Should().Be(expected);
+    }
+
+    [Fact]
+    public void GetThumbnailCandidateUrlsTest() {
+        var urls = YouTubeVideo.GetThumbnailCandidateUrls("_ox9gJZ8ENo",
+            "https://i.ytimg.com/vi_webp/_ox9gJZ8ENo/sddefault.webp");
+        urls.Should().Equal("https://i.ytimg.com/vi/_ox9gJZ8ENo/sddefault.jpg",
+            "https://i.ytimg.com/vi/_ox9gJZ8ENo/maxresdefault.jpg",
+            "https://i.ytimg.com/vi/_ox9gJZ8ENo/hqdefault.jpg",
+            "https://i.ytimg.com/vi/_ox9gJZ8ENo/mqdefault.jpg",
+            "https://i.ytimg.com/vi/_ox9gJZ8ENo/default.jpg");
     }
 
     [Fact]

@@ -101,51 +101,14 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
 
     public static OptionSet OptionSet => GetOptionSet();
 
-    public static void DownloadVideo(string videoId, string? filePath = null,
-        string? outputFolder = null, string? outputFileTemplate = null)
-        => Retry.Run(() => {
-            var ytdl = YoutubeDL;
-            if (filePath != null) {
-                ytdl.OutputFolder = Path.GetDirectoryName(filePath);
-                ytdl.OutputFileTemplate = $"{Path.GetFileNameWithoutExtension(filePath)}.%(ext)s";
-            }
-
-            if (outputFolder != null) {
-                ytdl.OutputFolder = outputFolder;
-            }
-
-            if (outputFileTemplate != null) {
-                ytdl.OutputFileTemplate = outputFileTemplate;
-            }
-
-            var downloadResult = ytdl.RunVideoDownload(
-                    videoId, mergeFormat: DownloadMergeFormat.Mp4, overrideOptions: OptionSet)
-                .GetAwaiter()
-                .GetResult();
-
-            if (!downloadResult.Success) {
-                throw new Exception(
-                    $"Failed to download video {videoId}: {string.Join("\n", downloadResult.ErrorOutput)}");
-            }
-        }, (ex, index) => {
-            if (index >= 5) {
-                throw ex;
-            }
-
-            Logger.Warn(ex, $"Failed to download video {videoId} ({index}). Retrying...");
-            Thread.Sleep(TimeSpan.FromSeconds(5));
-        });
-
     public static OptionSet GetTrackDownloadOptionSet(string parentFolder, string basePrefix,
         YouTubeVideo? video = null) {
         var options = GetOptionSet();
         options.Paths = parentFolder;
         options.EmbedMetadata = false;
         options.EmbedThumbnail = false;
-        options.WriteThumbnail = true;
-        options.ConvertThumbnails = "png";
+        options.Fixup = "never";
         options.Output = $"{basePrefix}.%(format_id)s.%(ext)s";
-        options.AddCustomOption("-o", $"thumbnail:{basePrefix}.c.%(ext)s");
 
         if (video?.FormatId != null) {
             var formatIds = video.FormatId.Split("+").ToList();
@@ -155,6 +118,71 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         }
 
         return options;
+    }
+
+    static readonly Regex YtimgWebpRegex = new(
+        @"^https?://([^/]*ytimg\.com)/vi_webp/([^/]+)/([^/?#]+)\.webp(?:[?#].*)?$",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    public static string? NormalizeThumbnailUrl(string? url) {
+        if (url == null) {
+            return null;
+        }
+
+        var match = YtimgWebpRegex.Match(url);
+        if (match.Success) {
+            return $"https://{match.Groups[1].Value}/vi/{match.Groups[2].Value}/{match.Groups[3].Value}.jpg";
+        }
+
+        return url;
+    }
+
+    static readonly string[] StandardThumbnailNames = [
+        "maxresdefault",
+        "sddefault",
+        "hqdefault",
+        "mqdefault",
+        "default"
+    ];
+
+    public static List<string> GetThumbnailCandidateUrls(string videoId, string? thumbnail = null) {
+        var candidates = new List<string>();
+        var normalized = NormalizeThumbnailUrl(thumbnail);
+        if (normalized != null &&
+            !normalized.Contains(".webp", StringComparison.OrdinalIgnoreCase)) {
+            candidates.Add(normalized);
+        }
+
+        foreach (var name in StandardThumbnailNames) {
+            var url = $"https://i.ytimg.com/vi/{videoId}/{name}.jpg";
+            if (!candidates.Contains(url)) {
+                candidates.Add(url);
+            }
+        }
+
+        return candidates;
+    }
+
+    static string? DownloadThumbnail(string videoId, string parentFolder, string basePrefix,
+        YouTubeVideo? video = null) {
+        foreach (var url in GetThumbnailCandidateUrls(videoId, video?.Thumbnail)) {
+            try {
+                using var response = HttpClient.GetAsync(url).GetAwaiter().GetResult();
+                if (!response.IsSuccessStatusCode) {
+                    continue;
+                }
+
+                var coverPath = Path.Combine(parentFolder, $"{basePrefix}.c.jpg");
+                using var fs = File.Create(coverPath);
+                response.Content.CopyToAsync(fs).GetAwaiter().GetResult();
+                return coverPath;
+            } catch (Exception ex) {
+                Logger.Debug(ex, $"Failed to download thumbnail from {url}");
+            }
+        }
+
+        Logger.Warn($"Failed to download any jpg thumbnail for {videoId}");
+        return null;
     }
 
     public static (List<string> TrackPaths, string? CoverPath) DownloadTracks(string videoId,
@@ -214,23 +242,7 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
                     $"No downloaded tracks found for {videoId} with prefix {basePrefix} in {parentFolder}.");
             }
 
-            var coverPath = downloadedFiles.FirstOrDefault(f
-                => Path.GetFileNameWithoutExtension(f) == $"{basePrefix}.c");
-            if (coverPath != null && Path.GetExtension(coverPath)
-                    .Equals(".webp", StringComparison.OrdinalIgnoreCase)) {
-                var pngCover = Path.Combine(parentFolder, $"{basePrefix}.c.png");
-                var convertResult = Executor.Run("ffmpeg",
-                    $"-i \"{coverPath}\" -update 1 -bitexact -y \"{pngCover}\"");
-                if (convertResult.ExitCode == 0) {
-                    try {
-                        File.Delete(coverPath);
-                    } catch {
-                    }
-
-                    coverPath = pngCover;
-                }
-            }
-
+            var coverPath = DownloadThumbnail(videoId, parentFolder, basePrefix, video);
             return (trackPaths, coverPath);
         }, (ex, index) => {
             if (index >= 5) {
@@ -709,7 +721,7 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
             }
         }
 
-        Thumbnail = videoData.Thumbnail;
+        Thumbnail = NormalizeThumbnailUrl(videoData.Thumbnail);
         Chapters = videoData.Chapters?.Select(c => new YouTubeChapter {
             StartTime = c.StartTime ?? 0,
             EndTime = c.EndTime ?? 0,
@@ -774,7 +786,7 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         Width = archiveFileContent.Width;
         Height = archiveFileContent.Height;
         Codec = NormalizeCodec(archiveFileContent.Vcodec);
-        Thumbnail = archiveFileContent.Thumbnail;
+        Thumbnail = NormalizeThumbnailUrl(archiveFileContent.Thumbnail);
     }
 
 
