@@ -15,6 +15,7 @@ namespace Kifa.Tools.Tests;
 public class ExtractCommandTests : IDisposable {
     readonly string tempDir;
     readonly FakeFileInformationServiceClient fakeClient;
+    readonly KifaServiceClient<FileIdInfo> originalFileIdInfoClient;
 
     public ExtractCommandTests() {
         KifaCommand.ResetInteractionState();
@@ -26,6 +27,8 @@ public class ExtractCommandTests : IDisposable {
         };
         fakeClient = new FakeFileInformationServiceClient();
         FileInformation.Client = fakeClient;
+        originalFileIdInfoClient = FileIdInfo.Client;
+        FileIdInfo.Client = new FakeFileIdInfoServiceClient();
     }
 
     public void Dispose() {
@@ -36,6 +39,7 @@ public class ExtractCommandTests : IDisposable {
         }
 
         FileInformation.Client = new FileInformationRestServiceClient();
+        FileIdInfo.Client = originalFileIdInfoClient;
     }
 
     [Fact]
@@ -339,6 +343,34 @@ public class ExtractCommandTests : IDisposable {
         }
     }
 
+    [Fact]
+    public void Execute_DoesNotIgnoreFiles_ExtractsIgnoredArchives() {
+        var originalExtensions = new HashSet<string>(KifaFile.IgnoredExtensions);
+        KifaFile.IgnoredExtensions = ["zip"];
+        try {
+            var subDir = $"{tempDir}/sub";
+            Directory.CreateDirectory(subDir);
+            var filePath = $"{subDir}/@ignored_archive.zip";
+            using (var zipArchive = System.IO.Compression.ZipFile.Open(filePath, System.IO.Compression.ZipArchiveMode.Create)) {
+                var entry = zipArchive.CreateEntry("extracted.txt");
+                using var writer = new StreamWriter(entry.Open());
+                writer.Write("extracted content");
+            }
+
+            var cmd = new ExtractCommand {
+                FileNames = [subDir],
+                AutoConfirmDefault = true
+            };
+
+            var exitCode = cmd.Execute();
+            Assert.Equal(0, exitCode);
+            Assert.True(File.Exists($"{subDir}/extracted.txt"));
+            Assert.Equal("extracted content", File.ReadAllText($"{subDir}/extracted.txt"));
+        } finally {
+            KifaFile.IgnoredExtensions = originalExtensions;
+        }
+    }
+
     class FakeFileInformationServiceClient : BaseKifaServiceClient<FileInformation>,
         FileInformationServiceClient {
         readonly Dictionary<string, FileInformation> data = new();
@@ -362,7 +394,11 @@ public class ExtractCommandTests : IDisposable {
         }
 
         public override KifaActionResult Update(FileInformation item) {
-            data[item.Id!] = item.Clone();
+            if (data.TryGetValue(item.Id.Checked(), out var existing)) {
+                item.Locations ??= existing.Locations;
+            }
+
+            data[item.Id.Checked()] = item.Clone();
             return KifaActionResult.Success();
         }
 
@@ -429,5 +465,34 @@ public class ExtractCommandTests : IDisposable {
 
             return KifaActionResult.Success();
         }
+    }
+
+    class FakeFileIdInfoServiceClient : BaseKifaServiceClient<FileIdInfo> {
+        readonly Dictionary<string, FileIdInfo> data = new();
+
+        public override SortedDictionary<string, FileIdInfo> List(string folder = "",
+            bool recursive = true, KifaDataOptions? options = null)
+            => new(data);
+
+        public override FileIdInfo? Get(string id, KifaDataOptions? options = null)
+            => data.GetValueOrDefault(id);
+
+        public override KifaActionResult Set(FileIdInfo item) {
+            data[item.Id.Checked()] = item;
+            return KifaActionResult.Success();
+        }
+
+        public override KifaActionResult Update(FileIdInfo item) {
+            data[item.Id.Checked()] = item;
+            return KifaActionResult.Success();
+        }
+
+        public override KifaActionResult Delete(string id) {
+            data.Remove(id);
+            return KifaActionResult.Success();
+        }
+
+        public override KifaActionResult Link(string targetId, string linkId)
+            => KifaActionResult.Success();
     }
 }

@@ -40,14 +40,11 @@ public class ExtractCommand : KifaCommand {
             "Separator between archive name and entry name. Default is not prepend archive name.")]
     public string? ArchiveNameSeparator { get; set; }
 
-    [Option('a', "include-all", HelpText = "Include all files already registered or ignored.")]
-    public bool IncludeAll { get; set; } = false;
-
     [Option('S', "show-size", HelpText = "Show size for each file and total size (can be slow).")]
     public bool ShowSize { get; set; } = false;
 
     public override int Execute(KifaTask? task = null) {
-        var files = KifaFile.FindExistingFiles(FileNames, shouldIgnoreFiles: !IncludeAll);
+        var files = KifaFile.FindExistingFiles(FileNames, shouldIgnoreFiles: false);
         var selected = SelectMany(files,
             file => ShowSize ? $"{file} ({file.FileInfo?.Size.ToSizeString()})" : file.ToString(),
             new Func<List<KifaFile>, string>(choices
