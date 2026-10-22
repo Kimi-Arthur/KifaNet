@@ -176,11 +176,48 @@ public class RetrieveCommandTests : IDisposable {
     }
 
     [Fact]
+    public void
+        RetrieveFile_UnregisteredRemoteFile_WithIncorrectServerMd5_DownloadsAndRegistersWithActualHashes() {
+        KifaFile.DefaultMirrorHost = "local:retrieve_test_dev1";
+        var fakeRemote = new FakeRemoteStorageClient("baidu", "test_acc");
+        fakeRemote.AddFile("/folder/wrong_md5.txt", "Hello World!",
+            md5: "00000000000000000000000000000000");
+
+        var remoteFile = new KifaFile("baidu:test_acc/folder/wrong_md5.txt") {
+            Client = fakeRemote
+        };
+
+        var cmd = new RetrieveCommand();
+        var result = cmd.RetrieveFile(remoteFile);
+
+        Assert.Equal(KifaActionStatus.Warning, result.Status);
+        Assert.Contains("differs from quick info MD5", result.Message);
+        var expectedLocalPath = $"{tempDir}/dev1/folder/wrong_md5.txt";
+        Assert.True(File.Exists(expectedLocalPath));
+        Assert.Equal("Hello World!", File.ReadAllText(expectedLocalPath));
+
+        var info = FileInformation.Client.Get("/folder/wrong_md5.txt").Checked();
+        Assert.Equal("ED076287532E86365E841E92BFC50D8C", info.Md5);
+        Assert.Equal("7F83B1657FF1FC53B92DC18148A1D65DFC2D4B1FA3D677284ADDD200126D9069",
+            info.Sha256);
+        Assert.NotNull(
+            info.Locations.GetValueOrDefault("local:retrieve_test_dev1/folder/wrong_md5.txt"));
+        Assert.NotNull(info.Locations.GetValueOrDefault("baidu:test_acc/folder/wrong_md5.txt"));
+    }
+
+    [Fact]
     public void Retrieve_ExistingLocalTargetWithCorruptedContent_ReturnsError() {
         KifaFile.DefaultMirrorHost = "local:retrieve_test_dev1";
         var existingLocalPath = $"{tempDir}/dev1/corrupted.txt";
-        // Same length (12 bytes) as "Hello World!", but different content/MD5
+        // Same length (12 bytes) as "Hello World!", but different content/hashes
         File.WriteAllText(existingLocalPath, "Wrong World!");
+
+        FileInformation.Client.Set(new FileInformation {
+            Id = "/corrupted.txt",
+            Size = 12,
+            Md5 = "ED076287532E86365E841E92BFC50D8C",
+            Sha256 = "7F83B1657FF1FC53B92DC18148A1D65DFC2D4B1FA3D677284ADDD200126D9069"
+        });
 
         var fakeRemote = new FakeRemoteStorageClient("baidu", "test_acc");
         fakeRemote.AddFile("/corrupted.txt", "Hello World!",

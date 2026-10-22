@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
+using Kifa.Api.Files;
 using Kifa.IO;
 using Kifa.IO.StorageClients;
 using Kifa.Service;
@@ -133,6 +135,73 @@ public class UploadCommandTests : IDisposable {
         Assert.Equal(KifaActionStatus.OK, batchResult.Status);
         Assert.Equal(KifaActionStatus.OK, batchResult.Results.First(r => r.Item == "google.v1").Result.Status);
         Assert.Equal(KifaActionStatus.Skipped, batchResult.Results.First(r => r.Item == "tele.v2").Result.Status);
+    }
+
+    [Fact]
+    public void Upload_SourceWithIncorrectQuickInfoMd5_ReturnsWarningAndRegistersActualHashes() {
+        KifaFile.DefaultMirrorHost = "local:upload_test_temp";
+        var fakeRemote = new FakeRemoteStorageClient("baidu", "test_acc");
+        fakeRemote.AddFile("/folder/wrong_md5_upload.txt", "Hello World!",
+            md5: "00000000000000000000000000000000");
+
+        var remoteFile = new KifaFile("baidu:test_acc/folder/wrong_md5_upload.txt") {
+            Client = fakeRemote
+        };
+
+        var result = remoteFile.Upload(targets: [], useCache: true);
+
+        Assert.Equal(KifaActionStatus.Warning, result.Status);
+        var batchResult = Assert.IsType<KifaBatchActionResult>(result);
+        var checkItem = Assert.Single(batchResult.Results, r => r.Item == "check");
+        Assert.Equal(KifaActionStatus.Warning, checkItem.Result.Status);
+        Assert.Contains("differs from quick info MD5", checkItem.Result.Message);
+
+        var info = FileInformation.Client.Get("/folder/wrong_md5_upload.txt").Checked();
+        Assert.Equal("ED076287532E86365E841E92BFC50D8C", info.Md5);
+        Assert.Equal("7F83B1657FF1FC53B92DC18148A1D65DFC2D4B1FA3D677284ADDD200126D9069",
+            info.Sha256);
+    }
+
+    class FakeRemoteStorageClient : StorageClient {
+        readonly Dictionary<string, (byte[] bytes, string? md5)> files = new();
+
+        public FakeRemoteStorageClient(string type, string id) {
+            Type = type;
+            Id = id;
+        }
+
+        public override string Type { get; }
+        public override string Id { get; }
+
+        public void AddFile(string path, string content, string? md5 = null) {
+            files[path] = (Encoding.UTF8.GetBytes(content), md5);
+        }
+
+        public override long Length(string path)
+            => files.TryGetValue(path, out var f)
+                ? f.bytes.Length
+                : throw new FileNotFoundException(path);
+
+        public override FileInformation? GetQuickInfo(string path)
+            => files.TryGetValue(path, out var f)
+                ? new FileInformation {
+                    Id = path,
+                    Size = f.bytes.Length,
+                    Md5 = f.md5
+                }
+                : null;
+
+        public override Stream OpenRead(string path)
+            => files.TryGetValue(path, out var f)
+                ? new MemoryStream(f.bytes, writable: false)
+                : throw new FileNotFoundException(path);
+
+        public override void Write(string path, Stream stream)
+            => throw new NotImplementedException();
+
+        public override void Delete(string path) => files.Remove(path);
+
+        public override void Touch(string path) => throw new NotImplementedException();
     }
 
     class TestFileInformationServiceClient : BaseKifaServiceClient<FileInformation>,

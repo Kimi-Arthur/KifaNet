@@ -765,8 +765,9 @@ public class KifaFileTests : IDisposable {
             Md5 = "ED076287532E86365E841E92BFC50D8C"
         });
 
-        file.Add();
+        var result = file.Add();
 
+        Assert.Equal(KifaActionStatus.OK, result.Status);
         Assert.True(file.Registered);
         Assert.Equal("7F83B1657FF1FC53B92DC18148A1D65DFC2D4B1FA3D677284ADDD200126D9069",
             file.FileInfo?.Sha256);
@@ -886,6 +887,26 @@ public class KifaFileTests : IDisposable {
 
         Assert.Empty(prompts);
         Assert.True(file.Registered);
+        Assert.Equal("7F83B1657FF1FC53B92DC18148A1D65DFC2D4B1FA3D677284ADDD200126D9069",
+            file.FileInfo?.Sha256);
+    }
+
+    [Fact]
+    public void Add_WithQuickInfoMd5_MismatchedActualMd5_WarnsAndRegistersWithActualHashes() {
+        var filePath = $"{tempDir}/quick_md5_mismatch_actual.txt";
+        File.WriteAllText(filePath, "Hello World!");
+
+        var file = new KifaFile(filePath, fileInfo: new FileInformation {
+            Size = 12,
+            Md5 = "00000000000000000000000000000000"
+        });
+
+        var result = file.Add();
+
+        Assert.Equal(KifaActionStatus.Warning, result.Status);
+        Assert.Contains("differs from quick info MD5", result.Message);
+        Assert.True(file.Registered);
+        Assert.Equal("ED076287532E86365E841E92BFC50D8C", file.FileInfo?.Md5);
         Assert.Equal("7F83B1657FF1FC53B92DC18148A1D65DFC2D4B1FA3D677284ADDD200126D9069",
             file.FileInfo?.Sha256);
     }

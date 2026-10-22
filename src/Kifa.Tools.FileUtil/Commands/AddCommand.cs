@@ -79,12 +79,14 @@ public class AddCommand : KifaCommand {
         return LogSummary();
     }
 
-    void AddFile(KifaFile file) {
+    KifaActionResult AddFile(KifaFile file) {
         Logger.Info($"Add {file}");
-        file.Add(QuickMode ? null : ForceRecheck,
+        var result = file.Add(QuickMode ? null : ForceRecheck,
             confirmPrompt: (prompt, suggested) => Confirm(prompt, suggested));
         if (MirrorHost != null && !KeepMirror) {
             file.RemoveLocalMirrorFile();
         }
+
+        return result;
     }
 }

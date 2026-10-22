@@ -771,9 +771,10 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
                 };
             }
 
+            KifaActionResult? addResult = null;
             if (!noRegister) {
                 try {
-                    localFile.Add(confirmPrompt: confirmPrompt);
+                    addResult = localFile.Add(confirmPrompt: confirmPrompt);
                     Register(true);
                 } catch (FileCorruptedException ex) {
                     return new KifaActionResult {
@@ -781,6 +782,13 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
                         Message = $"Target exists, but doesn't match: {ex}"
                     };
                 }
+            }
+
+            if (addResult?.Status == KifaActionStatus.Warning) {
+                return new KifaActionResult {
+                    Status = KifaActionStatus.Warning,
+                    Message = $"Already got! ({addResult.Message})"
+                };
             }
 
             return new KifaActionResult {
@@ -793,6 +801,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
         try {
             Logger.Debug($"Verify destination {localFile}...");
+            KifaActionResult? addResult = null;
             if (noRegister) {
                 if (!localFile.Exists()) {
                     return new KifaActionResult {
@@ -801,8 +810,15 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
                     };
                 }
             } else {
-                localFile.Add();
+                addResult = localFile.Add();
                 Register(true);
+            }
+
+            if (addResult?.Status == KifaActionStatus.Warning) {
+                return new KifaActionResult {
+                    Status = KifaActionStatus.Warning,
+                    Message = $"Successfully got file from {this}! ({addResult.Message})"
+                };
             }
 
             return new KifaActionResult {
@@ -847,13 +863,15 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         }
     }
 
-    void MirrorFileToLocal() {
+    KifaActionResult? MirrorFileToLocal() {
         if (!LocalMirrorFile.Registered || !LocalMirrorFile.Exists()) {
             Logger.Debug($"Mirror {this} to {LocalMirrorFile}...");
             using var stream = OpenRead();
             LocalMirrorFile.Write(stream);
-            LocalMirrorFile.Add();
+            return LocalMirrorFile.Add();
         }
+
+        return null;
     }
 
     public void RemoveLocalMirrorFile() {
@@ -887,7 +905,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     // - shouldCheckKnown == true: full checkup.
     // - shouldCheckKnown == false: skip check for known file.
     // - shouldCheckKnown == null (default): quick check for known instance.
-    public void Add(bool? shouldCheckKnown = null, long? expectedSize = null,
+    public KifaActionResult Add(bool? shouldCheckKnown = null, long? expectedSize = null,
         Func<string, bool, bool>? confirmPrompt = null) {
         if (expectedSize != null) {
             FileInfo ??= new FileInformation {
@@ -918,9 +936,10 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
         Logger.Trace($"Original info:\n{existingInfo}");
 
+        KifaActionResult? mirrorResult = null;
         if (UseCache) {
             try {
-                LocalMirrorFile.Add();
+                mirrorResult = LocalMirrorFile.Add();
                 file = LocalMirrorFile;
                 Logger.Debug($"Local file {file} is found. Use local file instead of {this}.");
             } catch (FileNotFoundException ex) {
@@ -934,7 +953,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             file.Registered) {
             if (shouldCheckKnown == false) {
                 Logger.Debug($"Quick check skipped for {file}.");
-                return;
+                return KifaActionResult.Success();
             }
 
             Logger.Debug($"Quick check for {file}.");
@@ -952,13 +971,13 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             existingInfo.AddProperties(quickInfo);
             Logger.Debug($"Quick check passed for {file}.");
             Logger.Trace($"With quickInfo:\n{existingInfo}");
-            return;
+            return KifaActionResult.Success();
         }
 
         if (shouldCheckKnown != true && file.CheckedByFileId()) {
             Logger.Debug($"Skipping check for {file} as it's already checked by file_id.");
             Register(true);
-            return;
+            return KifaActionResult.Success();
         }
 
         if (shouldCheckKnown != true && file.CheckedByQuickInfo(confirmPrompt)) {
@@ -966,11 +985,11 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
                 $"Skipping check for {file} as it's confirmed and linked by quick info.");
             Register(true);
             RegisterFileIdInfo();
-            return;
+            return KifaActionResult.Success();
         }
 
         if (UseCache) {
-            MirrorFileToLocal();
+            mirrorResult = MirrorFileToLocal() ?? mirrorResult;
             file = LocalMirrorFile;
             Logger.Debug($"Since file is mirrored to {file}, use that instead now.");
         }
@@ -980,8 +999,19 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         // A new encryption key will be added if not already there.
         var info = file.CalculateInfo(FileProperties.AllVerifiable | FileProperties.EncryptionKey);
 
+        var warningMessage = mirrorResult?.Status == KifaActionStatus.Warning
+            ? mirrorResult.Message
+            : null;
         var compareResultWithOld =
             info.CompareProperties(existingInfo, FileProperties.AllVerifiable);
+        if (existingInfo.Sha256 == null && compareResultWithOld.HasFlag(FileProperties.Md5)) {
+            warningMessage =
+                $"New result MD5 ({info.Md5}) differs from quick info MD5 ({existingInfo.Md5}) for {file}.";
+            Logger.Warn(warningMessage);
+            existingInfo.Md5 = info.Md5;
+            compareResultWithOld &= ~FileProperties.Md5;
+        }
+
         if (compareResultWithOld != FileProperties.None) {
             throw new FileCorruptedException(
                 $"New result differs from old result: {compareResultWithOld}\n" + "Expected:\n" +
@@ -1024,6 +1054,9 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         FileInfoClient.Update(info);
         Register(true);
         RegisterFileIdInfo();
+        return warningMessage != null
+            ? KifaActionResult.Warning(warningMessage)
+            : KifaActionResult.Success();
     }
 
     bool CheckedByFileId() {

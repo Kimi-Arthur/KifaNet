@@ -22,9 +22,10 @@ public partial class KifaFile {
         bool skipRegistered = false, Func<string, bool, bool>? confirmPrompt = null) {
         UseCache = useCache | downloadLocal;
 
+        KifaActionResult addResult;
         try {
             // We don't really need to check source, but we need the sha256 and size to continue.
-            Add(false, confirmPrompt: confirmPrompt);
+            addResult = Add(false, confirmPrompt: confirmPrompt);
             if (FileInfo?.Sha256 == null || FileInfo?.Size == null) {
                 return new KifaActionResult {
                     Status = KifaActionStatus.Error,
@@ -41,6 +42,10 @@ public partial class KifaFile {
         }
 
         var result = new KifaBatchActionResult();
+        if (addResult.Status == KifaActionStatus.Warning) {
+            result.Add("check", addResult);
+        }
+
         result.AddRange(targets.Select(target => (target.ToString(),
             UploadOneFile(target, deleteSource, skipVerify, skipRegistered, confirmPrompt))));
 

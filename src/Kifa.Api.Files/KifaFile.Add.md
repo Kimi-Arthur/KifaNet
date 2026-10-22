@@ -47,7 +47,7 @@ If the file is unknown (`FileInfo?.Sha256 == null`), quick info provides a hash 
 ### Situation 1:
 
 1. Calculate full info of the file.
-2. Compare to old `FileInformation`. Fail if they differ.
+2. Compare to old `FileInformation`. Fail if they differ (if the old `FileInformation` is unverified quick info with `Sha256 == null` and `Md5` differs, log a warning instead of failing).
 3. Find the `SHA256` `FileInformation` and link.
 4. Compare with the `SHA256` `FileInformation`. Fail if they differ.
 5. Register.
