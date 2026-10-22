@@ -19,3 +19,24 @@ public enum KifaActionStatus {
     // The action was cancelled before completion.
     Cancelled = 32
 }
+
+public static class KifaActionStatusExtensions {
+    public static string Format(this KifaActionStatus status)
+        => status switch {
+            KifaActionStatus.OK => status.ToString().Info(),
+            KifaActionStatus.Warning => status.ToString().Warn(),
+            KifaActionStatus.Cancelled => status.ToString().Warn(),
+            KifaActionStatus.Pending => status.ToString().Debug(),
+            KifaActionStatus.BadRequest => status.ToString().Error(),
+            KifaActionStatus.Error => status.ToString().Error(),
+            KifaActionStatus.Skipped => status.ToString().Trace(),
+            _ => status.HasFlag(KifaActionStatus.Error) || status.HasFlag(KifaActionStatus.BadRequest)
+                ? status.ToString().Error()
+                : status.HasFlag(KifaActionStatus.Cancelled) || status.HasFlag(KifaActionStatus.Warning)
+                    ? status.ToString().Warn()
+                    : status.HasFlag(KifaActionStatus.Pending)
+                        ? status.ToString().Debug()
+                        : status.ToString()
+        };
+}
+

@@ -30,6 +30,67 @@ public class KifaActionResultTests {
     }
 
     [Fact]
+    public void SubResultsColoringTest() {
+        try {
+            ConsoleColorExtensions.ForceEnabled = true;
+            var r = new KifaBatchActionResult([
+                ("file1", KifaActionResult.Success()),
+                ("file2", KifaActionResult.Error("failed")),
+                ("file3", KifaActionResult.Warning("warn")),
+                ("file4", KifaActionResult.Skipped()),
+                ("file5", new KifaActionResult { Status = KifaActionStatus.Pending }),
+                ("file6", KifaActionResult.Cancelled("cancelled")),
+                ("file7", KifaActionResult.BadRequest("bad input"))
+            ]);
+
+            r.ToString().Should().Be(
+                "\u001b[35mError\u001b[0m =>\n" +
+                "\tfile1: \u001b[32mOK\u001b[0m\n" +
+                "\tfile2: \u001b[35mError\u001b[0m => failed\n" +
+                "\tfile3: \u001b[33mWarning\u001b[0m => warn\n" +
+                "\tfile4: \u001b[37mSkipped\u001b[0m\n" +
+                "\tfile5: \u001b[97mPending\u001b[0m\n" +
+                "\tfile6: \u001b[33mCancelled\u001b[0m => cancelled\n" +
+                "\tfile7: \u001b[35mBadRequest\u001b[0m => bad input"
+            );
+        } finally {
+            ConsoleColorExtensions.ForceEnabled = null;
+        }
+    }
+
+    [Fact]
+    public void SubResultsNestedColoringTest() {
+        try {
+            ConsoleColorExtensions.ForceEnabled = true;
+            var r = new KifaBatchActionResult([
+                ("errorchild", new KifaBatchActionResult([
+                    ("first", KifaActionResult.Success()),
+                    ("second", KifaActionResult.UnknownError())
+                ])),
+                ("pendingchild", new KifaBatchActionResult([
+                    ("first", KifaActionResult.Success("success message")),
+                    ("second", new KifaActionResult {
+                        Status = KifaActionStatus.Pending,
+                        Message = "what message"
+                    })
+                ]))
+            ]);
+
+            r.ToString().Should().Be(
+                "\u001b[35mError\u001b[0m =>\n" +
+                "\terrorchild: \u001b[35mError\u001b[0m =>\n" +
+                "\t\tfirst: \u001b[32mOK\u001b[0m\n" +
+                "\t\tsecond: \u001b[35mError\u001b[0m => Unknown error\n" +
+                "\tpendingchild: \u001b[97mPending\u001b[0m =>\n" +
+                "\t\tfirst: \u001b[32mOK\u001b[0m => success message\n" +
+                "\t\tsecond: \u001b[97mPending\u001b[0m => what message"
+            );
+        } finally {
+            ConsoleColorExtensions.ForceEnabled = null;
+        }
+    }
+
+    [Fact]
     public void SerializationTest() {
         var fromValue = "{\"status\":\"OK\",\"value\":\"test_value\"}"
             .FromJson<KifaActionResult<string>>();
