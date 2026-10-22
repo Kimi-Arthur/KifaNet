@@ -371,6 +371,109 @@ public class ExtractCommandTests : IDisposable {
         }
     }
 
+    [Fact]
+    public void ExtractOneEntry_EncryptedStoredRarWithAesPadding_TruncatesToExpectedSizeAndVerifiesCrc() {
+        var expectedBytes = "hello world!3"u8.ToArray(); // 13 bytes (16 - 13 = 3 AES padding bytes)
+        var paddedBytes = expectedBytes.Concat(new byte[] { 0x01, 0xF3, 0x00 }).ToArray(); // 16 bytes
+        var expectedInfo = new FileInformation();
+        expectedInfo.AddProperties(new MemoryStream(expectedBytes), FileProperties.Crc32);
+        var expectedCrc = Convert.ToUInt32(expectedInfo.Crc32, 16);
+
+        var entry = new FakeRarArchiveEntry {
+            Key = "video.mp4",
+            Size = expectedBytes.Length,
+            CompressedSize = paddedBytes.Length,
+            Crc = expectedCrc,
+            CompressionType = SharpCompress.Common.CompressionType.Rar,
+            IsEncrypted = true
+        };
+
+        var targetPath = $"{tempDir}/video.mp4";
+        var targetFile = new KifaFile(targetPath);
+        var cmd = new ExtractCommand();
+
+        cmd.ExtractOneEntry(entry, targetFile, tempPath => File.WriteAllBytes(tempPath, paddedBytes));
+
+        Assert.True(File.Exists(targetPath));
+        Assert.Equal(expectedBytes, File.ReadAllBytes(targetPath));
+        Assert.Equal(expectedInfo.Crc32, targetFile.FileInfo?.Crc32);
+    }
+
+    [Fact]
+    public void ExtractOneEntry_EncryptedStoredRarWithAesPaddingAndCorruptedData_ThrowsFileCorruptedException() {
+        var expectedBytes = "hello world!3"u8.ToArray(); // 13 bytes
+        var corruptedPaddedBytes = "hello world!X"u8.ToArray().Concat(new byte[] { 0x01, 0xF3, 0x00 }).ToArray();
+        var expectedInfo = new FileInformation();
+        expectedInfo.AddProperties(new MemoryStream(expectedBytes), FileProperties.Crc32);
+        var expectedCrc = Convert.ToUInt32(expectedInfo.Crc32, 16);
+
+        var entry = new FakeRarArchiveEntry {
+            Key = "corrupted.mp4",
+            Size = expectedBytes.Length,
+            CompressedSize = corruptedPaddedBytes.Length,
+            Crc = expectedCrc,
+            CompressionType = SharpCompress.Common.CompressionType.Rar,
+            IsEncrypted = true
+        };
+
+        var targetFile = new KifaFile($"{tempDir}/corrupted.mp4");
+        var cmd = new ExtractCommand();
+
+        Assert.Throws<FileCorruptedException>(() =>
+            cmd.ExtractOneEntry(entry, targetFile, tempPath => File.WriteAllBytes(tempPath, corruptedPaddedBytes)));
+    }
+
+    [Fact]
+    public void ExtractOneEntry_NonEncryptedRarWithExtraBytes_ThrowsFileCorruptedException() {
+        var expectedBytes = "hello world!3"u8.ToArray();
+        var paddedBytes = expectedBytes.Concat(new byte[] { 0x01, 0xF3, 0x00 }).ToArray();
+        var expectedInfo = new FileInformation();
+        expectedInfo.AddProperties(new MemoryStream(expectedBytes), FileProperties.Crc32);
+        var expectedCrc = Convert.ToUInt32(expectedInfo.Crc32, 16);
+
+        var entry = new FakeRarArchiveEntry {
+            Key = "unencrypted.mp4",
+            Size = expectedBytes.Length,
+            CompressedSize = paddedBytes.Length,
+            Crc = expectedCrc,
+            CompressionType = SharpCompress.Common.CompressionType.Rar,
+            IsEncrypted = false
+        };
+
+        var targetFile = new KifaFile($"{tempDir}/unencrypted.mp4");
+        var cmd = new ExtractCommand();
+
+        Assert.Throws<FileCorruptedException>(() =>
+            cmd.ExtractOneEntry(entry, targetFile, tempPath => File.WriteAllBytes(tempPath, paddedBytes)));
+    }
+
+    class FakeRarArchiveEntry : SharpCompress.Archives.IArchiveEntry {
+        public SharpCompress.Common.CompressionType CompressionType { get; init; }
+        public DateTime? ArchivedTime => null;
+        public long CompressedSize { get; init; }
+        public long Crc { get; init; }
+        public DateTime? CreatedTime => null;
+        public string? Key { get; init; }
+        public string? LinkTarget => null;
+        public bool IsDirectory => false;
+        public bool IsEncrypted { get; init; }
+        public bool IsSplitAfter => false;
+        public bool IsSolid => false;
+        public int VolumeIndexFirst => 0;
+        public int VolumeIndexLast => 0;
+        public DateTime? LastAccessedTime => null;
+        public DateTime? LastModifiedTime => null;
+        public long Size { get; init; }
+        public int? Attrib => null;
+        public SharpCompress.Common.Options.IReaderOptions Options => throw new NotSupportedException();
+        public Stream OpenEntryStream() => throw new NotSupportedException();
+        public System.Threading.Tasks.ValueTask<Stream> OpenEntryStreamAsync(
+            System.Threading.CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
+        public bool IsComplete => true;
+        public SharpCompress.Archives.IArchive Archive => throw new NotSupportedException();
+    }
+
     class FakeFileInformationServiceClient : BaseKifaServiceClient<FileInformation>,
         FileInformationServiceClient {
         readonly Dictionary<string, FileInformation> data = new();
@@ -422,14 +525,12 @@ public class ExtractCommandTests : IDisposable {
                 targetInfo.Metadata.Linking.Links ??= [];
                 targetInfo.Metadata.Linking.Links.Add(linkId);
 
-                var linkInfo = new FileInformation {
-                    Id = linkId,
-                    Locations = targetInfo.Locations,
-                    Metadata = new DataMetadata {
-                        Linking = new LinkingMetadata {
-                            Target = targetId,
-                            Links = targetInfo.Metadata.Linking.Links
-                        }
+                var linkInfo = targetInfo.Clone();
+                linkInfo.Id = linkId;
+                linkInfo.Metadata = new DataMetadata {
+                    Linking = new LinkingMetadata {
+                        Target = targetId,
+                        Links = targetInfo.Metadata.Linking.Links
                     }
                 };
                 data[linkId] = linkInfo;

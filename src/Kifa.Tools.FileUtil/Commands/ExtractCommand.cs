@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using CommandLine;
@@ -188,13 +189,30 @@ public class ExtractCommand : KifaCommand {
         return results;
     }
 
-    void ExtractOneEntry(IArchiveEntry entry, KifaFile file, Action<string> extractAction) {
+    public void ExtractOneEntry(IArchiveEntry entry, KifaFile file, Action<string> extractAction) {
         file.EnsureLocalParent();
         var tempFile = file.GetIgnoredFile();
 
         Logger.Debug($"Write {entry.Key} to {file}");
-        Logger.Debug($"Extract {entry.Key} to temp location {tempFile.GetLocalPath()}");
-        extractAction(tempFile.GetLocalPath());
+        var tempLocalPath = tempFile.GetLocalPath();
+        Logger.Debug($"Extract {entry.Key} to temp location {tempLocalPath}");
+        extractAction(tempLocalPath);
+
+        // Workaround for SharpCompress RAR5 stored+encrypted entry bug where UnstoreFile()
+        // fails to stop at DestUnpSize == 0 and reads up to CompressedSize (appending 1-15 bytes
+        // of AES-256-CBC block padding).
+        // Introduced in https://github.com/adamhathcock/sharpcompress/commit/b6340f14584b5f6fdaf6547c4e1d3a7bf0da9b47
+        // Current code: https://github.com/adamhathcock/sharpcompress/blob/67ceab7443524daa494c4e16257e4c8ae7f79d1b/src/SharpCompress/Compressors/Rar/UnpackV2017/Unpack.cs#L125-L138
+        if (entry is { CompressionType: CompressionType.Rar, IsEncrypted: true } &&
+            entry.CompressedSize > entry.Size && entry.CompressedSize - entry.Size < 16) {
+            using var fs = File.OpenWrite(tempLocalPath);
+            if (fs.Length > entry.Size && fs.Length <= entry.CompressedSize) {
+                Logger.Warn(
+                    $"Truncating extracted encrypted RAR entry {entry.Key} from {fs.Length} to expected Size={entry.Size} (removing {fs.Length - entry.Size} AES padding bytes).");
+                fs.SetLength(entry.Size);
+            }
+        }
+
         tempFile.Add(expectedSize: entry.Size);
 
         var expectedCrc = entry.GetCrc32InHex();
