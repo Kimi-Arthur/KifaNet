@@ -57,6 +57,17 @@ public class BilibiliVideoTests {
         }
     }
 
+    [Theory]
+    [InlineData("av115015885586587", "演奏")]
+    [InlineData("av113368950116186", "演奏")]
+    public void CategoryFillTest(string id, string category) {
+        var video = new BilibiliVideo {
+            Id = id
+        };
+        video.Fill();
+        Assert.Equal(category, video.Category);
+    }
+
     [Fact]
     public void SinglePartTest() {
         var video = BilibiliVideo.Client.Get("av26361000");

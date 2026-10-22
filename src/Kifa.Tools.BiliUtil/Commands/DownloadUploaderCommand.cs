@@ -52,7 +52,7 @@ public class DownloadUploaderCommand : DownloadCommand {
         }
 
         var videos = SelectMany(BilibiliVideo.Client.Get(aids).ExceptNull().ToList(),
-            video => $"{video.Id} {video.Title} ({video.Pages.Count})", "videos to download");
+            FormatVideoChoice, "videos to download");
         if (videos.Status == KifaActionStatus.OK) {
             DownloadVideos(uploader, videos.Value);
         }
@@ -69,14 +69,18 @@ public class DownloadUploaderCommand : DownloadCommand {
         }
 
         var deletedVideos = SelectMany(BilibiliVideo.Client.Get(removedAids).ExceptNull().ToList(),
-            video => $"{video.Id} {video.Title} ({video.Pages.Count})",
-            "deleted videos to download");
+            FormatVideoChoice, "deleted videos to download");
         if (deletedVideos.Status == KifaActionStatus.OK) {
             DownloadVideos(uploader, deletedVideos.Value);
         }
 
         return LogSummary();
     }
+
+    static string FormatVideoChoice(BilibiliVideo video)
+        => string.IsNullOrEmpty(video.Category)
+            ? $"{video.Id} {video.Title} ({video.Pages.Count})"
+            : $"{video.Id} [{video.Category}] {video.Title} ({video.Pages.Count})";
 
     public KifaFile GetUploaderFolder(BilibiliUploader uploader)
         => BaseFolder.GetFile(uploader.GetUploaderFolder());

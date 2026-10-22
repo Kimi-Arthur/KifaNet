@@ -28,6 +28,7 @@
 - Prefer using the C# `field` keyword in property accessors when custom getter or setter logic is needed, rather than declaring manual private backing fields.
 - For configurable properties, set the default value directly on the property instead of declaring a separate default property (e.g., avoid separate `DefaultXxx` and `Xxx` properties). Configuration files and tests can override the property directly.
 - Avoid introducing unnecessary setups or surrogate indirection purely for tests (such as `DefaultXxx` properties/methods paired with `XxxAction` delegates). Instead, prefer clean, direct designs: use `virtual` methods that test subclasses can override, or direct properties with sensible default values that tests and configs can configure directly.
+- Prefer relying on default JSON serialization conventions (e.g. `SnakeCaseNamingStrategy`) and avoid marking properties with serialization attributes (such as `[JsonProperty]`) unnecessarily unless custom mapping or behavior is strictly required.
 
 ## Temporary Files Rules
 - Always place all temporary files, crawler state/progress files, local logs, intermediate scripts, or certificates generated during agent operations in the `.agent_temp/` directory.

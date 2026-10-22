@@ -21,6 +21,8 @@ public sealed class VideoRpc : KifaJsonParameterizedRpc<VideoRpc.Response> {
         public long Videos { get; set; }
         public long Tid { get; set; }
         public string Tname { get; set; }
+        public long TidV2 { get; set; }
+        public string TnameV2 { get; set; } = "";
         public long Copyright { get; set; }
         public Uri Pic { get; set; }
         public string Title { get; set; }

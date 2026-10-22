@@ -133,6 +133,146 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
         throw new DataNotFoundException();
     }
 
+    public static readonly Dictionary<long, string> KnownCategories = new() {
+        { 1, "动画" },
+        { 24, "MAD·AMV" },
+        { 25, "MMD·3D" },
+        { 47, "短片·手书·配音" },
+        { 86, "特摄" },
+        { 210, "手办·模玩" },
+        { 258, "动漫杂谈" },
+        { 27, "动画综合" },
+        { 13, "番剧" },
+        { 33, "连载动画" },
+        { 32, "完结动画" },
+        { 51, "资讯" },
+        { 152, "官方延伸" },
+        { 168, "国创" },
+        { 153, "国产动画" },
+        { 169, "国产原创相关" },
+        { 195, "布袋戏" },
+        { 170, "资讯" },
+        { 3, "音乐" },
+        { 28, "原创音乐" },
+        { 31, "翻唱" },
+        { 59, "演奏" },
+        { 30, "VOCALOID·UTAU" },
+        { 194, "电音" },
+        { 193, "MV" },
+        { 29, "音乐现场" },
+        { 130, "音乐综合" },
+        { 243, "乐评盘点" },
+        { 244, "音乐教学" },
+        { 129, "舞蹈" },
+        { 20, "宅舞" },
+        { 198, "街舞" },
+        { 199, "明星舞蹈" },
+        { 200, "中国舞" },
+        { 257, "舞蹈综合" },
+        { 154, "舞蹈教程" },
+        { 4, "游戏" },
+        { 17, "单机游戏" },
+        { 171, "电子竞技" },
+        { 172, "手机游戏" },
+        { 65, "网络游戏" },
+        { 173, "桌游棋牌" },
+        { 121, "GMV" },
+        { 136, "音游" },
+        { 19, "Mugen" },
+        { 36, "知识" },
+        { 201, "科学科普" },
+        { 124, "社科·法律·心理" },
+        { 228, "人文历史" },
+        { 207, "财经商业" },
+        { 208, "校园学习" },
+        { 209, "职业职场" },
+        { 229, "设计·创意" },
+        { 122, "野生技术协会" },
+        { 188, "科技" },
+        { 95, "数码" },
+        { 230, "软件应用" },
+        { 231, "计算机技术" },
+        { 232, "工业·工程·机械" },
+        { 202, "极客DIY" },
+        { 234, "运动" },
+        { 235, "篮球" },
+        { 249, "足球" },
+        { 250, "健身" },
+        { 251, "竞技体育" },
+        { 252, "运动综合" },
+        { 223, "汽车" },
+        { 176, "汽车生活" },
+        { 224, "汽车文化" },
+        { 225, "汽车极客" },
+        { 226, "摩托车" },
+        { 227, "智能出行" },
+        { 160, "生活" },
+        { 138, "搞笑" },
+        { 253, "出行" },
+        { 254, "三农" },
+        { 255, "家居房产" },
+        { 248, "手工" },
+        { 21, "日常" },
+        { 211, "美食" },
+        { 76, "美食制作" },
+        { 212, "美食侦探" },
+        { 213, "美食测评" },
+        { 214, "田园美食" },
+        { 215, "美食记录" },
+        { 217, "动物圈" },
+        { 218, "喵星人" },
+        { 219, "汪星人" },
+        { 220, "大熊猫" },
+        { 221, "野生动物" },
+        { 222, "爬宠" },
+        { 260, "动物综合" },
+        { 119, "鬼畜" },
+        { 22, "鬼畜调教" },
+        { 26, "音MAD" },
+        { 126, "人力VOCALOID" },
+        { 216, "鬼畜剧场" },
+        { 127, "教程演示" },
+        { 155, "时尚" },
+        { 157, "美妆护肤" },
+        { 158, "穿搭" },
+        { 159, "时尚潮流" },
+        { 5, "娱乐" },
+        { 71, "综艺" },
+        { 241, "娱乐杂谈" },
+        { 242, "粉丝创作" },
+        { 137, "明星综合" },
+        { 181, "影视" },
+        { 182, "影视剪辑" },
+        { 183, "影视杂谈" },
+        { 85, "小剧场" },
+        { 184, "预告·资讯" },
+        { 177, "纪录片" },
+        { 37, "人文·历史" },
+        { 178, "科学·探索·自然" },
+        { 179, "军事" },
+        { 180, "社会·美食·旅行" },
+        { 23, "电影" },
+        { 147, "华语电影" },
+        { 145, "欧美电影" },
+        { 146, "日本电影" },
+        { 83, "其他国家" },
+        { 11, "电视剧" },
+        { 185, "国产剧" },
+        { 187, "海外剧" }
+    };
+
+    static string ResolveCategory(string? tname, string? tnameV2, long tid, long tidV2 = 0) {
+        if (!string.IsNullOrEmpty(tname)) {
+            return tname;
+        }
+
+        if (!string.IsNullOrEmpty(tnameV2)) {
+            return tnameV2;
+        }
+
+        return KnownCategories.GetValueOrDefault(tid, KnownCategories.GetValueOrDefault(tidV2, ""));
+    }
+
     void FillWithBilibili() {
         var client = HttpClients.GetBilibiliClient();
         var response = client.Call(new VideoRpc(Id));
@@ -148,8 +288,8 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
         Author = data.Owner.Name;
         AuthorId = data.Owner.Mid.ToString();
         Description = data.Desc;
-        Tags = tags.Select(t => t.TagName).OrderBy(t => t).ToList();
-        Category = data.Tname;
+        Tags = tags?.Select(t => t.TagName).OrderBy(t => t).ToList() ?? [];
+        Category = ResolveCategory(data.Tname, data.TnameV2, data.Tid, data.TidV2);
         Cover = data.Pic;
         Pages = data.Pages.Select(p => new BilibiliChat {
             Id = p.Page,
@@ -200,7 +340,7 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
                 Tags.AddRange(v2.Tag.Select(t => t.TagName));
             }
 
-            Category = v2.Tname;
+            Category = ResolveCategory(v2.Tname, null, v2.Tid);
             Cover = v2.Pic;
             Pages = v2.Pages.Select(p => new BilibiliChat {
                 Id = p.Page,
@@ -226,7 +366,7 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
             AuthorId = data.Mid.ToString();
             Description = data.Description;
             Tags = data.Tag.Split(",").ToList();
-            Category = data.Typename;
+            Category = ResolveCategory(data.Typename, null, data.Tid);
             Cover = data.Pic;
             Pages = data.List.Select(p => new BilibiliChat {
                 Id = p.Page,
