@@ -59,13 +59,15 @@ public abstract partial class KifaCommand {
         return parse(args).MapResult<KifaCommand, int>(ExecuteCommand, HandleParseFail);
     }
 
-    public static int Run(string[] args, params Type[] types)
-        => Run(
+    public static int Run(string[] args, params Type[] types) {
+        var commandTypes = types.Contains(typeof(UpgradeCommand)) ? types : [..types, typeof(UpgradeCommand)];
+        return Run(
             parameters => new Parser(settings => {
                 settings.CaseInsensitiveEnumValues = true;
                 settings.HelpWriter = Console.Error;
                 settings.EnableDashDash = true;
-            }).ParseArguments(parameters, types), args);
+            }).ParseArguments(parameters, commandTypes), args);
+    }
 
     volatile bool pauseRequested;
 
