@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +17,32 @@ namespace Kifa.Tools;
 
 public abstract partial class KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+    static KifaCommand() {
+        PreloadAssemblies();
+    }
+
+    static void PreloadAssemblies() {
+        var baseDir = AppContext.BaseDirectory;
+        if (!Directory.Exists(baseDir)) {
+            return;
+        }
+
+        foreach (var file in Directory.EnumerateFiles(baseDir, "*.dll")) {
+            try {
+                var assembly = Assembly.LoadFrom(file);
+                foreach (var referenced in assembly.GetReferencedAssemblies()) {
+                    try {
+                        Assembly.Load(referenced);
+                    } catch {
+                        // Ignore optional or unresolvable references.
+                    }
+                }
+            } catch {
+                // Ignore non-.NET or incompatible native files.
+            }
+        }
+    }
 
     public static KifaFile CurrentFolder => new(".");
 
