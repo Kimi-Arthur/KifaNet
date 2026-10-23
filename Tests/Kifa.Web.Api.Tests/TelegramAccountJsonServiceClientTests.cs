@@ -130,7 +130,8 @@ public class TelegramAccountJsonServiceClientTests : IDisposable {
 
     [Fact]
     public void ObtainSession_WhenLimitsMissingFromJson_CanObtainUpToDefaultLimit() {
-        var rawJson = """
+        var now = DateTimeOffset.UtcNow;
+        var rawJson = $$"""
         {
           "id": "missing_limits_file",
           "phone": "+1234567890",
@@ -140,7 +141,7 @@ public class TelegramAccountJsonServiceClientTests : IDisposable {
             {
               "id": 1,
               "data": [1, 2, 3, 4],
-              "refreshed": "2026-10-14 15:32:42.872525",
+              "refreshed": "{{now:yyyy-MM-dd HH:mm:ss.ffffff}}",
               "reserved": "0001-01-01 00:00:00.000000"
             }
           ]
@@ -501,5 +502,131 @@ public class TelegramAccountJsonServiceClientTests : IDisposable {
         result.Status.Should().Be(KifaActionStatus.OK);
         result.Value.Should().NotBeNull();
         result.Value.Checked().Type.Should().Be(TelegramSessionType.Quick);
+    }
+
+    [Fact]
+    public void ObtainSession_WhenColdestSessionNeedsRefreshAndFails_RelocatesToNextAvailableFreshSession() {
+        var now = DateTimeOffset.UtcNow;
+        var account = new TelegramAccount {
+            Id = "relocate_test",
+            Phone = "+1234567890",
+            ApiId = 12345,
+            ApiHash = "fake_hash",
+            Sessions = new List<TelegramSession> {
+                new() {
+                    Id = 101,
+                    Data = [1, 2, 3, 4],
+                    Refreshed = now - TimeSpan.FromDays(2), // Needs refresh, will fail due to fake credentials
+                    Reserved = Date.Zero
+                },
+                new() {
+                    Id = 102,
+                    Data = [1, 2, 3, 4],
+                    Refreshed = now, // Fresh, no refresh needed
+                    Reserved = Date.Zero.AddSeconds(1) // Slightly newer reserved timestamp
+                }
+            }
+        };
+        client.Set(account);
+
+        var result = client.ObtainSession("relocate_test", TelegramSessionType.Quick);
+        result.Status.Should().Be(KifaActionStatus.OK);
+        result.Value.Should().NotBeNull();
+        result.Value.Checked().Type.Should().Be(TelegramSessionType.Quick);
+
+        // Verify account state: session 101 marked as Refresh with future Reserved, session 102 leased
+        var updatedAccount = client.Get("relocate_test").Checked();
+        var session101 = updatedAccount.Sessions.First(s => s.Id == 101);
+        session101.Type.Should().Be(TelegramSessionType.Refresh);
+        session101.Reserved.Should().BeAfter(now);
+
+        var leasedSession = updatedAccount.Sessions.First(s => s.Type == TelegramSessionType.Quick);
+        leasedSession.Reserved.Should().BeAfter(now);
+    }
+
+    [Fact]
+    public void ObtainSession_WhenAllSessionsFailRefresh_ReturnsPending() {
+        var now = DateTimeOffset.UtcNow;
+        var account = new TelegramAccount {
+            Id = "all_fail_test",
+            Phone = "+1234567890",
+            ApiId = 12345,
+            ApiHash = "fake_hash",
+            Sessions = new List<TelegramSession> {
+                new() {
+                    Id = 201,
+                    Data = [1, 2, 3, 4],
+                    Refreshed = now - TimeSpan.FromDays(2),
+                    Reserved = Date.Zero
+                },
+                new() {
+                    Id = 202,
+                    Data = [1, 2, 3, 4],
+                    Refreshed = now - TimeSpan.FromDays(3),
+                    Reserved = Date.Zero.AddSeconds(1)
+                }
+            }
+        };
+        client.Set(account);
+
+        var result = client.ObtainSession("all_fail_test", TelegramSessionType.Quick);
+        result.Status.Should().Be(KifaActionStatus.Pending);
+        result.Message.Should().Be("All 2 sessions are reserved.");
+
+        var updatedAccount = client.Get("all_fail_test").Checked();
+        updatedAccount.Sessions.Should().OnlyContain(s => s.Type == TelegramSessionType.Refresh && s.Reserved > now);
+    }
+
+    [Fact]
+    public void ObtainSession_WithSpecificSessionId_WhenItFailsRefresh_RelocatesToOtherFreshSession() {
+        var now = DateTimeOffset.UtcNow;
+        var account = new TelegramAccount {
+            Id = "specific_session_relocate",
+            Phone = "+1234567890",
+            ApiId = 12345,
+            ApiHash = "fake_hash",
+            Sessions = new List<TelegramSession> {
+                new() {
+                    Id = 301,
+                    Data = [1, 2, 3, 4],
+                    Refreshed = now - TimeSpan.FromDays(2), // Needs refresh and fails
+                    Reserved = Date.Zero
+                },
+                new() {
+                    Id = 302,
+                    Data = [1, 2, 3, 4],
+                    Refreshed = now, // Fresh
+                    Reserved = Date.Zero
+                }
+            }
+        };
+        client.Set(account);
+
+        // Explicitly request session 301
+        var result = client.ObtainSession("specific_session_relocate", TelegramSessionType.Quick, sessionId: 301);
+        result.Status.Should().Be(KifaActionStatus.OK);
+        result.Value.Should().NotBeNull();
+        result.Value.Checked().Type.Should().Be(TelegramSessionType.Quick);
+
+        var updatedAccount = client.Get("specific_session_relocate").Checked();
+        var session301 = updatedAccount.Sessions.First(s => s.Id == 301);
+        session301.Type.Should().Be(TelegramSessionType.Refresh);
+        session301.Reserved.Should().BeAfter(now);
+
+        var leasedSession = updatedAccount.Sessions.First(s => s.Type == TelegramSessionType.Quick);
+        leasedSession.Reserved.Should().BeAfter(now);
+    }
+
+    [Fact]
+    public void RenewSession_WhenSessionTypeIsRefresh_ReturnsBadRequest() {
+        var account = CreateAccountWithSessions("renew_refresh_type", 1);
+        var session = account.Sessions[0];
+        session.Type = TelegramSessionType.Refresh;
+        session.Reserved = DateTimeOffset.UtcNow + TimeSpan.FromMinutes(5);
+        client.Update(account);
+
+        var result = client.RenewSession(account.Id.Checked(), session.Id);
+        result.Status.Should().Be(KifaActionStatus.BadRequest);
+        result.Message.Should().Contain("has no session type assigned");
     }
 }

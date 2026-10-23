@@ -26,7 +26,7 @@ public class
         CancellationToken cancellationToken,
         [FromServices] IHostApplicationLifetime? hostApplicationLifetime = null) {
         Logger.Trace($"Got request: obtain_session({request.ToJson()})");
-        if (!Enum.IsDefined(request.Type)) {
+        if (!Enum.IsDefined(request.Type) || request.Type == TelegramSessionType.Refresh) {
             return new KifaActionResult<TelegramSession> {
                 Status = KifaActionStatus.BadRequest,
                 Message = $"Invalid session type: {request.Type}."
@@ -89,6 +89,7 @@ public partial class TelegramAccountJsonServiceClient : KifaServiceJsonClient<Te
 
     static readonly TimeSpan LongLeaseDuration = TimeSpan.FromMinutes(10);
     static readonly TimeSpan QuickLeaseDuration = TimeSpan.FromMinutes(2);
+    static readonly TimeSpan DefaultRefreshErrorDelay = TimeSpan.FromMinutes(2);
 
     static TimeSpan GetLeaseDuration(TelegramSessionType type)
         => type switch {
@@ -116,21 +117,9 @@ public partial class TelegramAccountJsonServiceClient : KifaServiceJsonClient<Te
                 var matchedSession = account.Sessions.FirstOrDefault(s => s.Id == sessionId);
                 // Session should already expire/be returned, otherwise RenewSession should be used.
                 if (matchedSession != null && matchedSession.Reserved <= DateTimeOffset.UtcNow) {
-                    try {
-                        account.RefreshIfNeeded(matchedSession);
-                        matchedSession.Reserved = DateTimeOffset.UtcNow + GetLeaseDuration(type);
-                        matchedSession.Type = type;
-
-                        Update(account);
-                        return matchedSession;
-                    } catch (RpcException ex) when (ex.Code == 401 || ex.Message is "AUTH_KEY_UNREGISTERED" or "SESSION_REVOKED" or "SESSION_EXPIRED") {
-                        Logger.Error(ex,
-                            $"Failed to refresh requested session {sessionId} for account {accountId}. Removing dead session.");
-                        account.Sessions.Remove(matchedSession);
-                        Update(account);
-                    } catch (Exception ex) {
-                        Logger.Warn(ex,
-                            $"Failed to refresh requested session {sessionId} for account {accountId}. Retrying next available session.");
+                    if (TryLeaseSession(account, matchedSession, type, regenerateId: false,
+                            out var leasedSession)) {
+                        return leasedSession.Checked();
                     }
                 }
             }
@@ -145,26 +134,9 @@ public partial class TelegramAccountJsonServiceClient : KifaServiceJsonClient<Te
                     };
                 }
 
-                try {
-                    account.RefreshIfNeeded(coldestSession);
-                    coldestSession.Reserved = DateTimeOffset.UtcNow + GetLeaseDuration(type);
-                    coldestSession.Type = type;
-                    coldestSession.Id = Random.Shared.Next();
-
-                    Update(account);
-                    return coldestSession;
-                } catch (RpcException ex) when (ex.Code == 401 || ex.Message is "AUTH_KEY_UNREGISTERED" or "SESSION_REVOKED" or "SESSION_EXPIRED") {
-                    Logger.Error(ex,
-                        $"Failed to refresh session {coldestSession.Id} for account {accountId}. Removing dead session.");
-                    account.Sessions.Remove(coldestSession);
-                    Update(account);
-                } catch (Exception ex) {
-                    Logger.Warn(ex,
-                        $"Transient failure to refresh session {coldestSession.Id} for account {accountId}.");
-                    return new KifaActionResult<TelegramSession> {
-                        Status = KifaActionStatus.BadRequest,
-                        Message = $"Transient failure refreshing session: {ex.Message}"
-                    };
+                if (TryLeaseSession(account, coldestSession, type, regenerateId: true,
+                        out var leasedSession)) {
+                    return leasedSession.Checked();
                 }
             }
 
@@ -172,6 +144,44 @@ public partial class TelegramAccountJsonServiceClient : KifaServiceJsonClient<Te
                 Status = KifaActionStatus.BadRequest,
                 Message = $"No valid sessions remaining for account {accountId}."
             };
+        }
+    }
+
+    bool TryLeaseSession(TelegramAccount account, TelegramSession session,
+        TelegramSessionType type, bool regenerateId, out TelegramSession? leasedSession) {
+        leasedSession = null;
+        try {
+            account.RefreshIfNeeded(session);
+            session.Reserved = DateTimeOffset.UtcNow + GetLeaseDuration(type);
+            session.Type = type;
+            if (regenerateId) {
+                session.Id = Random.Shared.Next();
+            }
+
+            Update(account);
+            leasedSession = session;
+            return true;
+        } catch (RpcException ex) when (ex.Code == 401 || ex.Message is "AUTH_KEY_UNREGISTERED" or "SESSION_REVOKED" or "SESSION_EXPIRED") {
+            Logger.Error(ex,
+                $"Dead session {session.Id} for account {account.Id}. Removing dead session.");
+            account.Sessions.Remove(session);
+            Update(account);
+            return false;
+        } catch (RpcException ex) when (ex.Code == 420 || ex.Message.StartsWith("FLOOD_WAIT_") || ex.X > 0) {
+            var waitSeconds = ex.X > 0 ? ex.X + 1 : 60;
+            Logger.Warn(ex,
+                $"Flood wait of {waitSeconds}s refreshing session {session.Id} for account {account.Id}.");
+            session.Reserved = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(waitSeconds);
+            session.Type = TelegramSessionType.Refresh;
+            Update(account);
+            return false;
+        } catch (Exception ex) {
+            Logger.Warn(ex,
+                $"Transient failure refreshing session {session.Id} for account {account.Id}.");
+            session.Reserved = DateTimeOffset.UtcNow + DefaultRefreshErrorDelay;
+            session.Type = TelegramSessionType.Refresh;
+            Update(account);
+            return false;
         }
     }
 
@@ -186,7 +196,7 @@ public partial class TelegramAccountJsonServiceClient : KifaServiceJsonClient<Te
                 };
             }
 
-            if (session.Type == null) {
+            if (session.Type == null || session.Type == TelegramSessionType.Refresh) {
                 return new KifaActionResult {
                     Status = KifaActionStatus.BadRequest,
                     Message = $"Session {sessionId} has no session type assigned."
