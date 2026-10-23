@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Kifa.Service;
 
@@ -21,22 +22,27 @@ public enum KifaActionStatus {
 }
 
 public static class KifaActionStatusExtensions {
-    public static string Format(this KifaActionStatus status)
-        => status switch {
-            KifaActionStatus.OK => status.ToString().Info(),
-            KifaActionStatus.Warning => status.ToString().Warn(),
-            KifaActionStatus.Cancelled => status.ToString().Warn(),
-            KifaActionStatus.Pending => status.ToString().Debug(),
-            KifaActionStatus.BadRequest => status.ToString().Error(),
-            KifaActionStatus.Error => status.ToString().Error(),
-            KifaActionStatus.Skipped => status.ToString().Trace(),
-            _ => status.HasFlag(KifaActionStatus.Error) || status.HasFlag(KifaActionStatus.BadRequest)
-                ? status.ToString().Error()
-                : status.HasFlag(KifaActionStatus.Cancelled) || status.HasFlag(KifaActionStatus.Warning)
-                    ? status.ToString().Warn()
-                    : status.HasFlag(KifaActionStatus.Pending)
-                        ? status.ToString().Debug()
-                        : status.ToString()
-        };
+    [return: NotNullIfNotNull(nameof(text))]
+    public static string? Format(this KifaActionStatus status, string? text)
+        => text == null
+            ? null
+            : status switch {
+                KifaActionStatus.OK => text.Info(),
+                KifaActionStatus.Warning => text.Warn(),
+                KifaActionStatus.Cancelled => text.Warn(),
+                KifaActionStatus.Pending => text.Debug(),
+                KifaActionStatus.BadRequest => text.Error(),
+                KifaActionStatus.Error => text.Error(),
+                KifaActionStatus.Skipped => text.Trace(),
+                _ => status.HasFlag(KifaActionStatus.Error) || status.HasFlag(KifaActionStatus.BadRequest)
+                    ? text.Error()
+                    : status.HasFlag(KifaActionStatus.Cancelled) || status.HasFlag(KifaActionStatus.Warning)
+                        ? text.Warn()
+                        : status.HasFlag(KifaActionStatus.Pending)
+                            ? text.Debug()
+                            : text
+            };
+
+    public static string Format(this KifaActionStatus status) => status.Format(status.ToString());
 }
 

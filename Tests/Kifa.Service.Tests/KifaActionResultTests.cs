@@ -46,12 +46,12 @@ public class KifaActionResultTests {
             r.ToString().Should().Be(
                 "\u001b[35mError\u001b[0m =>\n" +
                 "\tfile1: \u001b[32mOK\u001b[0m\n" +
-                "\tfile2: \u001b[35mError\u001b[0m => failed\n" +
-                "\tfile3: \u001b[33mWarning\u001b[0m => warn\n" +
+                "\tfile2: \u001b[35mError\u001b[0m => \u001b[35mfailed\u001b[0m\n" +
+                "\tfile3: \u001b[33mWarning\u001b[0m => \u001b[33mwarn\u001b[0m\n" +
                 "\tfile4: \u001b[37mSkipped\u001b[0m\n" +
                 "\tfile5: \u001b[97mPending\u001b[0m\n" +
-                "\tfile6: \u001b[33mCancelled\u001b[0m => cancelled\n" +
-                "\tfile7: \u001b[35mBadRequest\u001b[0m => bad input"
+                "\tfile6: \u001b[33mCancelled\u001b[0m => \u001b[33mcancelled\u001b[0m\n" +
+                "\tfile7: \u001b[35mBadRequest\u001b[0m => \u001b[35mbad input\u001b[0m"
             );
         } finally {
             ConsoleColorExtensions.ForceEnabled = null;
@@ -80,10 +80,10 @@ public class KifaActionResultTests {
                 "\u001b[35mError\u001b[0m =>\n" +
                 "\terrorchild: \u001b[35mError\u001b[0m =>\n" +
                 "\t\tfirst: \u001b[32mOK\u001b[0m\n" +
-                "\t\tsecond: \u001b[35mError\u001b[0m => Unknown error\n" +
+                "\t\tsecond: \u001b[35mError\u001b[0m => \u001b[35mUnknown error\u001b[0m\n" +
                 "\tpendingchild: \u001b[97mPending\u001b[0m =>\n" +
-                "\t\tfirst: \u001b[32mOK\u001b[0m => success message\n" +
-                "\t\tsecond: \u001b[97mPending\u001b[0m => what message"
+                "\t\tfirst: \u001b[32mOK\u001b[0m => \u001b[32msuccess message\u001b[0m\n" +
+                "\t\tsecond: \u001b[97mPending\u001b[0m => \u001b[97mwhat message\u001b[0m"
             );
         } finally {
             ConsoleColorExtensions.ForceEnabled = null;

@@ -130,7 +130,7 @@ public class KifaActionResult {
     public override string ToString() => ToString(0);
 
     public virtual string ToString(int level)
-        => string.IsNullOrEmpty(Message) ? $"{Status.Format()}" : $"{Status.Format()} => {Message}";
+        => string.IsNullOrEmpty(Message) ? $"{Status.Format()}" : $"{Status.Format()} => {Status.Format(Message)}";
 }
 
 public class BatchActionResultItem {
@@ -235,7 +235,7 @@ public class KifaBatchActionResult : KifaActionResult {
             return base.ToString(level);
         }
 
-        return $"{Status.Format()} =>" + string.FormatOrEmpty($" {Message}") +
+        return $"{Status.Format()} =>" + string.FormatOrEmpty($" {Status.Format(Message)}") +
                $"\n{string.Join("\n", Results.Select(r => new string('\t', level + 1) + $"{r.Item}: {r.Result.ToString(level + 1)}"))}";
     }
 }
