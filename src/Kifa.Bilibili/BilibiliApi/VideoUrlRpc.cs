@@ -58,8 +58,18 @@ public class Dash {
     public double DashMinBufferTime { get; set; }
     public List<Resource>? Video { get; set; }
     public List<Resource>? Audio { get; set; }
-    public Dash? Dolby { get; set; }
-    public Dash? Flac { get; set; }
+    public Dolby? Dolby { get; set; }
+    public Flac? Flac { get; set; }
+}
+
+public class Dolby {
+    public int Type { get; set; }
+    public List<Resource>? Audio { get; set; }
+}
+
+public class Flac {
+    public bool Display { get; set; }
+    public Resource? Audio { get; set; }
 }
 
 public class AutoQnResp {

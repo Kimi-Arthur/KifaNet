@@ -675,7 +675,7 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
             var video = videos.First(v => v.Codecid == codec);
             var audio = data.Dash.Audio![0];
             var dolby = data.Dash.Dolby?.Audio?[0];
-            var flac = data.Dash.Flac?.Audio?[0];
+            var flac = data.Dash.Flac?.Audio;
             var audios = new List<Resource>();
             if (dolby != null) {
                 audios.Add(dolby);

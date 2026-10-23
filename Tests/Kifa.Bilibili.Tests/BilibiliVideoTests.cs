@@ -251,4 +251,63 @@ public class BilibiliVideoTests {
         var slashDesiredName = slashVideo.GetDesiredName(1, 64, 0, includePageTitle: false);
         Assert.Equal("Studio／Trigger.123.bilibili/Fate／Zero - Episode 01 ／ Prologue.av170001p1.c279786.64", slashDesiredName);
     }
+
+    [Fact]
+    public void VideoUrlResponseDeserializationWithFlacTest() {
+        var json = """
+            {
+                "code": 0,
+                "message": "0",
+                "ttl": 1,
+                "data": {
+                    "quality": 116,
+                    "format": "flv_p60",
+                    "timelength": 284864,
+                    "accept_format": "flv_p60,flv,flv720,flv480,mp4",
+                    "accept_description": ["高清 1080P60", "高清 1080P"],
+                    "accept_quality": [116, 80],
+                    "video_codecid": 7,
+                    "dash": {
+                        "duration": 285,
+                        "minBufferTime": 1.5,
+                        "min_buffer_time": 1.5,
+                        "video": [
+                            {
+                                "id": 116,
+                                "baseUrl": "https://example.com/video.m4s",
+                                "codecid": 7
+                            }
+                        ],
+                        "audio": [
+                            {
+                                "id": 30280,
+                                "baseUrl": "https://example.com/audio.m4s"
+                            }
+                        ],
+                        "dolby": {
+                            "type": 0,
+                            "audio": null
+                        },
+                        "flac": {
+                            "display": true,
+                            "audio": {
+                                "id": 30251,
+                                "baseUrl": "https://example.com/flac.m4s"
+                            }
+                        }
+                    }
+                }
+            }
+            """;
+
+        var response = Newtonsoft.Json.JsonConvert.DeserializeObject<VideoUrlResponse>(json);
+        Assert.NotNull(response);
+        Assert.Equal(0, response.Code);
+        Assert.NotNull(response.Data?.Dash.Flac?.Audio);
+        Assert.Equal(30251, response.Data.Dash.Flac.Audio.Id);
+        Assert.Equal("https://example.com/flac.m4s", response.Data.Dash.Flac.Audio.BaseUrl);
+        Assert.True(response.Data.Dash.Flac.Display);
+        Assert.NotNull(response.Data.Dash.Dolby);
+        Assert.Null(response.Data.Dash.Dolby.Audio);
+    }
 }
