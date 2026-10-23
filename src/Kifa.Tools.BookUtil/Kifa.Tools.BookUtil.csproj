@@ -5,7 +5,7 @@
         <OutputType>Exe</OutputType>
         <ToolCommandName>bookx</ToolCommandName>
         <PackAsTool>true</PackAsTool>
-        <Version>2.2.3</Version>
+        <Version>3.0.0</Version>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageProjectUrl>https://github.com/Kimi-Arthur/KifaNet</PackageProjectUrl>
         <PackageIcon>Kifa.png</PackageIcon>
