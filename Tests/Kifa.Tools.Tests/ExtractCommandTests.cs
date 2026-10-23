@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using CommandLine;
 using Kifa.Api.Files;
 using Kifa.IO;
 using Kifa.IO.StorageClients;
@@ -368,6 +369,126 @@ public class ExtractCommandTests : IDisposable {
             Assert.Equal("extracted content", File.ReadAllText($"{subDir}/extracted.txt"));
         } finally {
             KifaFile.IgnoredExtensions = originalExtensions;
+        }
+    }
+
+    [Fact]
+    public void CommandLineParser_WithoutOptionA_SetsIncludeAllFalse() {
+        var result = Parser.Default.ParseArguments<ExtractCommand>(new[] { "archive.zip" });
+        Assert.Equal(ParserResultType.Parsed, result.Tag);
+        var parsed = ((Parsed<ExtractCommand>) result).Value;
+        Assert.False(parsed.IncludeAll);
+        Assert.Equal(["archive.zip"], parsed.FileNames);
+    }
+
+    [Theory]
+    [InlineData("-a")]
+    [InlineData("--include-all")]
+    public void CommandLineParser_WithOptionA_SetsIncludeAllTrue(string option) {
+        var result = Parser.Default.ParseArguments<ExtractCommand>(new[] { option, "archive.zip" });
+        Assert.Equal(ParserResultType.Parsed, result.Tag);
+        var parsed = ((Parsed<ExtractCommand>) result).Value;
+        Assert.True(parsed.IncludeAll);
+        Assert.Equal(["archive.zip"], parsed.FileNames);
+    }
+
+    [Fact]
+    public void Execute_WithoutIncludeAll_FiltersIgnoredOutputFiles() {
+        var subDir = $"{tempDir}/extract_filter";
+        Directory.CreateDirectory(subDir);
+        var filePath = $"{subDir}/archive.zip";
+        using (var zipArchive = System.IO.Compression.ZipFile.Open(filePath, System.IO.Compression.ZipArchiveMode.Create)) {
+            var entry1 = zipArchive.CreateEntry("normal.txt");
+            using (var writer = new StreamWriter(entry1.Open())) {
+                writer.Write("normal content");
+            }
+
+            var entry2 = zipArchive.CreateEntry("@ignored.txt");
+            using (var writer = new StreamWriter(entry2.Open())) {
+                writer.Write("ignored content");
+            }
+        }
+
+        var cmd = new ExtractCommand {
+            FileNames = [filePath],
+            AutoConfirmDefault = true,
+            IncludeAll = false
+        };
+
+        var exitCode = cmd.Execute();
+        Assert.Equal(0, exitCode);
+        Assert.True(File.Exists($"{subDir}/normal.txt"));
+        Assert.Equal("normal content", File.ReadAllText($"{subDir}/normal.txt"));
+        Assert.False(File.Exists($"{subDir}/@ignored.txt"));
+    }
+
+    [Fact]
+    public void Execute_WithIncludeAll_ExtractsIgnoredOutputFiles() {
+        var subDir = $"{tempDir}/extract_all";
+        Directory.CreateDirectory(subDir);
+        var filePath = $"{subDir}/archive.zip";
+        using (var zipArchive = System.IO.Compression.ZipFile.Open(filePath, System.IO.Compression.ZipArchiveMode.Create)) {
+            var entry1 = zipArchive.CreateEntry("normal.txt");
+            using (var writer = new StreamWriter(entry1.Open())) {
+                writer.Write("normal content");
+            }
+
+            var entry2 = zipArchive.CreateEntry("@ignored.txt");
+            using (var writer = new StreamWriter(entry2.Open())) {
+                writer.Write("ignored content");
+            }
+        }
+
+        var cmd = new ExtractCommand {
+            FileNames = [filePath],
+            AutoConfirmDefault = true,
+            IncludeAll = true
+        };
+
+        var exitCode = cmd.Execute();
+        Assert.Equal(0, exitCode);
+        Assert.True(File.Exists($"{subDir}/normal.txt"));
+        Assert.Equal("normal content", File.ReadAllText($"{subDir}/normal.txt"));
+        Assert.True(File.Exists($"{subDir}/@ignored.txt"));
+        Assert.Equal("ignored content", File.ReadAllText($"{subDir}/@ignored.txt"));
+    }
+
+    [Fact]
+    public void Execute_WithoutIncludeAll_ManualSelectionExtractsIgnoredOutputFiles() {
+        var originalIn = Console.In;
+        try {
+            // Select all archives (*), then select all entries (*) manually when prompted
+            Console.SetIn(new StringReader("*\n*\n"));
+
+            var subDir = $"{tempDir}/extract_manual";
+            Directory.CreateDirectory(subDir);
+            var filePath = $"{subDir}/archive.zip";
+            using (var zipArchive = System.IO.Compression.ZipFile.Open(filePath, System.IO.Compression.ZipArchiveMode.Create)) {
+                var entry1 = zipArchive.CreateEntry("normal.txt");
+                using (var writer = new StreamWriter(entry1.Open())) {
+                    writer.Write("normal content");
+                }
+
+                var entry2 = zipArchive.CreateEntry("@ignored.txt");
+                using (var writer = new StreamWriter(entry2.Open())) {
+                    writer.Write("ignored content");
+                }
+            }
+
+            var cmd = new ExtractCommand {
+                FileNames = [filePath],
+                AutoConfirmDefault = false,
+                IncludeAll = false
+            };
+
+            var exitCode = cmd.Execute();
+            Assert.Equal(0, exitCode);
+            Assert.True(File.Exists($"{subDir}/normal.txt"));
+            Assert.Equal("normal content", File.ReadAllText($"{subDir}/normal.txt"));
+            Assert.True(File.Exists($"{subDir}/@ignored.txt"));
+            Assert.Equal("ignored content", File.ReadAllText($"{subDir}/@ignored.txt"));
+        } finally {
+            Console.SetIn(originalIn);
         }
     }
 

@@ -41,6 +41,9 @@ public class ExtractCommand : KifaCommand {
             "Separator between archive name and entry name. Default is not prepend archive name.")]
     public string? ArchiveNameSeparator { get; set; }
 
+    [Option('a', "include-all", HelpText = "Include all files, including ignored ones.")]
+    public bool IncludeAll { get; set; } = false;
+
     [Option('S', "show-size", HelpText = "Show size for each file and total size (can be slow).")]
     public bool ShowSize { get; set; } = false;
 
@@ -115,7 +118,8 @@ public class ExtractCommand : KifaCommand {
             entry
                 => $"{entry.Entry.Key}: {entry.Entry.Size} ({entry.Entry.GetCrc32InHex()}) => {entry.File}",
             new Func<List<(IArchiveEntry Entry, KifaFile File)>, string>(choices
-                => $"entries ({choices.Sum(c => c.Entry.Size).ToSizeString()}) to extract"));
+                => $"entries ({choices.Sum(c => c.Entry.Size).ToSizeString()}) to extract"),
+            defaultReply: GetDefaultExtractReply(entries, folder.Id));
 
         if (selected.Status != KifaActionStatus.OK) {
             var results = new KifaBatchActionResult();
@@ -131,6 +135,23 @@ public class ExtractCommand : KifaCommand {
                 $"Failed to extract as solid archive: {ex.Message}. Falling back to normal archive extraction.");
             return ExtractNormalArchive(archive, selected.Value, archiveFile.ToString());
         }
+    }
+
+    string GetDefaultExtractReply(List<(IArchiveEntry Entry, KifaFile File)> entries, string folderId) {
+        if (IncludeAll) {
+            return AllChoices;
+        }
+
+        var matchingIndexes = new List<int>();
+        for (var i = 0; i < entries.Count; i++) {
+            if (!entries[i].File.IsIgnored(folderId)) {
+                matchingIndexes.Add(i + 1);
+            }
+        }
+
+        return matchingIndexes.Count == entries.Count ? AllChoices
+            : matchingIndexes.Count > 0 ? string.Join(",", matchingIndexes)
+            : EmptyChoice;
     }
 
     KifaBatchActionResult ExtractSolidArchive(IArchive archive,
