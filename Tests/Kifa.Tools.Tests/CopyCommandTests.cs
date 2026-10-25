@@ -450,7 +450,7 @@ public class CopyCommandTests : IDisposable {
     }
 
     [Fact]
-    public void FindPotentialFiles_DefaultsToIgnoringUnregisteredFiles_AndIncludesRegisteredIgnoredFiles() {
+    public void FindPotentialFiles_ReturnsAllLogicalFiles() {
         var testClient = (TestFileInformationServiceClient) FileInformation.Client;
         testClient.Set(new FileInformation {
             Id = "/pot_test/normal.txt",
@@ -470,13 +470,11 @@ public class CopyCommandTests : IDisposable {
         });
 
         var dir = $"{tempDir}/pot_test";
-        var potentialDefault = KifaFile.FindPotentialFiles([dir]);
-        Assert.Equal(2, potentialDefault.Count);
-        Assert.Contains(potentialDefault, f => f.Path == "/pot_test/normal.txt");
-        Assert.Contains(potentialDefault, f => f.Path == "/pot_test/@registered_locally.txt");
-
-        var potentialAll = KifaFile.FindPotentialFiles([dir], shouldIgnoreFiles: false);
-        Assert.Equal(3, potentialAll.Count);
+        var potential = KifaFile.FindPotentialFiles([dir]);
+        Assert.Equal(3, potential.Count);
+        Assert.Contains(potential, f => f.Path == "/pot_test/normal.txt");
+        Assert.Contains(potential, f => f.Path == "/pot_test/@unregistered_locally.txt");
+        Assert.Contains(potential, f => f.Path == "/pot_test/@registered_locally.txt");
     }
 
     class TestFileInformationServiceClient : BaseKifaServiceClient<FileInformation>,

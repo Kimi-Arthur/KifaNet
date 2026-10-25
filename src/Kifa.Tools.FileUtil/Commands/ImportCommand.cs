@@ -49,7 +49,7 @@ class ImportCommand : KifaFileCommand {
             RegisterUnregisteredFiles(localFiles, ShowSize, "importing");
         }
 
-        var foundFiles = FindFileInfos(FileNames, ById, shouldIgnoreFiles: !IncludeAll);
+        var foundFiles = FindFileInfos(FileNames, ById);
         if (foundFiles.Count == 0) {
             Logger.Error("No files found. Action cancelled.");
             return 1;

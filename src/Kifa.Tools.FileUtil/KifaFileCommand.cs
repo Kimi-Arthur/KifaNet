@@ -29,10 +29,10 @@ public abstract class KifaFileCommand : KifaCommand {
     }
 
     public static List<FileInformation> FindFileInfos(IEnumerable<string> sources,
-        bool byId = false, bool recursive = true, string pattern = "*", bool shouldIgnoreFiles = true)
+        bool byId = false, bool recursive = true, string pattern = "*")
         => byId
             ? FindFileInfosByIds(sources, recursive)
-            : KifaFile.FindPotentialFiles(sources, recursive, pattern, shouldIgnoreFiles).Select(f
+            : KifaFile.FindPotentialFiles(sources, recursive, pattern).Select(f
                 => f.FileInfo ?? new FileInformation {
                     Id = f.Id
                 }).DistinctBy(f => f.Id).OrderBy(f => f.Id.Checked().GetNaturalSortKey()).ToList();

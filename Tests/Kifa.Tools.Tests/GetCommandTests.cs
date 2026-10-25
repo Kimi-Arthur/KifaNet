@@ -116,6 +116,30 @@ public class GetCommandTests : IDisposable {
     }
 
     [Fact]
+    public void Execute_FolderWithIgnoredPattern_GetsRegisteredFiles() {
+        var dev1Dir = $"{tempDir}/dev1/sub";
+        var dev2Dir = $"{tempDir}/dev2/sub";
+        Directory.CreateDirectory(dev1Dir);
+        Directory.CreateDirectory(dev2Dir);
+        var sourcePath = $"{dev1Dir}/@ignored.txt";
+        var destPath = $"{dev2Dir}/@ignored.txt";
+        File.WriteAllText(sourcePath, "ignored content");
+
+        var sourceFile = new KifaFile(sourcePath);
+        sourceFile.Add();
+
+        var cmd = new GetCommand {
+            FileNames = [dev2Dir],
+            AutoConfirmDefault = true
+        };
+        var exitCode = cmd.Execute();
+
+        Assert.Equal(0, exitCode);
+        Assert.True(File.Exists(destPath));
+        Assert.Equal("ignored content", File.ReadAllText(destPath));
+    }
+
+    [Fact]
     public void CommandLineParsing_MutuallyExclusiveGroup_OnlyOneAllowed() {
         var parser = new Parser();
 

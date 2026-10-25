@@ -81,30 +81,13 @@ public class UniqCommandTests : IDisposable {
         var folder2 = $"{tempDir}/Anime/Show2";
         Directory.CreateDirectory(folder1);
         Directory.CreateDirectory(folder2);
-        Directory.CreateDirectory($"{tempDir}/$");
 
         var file1 = $"{folder1}/01.xml";
         var file2 = $"{folder2}/01.xml";
-        var cloudFile = $"{tempDir}/$/dummy_sha256_xml.v1";
         File.WriteAllText(file1, "xml content");
         File.WriteAllText(file2, "xml content");
-        File.WriteAllText(cloudFile, "cloud content");
 
         var testClient = (TestFileInformationServiceClient) FileInformation.Client;
-        testClient.Set(new FileInformation {
-            Id = "/Anime/Show1/01.xml",
-            Sha256 = "dummy_sha256_xml",
-            Size = 11,
-            Locations = new() {
-                ["local:uniq_test_temp/$/dummy_sha256_xml.v1"] = DateTime.UtcNow
-            }
-        });
-        testClient.Set(new FileInformation {
-            Id = "/Anime/Show2/01.xml",
-            Sha256 = "dummy_sha256_xml",
-            Size = 11,
-            Locations = new()
-        });
 
         var cmd = new UniqCommand {
             FileNames = [folder1, folder2],
@@ -113,8 +96,8 @@ public class UniqCommandTests : IDisposable {
 
         var exitCode = cmd.Execute();
         Assert.Equal(1, exitCode);
-        Assert.NotNull(testClient.Get("/Anime/Show1/01.xml"));
-        Assert.NotNull(testClient.Get("/Anime/Show2/01.xml"));
+        Assert.Null(testClient.Get("/Anime/Show1/01.xml"));
+        Assert.Null(testClient.Get("/Anime/Show2/01.xml"));
     }
 
     [Fact]

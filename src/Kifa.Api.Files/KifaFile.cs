@@ -449,14 +449,14 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     // KifaFile.FileInfo is filled for items returned.
     public static List<KifaFile> FindPhantomFiles(IEnumerable<string> sources,
-        bool recursive = true, bool shouldIgnoreFiles = true) {
-        var files = FindPotentialFiles(sources, recursive: recursive, shouldIgnoreFiles: shouldIgnoreFiles);
+        bool recursive = true) {
+        var files = FindPotentialFiles(sources, recursive: recursive);
         return files.Where(f => f.Registered && !f.Exists()).ToList();
     }
 
     // KifaFile.FileInfo is filled for items returned.
     public static List<KifaFile> FindPotentialFiles(IEnumerable<string> sources,
-        bool recursive = true, string pattern = "*", bool shouldIgnoreFiles = true) {
+        bool recursive = true, string pattern = "*") {
         var allFiles = new HashSet<KifaFile>();
         foreach (var source in GetKifaFiles(sources)) {
             var file = source;
@@ -478,8 +478,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
                             MatchPattern(f[(path.Length + 1)..], pattern))
                 .Select(f => host + f));
 
-            allFiles.UnionWith(GetKifaFiles(matched)
-                .Where(f => !shouldIgnoreFiles || !f.IsIgnored(file.Id)));
+            allFiles.UnionWith(GetKifaFiles(matched));
         }
 
         return allFiles.OrderBy(f => f.ToString().GetNaturalSortKey()).ToList();
@@ -505,8 +504,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         var sourceFiles = sources.ToList();
         var existingFiles = FindExistingFiles(sourceFiles, recursive: recursive, pattern: pattern,
             shouldIgnoreFiles: shouldIgnoreFiles);
-        var potentialFiles = FindPotentialFiles(sourceFiles, recursive: recursive, pattern: pattern,
-            shouldIgnoreFiles: shouldIgnoreFiles);
+        var potentialFiles = FindPotentialFiles(sourceFiles, recursive: recursive, pattern: pattern);
         var allFiles = new HashSet<KifaFile>();
         allFiles.UnionWith(existingFiles);
         allFiles.UnionWith(potentialFiles);

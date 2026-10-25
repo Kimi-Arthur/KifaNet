@@ -120,7 +120,7 @@ public class UniqCommand : KifaFileCommand {
             RegisterUnregisteredFiles(localFiles, ShowSize, "making unique");
         }
 
-        var infos = FindFileInfos(fileNames, ById, shouldIgnoreFiles: !IncludeAll);
+        var infos = FindFileInfos(fileNames, ById);
         if (infos.Count == 0) {
             Logger.Warn("No files found.");
             return 1;

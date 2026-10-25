@@ -17,9 +17,6 @@ public class CleanCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Target file(s) to upload.")]
     public IEnumerable<string> FileNames { get; set; }
 
-    [Option('a', "include-all", HelpText = "Include all files already registered or ignored.")]
-    public bool IncludeAll { get; set; } = false;
-
     [Option('S', "show-size", HelpText = "Show size for each file and total size (can be slow).")]
     public bool ShowSize { get; set; } = false;
 
@@ -31,7 +28,7 @@ public class CleanCommand : KifaCommand {
     }
 
     void RemoveMissingFiles() {
-        var files = KifaFile.FindPotentialFiles(FileNames, shouldIgnoreFiles: !IncludeAll);
+        var files = KifaFile.FindPotentialFiles(FileNames);
         var filesToRemove = files.Where(file => file.HasEntry && !file.Exists()).ToList();
 
         var selected = SelectMany(filesToRemove,
@@ -52,7 +49,7 @@ public class CleanCommand : KifaCommand {
     }
 
     void DeduplicateFiles() {
-        var files = KifaFile.FindPotentialFiles(FileNames, shouldIgnoreFiles: !IncludeAll);
+        var files = KifaFile.FindPotentialFiles(FileNames);
         var processed = new HashSet<string>();
         foreach (var file in files) {
             var info = file.FileInfo;
