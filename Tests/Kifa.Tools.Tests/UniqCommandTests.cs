@@ -901,6 +901,95 @@ public class UniqCommandTests : IDisposable {
         Assert.NotNull(testClient.Get("/Anime/Show1/01.mp4"));
     }
 
+    [Fact]
+    public void Execute_FilesWithoutSha256_IgnoresThemAndProcessesValidPairs() {
+        var folder1 = $"{tempDir}/Anime/Show1";
+        var folder2 = $"{tempDir}/Anime/Show2";
+        Directory.CreateDirectory(folder1);
+        Directory.CreateDirectory(folder2);
+        Directory.CreateDirectory($"{tempDir}/$");
+
+        var file1 = $"{folder1}/01.mp4";
+        var file2 = $"{folder2}/01.mp4";
+        var fileWithoutSha = $"{folder1}/no_sha.mp4";
+        var cloudFile = $"{tempDir}/$/dummy_sha256_partial.v1";
+        File.WriteAllText(file1, "duplicate content");
+        File.WriteAllText(file2, "duplicate content");
+        File.WriteAllText(fileWithoutSha, "no sha content");
+        File.WriteAllText(cloudFile, "cloud content");
+
+        var testClient = (TestFileInformationServiceClient) FileInformation.Client;
+        testClient.Set(new FileInformation {
+            Id = "/Anime/Show1/01.mp4",
+            Sha256 = "dummy_sha256_partial",
+            Size = 17,
+            Locations = new() {
+                ["local:uniq_test_temp/Anime/Show1/01.mp4"] = DateTime.UtcNow,
+                ["local:uniq_test_temp/$/dummy_sha256_partial.v1"] = DateTime.UtcNow
+            }
+        });
+        testClient.Set(new FileInformation {
+            Id = "/Anime/Show2/01.mp4",
+            Sha256 = "dummy_sha256_partial",
+            Size = 17,
+            Locations = new() {
+                ["local:uniq_test_temp/Anime/Show2/01.mp4"] = DateTime.UtcNow
+            }
+        });
+        testClient.Set(new FileInformation {
+            Id = "/Anime/Show1/no_sha.mp4",
+            Sha256 = null,
+            Size = 14,
+            Locations = new() {
+                ["local:uniq_test_temp/Anime/Show1/no_sha.mp4"] = DateTime.UtcNow
+            }
+        });
+
+        var cmd = new UniqCommand {
+            FileNames = [folder1, folder2],
+            AutoConfirmDefault = true
+        };
+
+        var exitCode = cmd.Execute();
+        Assert.Equal(1, exitCode);
+
+        // Valid duplicate pair processed
+        Assert.NotNull(testClient.Get("/Anime/Show1/01.mp4"));
+        Assert.Null(testClient.Get("/Anime/Show2/01.mp4"));
+
+        // File without SHA256 logged as error result and left untouched
+        Assert.NotNull(testClient.Get("/Anime/Show1/no_sha.mp4"));
+        Assert.Contains(cmd.Results, r => r.item == "/Anime/Show1/no_sha.mp4" && r.result.Status == KifaActionStatus.Error);
+    }
+
+    [Fact]
+    public void Execute_AllFilesWithoutSha256_ReturnsOne() {
+        var folder1 = $"{tempDir}/Anime/Show1";
+        Directory.CreateDirectory(folder1);
+
+        var fileWithoutSha = $"{folder1}/no_sha.mp4";
+        File.WriteAllText(fileWithoutSha, "no sha content");
+
+        var testClient = (TestFileInformationServiceClient) FileInformation.Client;
+        testClient.Set(new FileInformation {
+            Id = "/Anime/Show1/no_sha.mp4",
+            Sha256 = null,
+            Size = 14,
+            Locations = new() {
+                ["local:uniq_test_temp/Anime/Show1/no_sha.mp4"] = DateTime.UtcNow
+            }
+        });
+
+        var cmd = new UniqCommand {
+            FileNames = [folder1],
+            AutoConfirmDefault = true
+        };
+
+        var exitCode = cmd.Execute();
+        Assert.Equal(1, exitCode);
+        Assert.NotNull(testClient.Get("/Anime/Show1/no_sha.mp4"));
+    }
+
     class TestFileInformationServiceClient : BaseKifaServiceClient<FileInformation>,
         FileInformationServiceClient {
         readonly Dictionary<string, FileInformation> data = new();

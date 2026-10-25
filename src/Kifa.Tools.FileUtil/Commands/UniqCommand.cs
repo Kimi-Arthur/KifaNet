@@ -127,12 +127,13 @@ public class UniqCommand : KifaFileCommand {
         }
 
         var filesWithoutSha = infos.Where(f => f.Sha256 == null).ToList();
-        if (filesWithoutSha.Count > 0) {
-            foreach (var file in filesWithoutSha) {
-                ExecuteItem(file.Id.Checked(),
-                    () => KifaActionResult.Error("No SHA256 calculated."));
-            }
+        foreach (var file in filesWithoutSha) {
+            ExecuteItem(file.Id.Checked(),
+                () => KifaActionResult.Error("No SHA256 calculated."));
+        }
 
+        infos = infos.Where(f => f.Sha256 != null).ToList();
+        if (infos.Count == 0) {
             return LogSummary();
         }
 
