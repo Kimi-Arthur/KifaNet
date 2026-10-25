@@ -138,6 +138,44 @@ public class UploadCommandTests : IDisposable {
     }
 
     [Fact]
+    public void TwoPasses_Pass2VerificationMerge_PreviouslyUploadedNowVerified_ReturnsOKResult() {
+        var batchResult = new KifaBatchActionResult();
+        batchResult.Add("google.v1", new KifaActionResult {
+            Status = KifaActionStatus.OK,
+            Message = "Uploaded to destination google:cell1/$/sha.v1."
+        });
+        batchResult.Add("tele.v2", new KifaActionResult {
+            Status = KifaActionStatus.Pending,
+            Message = "Skipped uploading of file to tele:cell2/$/sha.v2 for now as it's supposed to be already uploaded..."
+        });
+
+        Assert.Equal(KifaActionStatus.Pending, batchResult.Status);
+
+        // Simulate pass 2 verification result for tele.v2 when it was uploaded previously but only verified in this run
+        var pass2BatchResult = new KifaBatchActionResult();
+        pass2BatchResult.Add("tele.v2", new KifaActionResult {
+            Status = KifaActionStatus.OK,
+            Message = "Destination tele:cell2/$/sha.v2 is already uploaded, now verified."
+        });
+
+        // Merge pass 2 into pass 1 batchResult
+        foreach (var (item, itemResult) in pass2BatchResult.Results) {
+            var existing = batchResult.Results.FirstOrDefault(r => r.Item == item);
+            if (existing != null) {
+                existing.Result = itemResult;
+            } else {
+                batchResult.Add(item, itemResult);
+            }
+        }
+
+        Assert.Equal(KifaActionStatus.OK, batchResult.Status);
+        Assert.Equal(KifaActionStatus.OK, batchResult.Results.First(r => r.Item == "google.v1").Result.Status);
+        Assert.Equal(KifaActionStatus.OK, batchResult.Results.First(r => r.Item == "tele.v2").Result.Status);
+        Assert.Equal("Destination tele:cell2/$/sha.v2 is already uploaded, now verified.",
+            batchResult.Results.First(r => r.Item == "tele.v2").Result.Message);
+    }
+
+    [Fact]
     public void Upload_SourceWithIncorrectQuickInfoMd5_ReturnsWarningAndRegistersActualHashes() {
         KifaFile.DefaultMirrorHost = "local:upload_test_temp";
         var fakeRemote = new FakeRemoteStorageClient("baidu", "test_acc");

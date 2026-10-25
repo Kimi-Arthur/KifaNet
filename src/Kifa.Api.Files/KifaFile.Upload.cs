@@ -115,8 +115,9 @@ public partial class KifaFile {
 
         Logger.Debug($"Will upload {this} to {destinationLocation}.");
 
+        var alreadyRegistered = destination.Registered;
         if (!deleteSource && skipRegistered) {
-            if (destination.Registered) {
+            if (alreadyRegistered) {
                 return new KifaActionResult {
                     Status = KifaActionStatus.Pending,
                     Message = $"Skipped uploading of {this} to {destinationLocation} for now " +
@@ -128,10 +129,15 @@ public partial class KifaFile {
         try {
             CheckDestination(destination, skipVerify, confirmPrompt);
             CheckedTargets.Add(targetKey);
-            return new KifaActionResult {
-                Status = KifaActionStatus.Skipped,
-                Message = $"Destination {destination} is already uploaded."
-            };
+            return alreadyRegistered || skipVerify
+                ? new KifaActionResult {
+                    Status = KifaActionStatus.Skipped,
+                    Message = $"Destination {destination} is already uploaded."
+                }
+                : new KifaActionResult {
+                    Status = KifaActionStatus.OK,
+                    Message = $"Destination {destination} is already uploaded, now verified."
+                };
         } catch (FileNotFoundException ex) {
             Logger.Trace(ex, $"File {destination} is not found. This is expected if not uploaded.");
         } catch (FileCorruptedException ex) {
