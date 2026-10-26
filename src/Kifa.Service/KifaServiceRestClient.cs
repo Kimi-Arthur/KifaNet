@@ -198,7 +198,8 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
                     }.ToJson(), Encoding.UTF8, "application/json")
                 };
 
-                return KifaServiceRestClient.Client.GetObject<KifaActionResult>(request) ??
+                return KifaServiceRestClient.Client.GetObject<KifaBatchActionResult>(request)
+                           ?.Results.FirstOrDefault()?.Result ??
                        KifaActionResult.UnknownError();
             },
             (ex, i) => HandleException(ex, i,

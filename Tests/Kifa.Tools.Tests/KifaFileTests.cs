@@ -172,7 +172,9 @@ public class KifaFileTests : IDisposable {
 
         var result = KifaFile.LinkAll(source, [source, link1, link2]);
         Assert.Equal(KifaActionStatus.OK, result.Status);
-        Assert.Equal("Linked locally 2/2 files.", result.Message);
+        var batchResult = Assert.IsType<KifaBatchActionResult>(result);
+        Assert.Equal(2, batchResult.Results.Count);
+        Assert.All(batchResult.Results, r => Assert.Equal(KifaActionStatus.OK, r.Result.Status));
         Assert.True(link1.Exists());
         Assert.True(link2.Exists());
     }
@@ -191,7 +193,10 @@ public class KifaFileTests : IDisposable {
 
         var result = KifaFile.LinkAll(source, [source, link1, link2]);
         Assert.Equal(KifaActionStatus.OK, result.Status);
-        Assert.Equal("Linked locally 1/2 files.", result.Message);
+        var batchResult = Assert.IsType<KifaBatchActionResult>(result);
+        Assert.Equal(2, batchResult.Results.Count);
+        Assert.Equal(KifaActionStatus.Skipped, batchResult.Results[0].Result.Status);
+        Assert.Equal(KifaActionStatus.OK, batchResult.Results[1].Result.Status);
         Assert.True(link2.Exists());
     }
 
@@ -208,7 +213,9 @@ public class KifaFileTests : IDisposable {
 
         var result = KifaFile.LinkAll(source, [source, link1]);
         Assert.Equal(KifaActionStatus.Skipped, result.Status);
-        Assert.Equal("All 1 files are already linked locally.", result.Message);
+        var batchResult = Assert.IsType<KifaBatchActionResult>(result);
+        Assert.Single(batchResult.Results);
+        Assert.Equal(KifaActionStatus.Skipped, batchResult.Results[0].Result.Status);
     }
 
     [Fact]
