@@ -34,6 +34,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Selenium.WebDriver" Version="4.35.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
         <None Include="..\..\resources\Kifa.png" Pack="true" PackagePath="\"/>
     </ItemGroup>
 </Project>

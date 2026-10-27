@@ -4,6 +4,7 @@ using Kifa.Cloud.MegaNz;
 using Kifa.Cloud.Swisscom;
 using Kifa.Cloud.Telegram;
 using Kifa.Jobs;
+using Kifa.YouTube;
 using NLog;
 
 namespace Kifa.Tools.DataUtil.Commands;
@@ -35,6 +36,11 @@ public partial class AddCommand : KifaCommand {
 
         if (Type == MegaNzAccount.ModelId) {
             AddMegaNzAccountSubCommand.CreateMegaNzAccounts(Specs);
+            return 0;
+        }
+
+        if (Type == YouTubeAccount.ModelId) {
+            CreateYouTubeAccounts(Specs);
             return 0;
         }
 
