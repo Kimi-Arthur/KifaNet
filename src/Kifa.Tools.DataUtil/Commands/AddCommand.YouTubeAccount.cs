@@ -104,9 +104,44 @@ public partial class AddCommand {
                     }
                 }
 
-                Confirm(
-                    $"Please complete YouTube login for account '{accountId}' in the opened browser window, then press Enter to continue...",
-                    "");
+                if (account.Password != null) {
+                    try {
+                        var passwordInput = Retry.Run(
+                            () => driver.FindElement(By.CssSelector(
+                                "input[type=password], input[name=Passwd], input[name=password]")),
+                            interval: YouTubeInterval, timeout: TimeSpan.FromSeconds(10),
+                            noLogging: true);
+                        if (passwordInput != null) {
+                            passwordInput.SendKeys(account.Password);
+                            try {
+                                var nextButton = driver.FindElement(By.Id("passwordNext"));
+                                nextButton.Click();
+                            } catch {
+                                passwordInput.SendKeys(Keys.Enter);
+                            }
+
+                            Thread.Sleep(YouTubePageLoadWait);
+                        }
+                    } catch (Exception ex) {
+                        Logger.Debug(ex, "Failed to fill in password automatically.");
+                    }
+                }
+
+                Logger.Info(
+                    $"Waiting for YouTube login to complete for account '{accountId}' (will auto-detect once logged in)...");
+
+                var deadline = DateTime.UtcNow + YouTubeWebDriverTimeout;
+                while (DateTime.UtcNow < deadline) {
+                    try {
+                        if (IsLoggedIn(driver)) {
+                            Logger.Info($"Detected successful login for '{accountId}'.");
+                            break;
+                        }
+                    } catch (WebDriverException) {
+                    }
+
+                    Thread.Sleep(YouTubeInterval);
+                }
 
                 if (!driver.Url.StartsWith("https://www.youtube.com")) {
                     driver.Navigate().GoToUrl("https://www.youtube.com/");
@@ -118,6 +153,19 @@ public partial class AddCommand {
                     "add new session", NLog.LogLevel.Info);
             }
         }
+    }
+
+    static bool IsLoggedIn(IWebDriver driver) {
+        var url = driver.Url;
+        if (url.StartsWith("https://www.youtube.com") || url.StartsWith("https://m.youtube.com") ||
+            url.StartsWith("https://studio.youtube.com")) {
+            var cookies = driver.Manage().Cookies.AllCookies;
+            return cookies.Any(c
+                => c.Name is "LOGIN_INFO" or "SAPISID" or "SID" or "SSID" or "__Secure-1PSID"
+                    or "__Secure-3PSID");
+        }
+
+        return false;
     }
 
     public static IWebDriver GetYouTubeDriver() {
