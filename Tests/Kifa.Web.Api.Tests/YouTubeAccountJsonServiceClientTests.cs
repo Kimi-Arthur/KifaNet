@@ -22,11 +22,13 @@ public class YouTubeAccountJsonServiceClientTests : IDisposable {
         sessionClient.DataFolder = folder;
         YouTubeAccount.MaxQuickSessions = 5;
         YouTubeAccount.MaxDownloadSessions = 2;
+        YouTubeAccount.Client = client;
     }
 
     public void Dispose() {
         YouTubeAccount.MaxQuickSessions = 5;
         YouTubeAccount.MaxDownloadSessions = 2;
+        YouTubeAccount.Client = new YouTubeAccount.RestServiceClient();
         if (Directory.Exists(folder)) {
             Directory.Delete(folder, true);
         }
@@ -154,5 +156,58 @@ public class YouTubeAccountJsonServiceClientTests : IDisposable {
         client.ReleaseSession("StoppingTest", sessionId).Status.Should().Be(KifaActionStatus.OK);
         var next = client.ObtainSession("StoppingTest", YouTubeSessionType.Quick);
         next.Status.Should().Be(KifaActionStatus.OK);
+    }
+
+    [Fact]
+    public void ObtainLease_CreatesTempCookieFileAndReleasesUpdatedCookiesOnDispose() {
+        var account = new YouTubeAccount {
+            Id = "LeaseTest"
+        };
+        client.Set(account);
+        client.AddSession("LeaseTest", "initial_cookie_content");
+
+        string? tempCookiePath = null;
+        using (var lease = YouTubeAccount.ObtainLease(YouTubeSessionType.Quick, "LeaseTest")) {
+            lease.Should().NotBeNull();
+            tempCookiePath = lease!.CookieFile;
+            tempCookiePath.Should().NotBeNull();
+            File.Exists(tempCookiePath).Should().BeTrue();
+            File.ReadAllText(tempCookiePath!).Should().Be("initial_cookie_content");
+
+            // Update cookie file as yt-dlp would
+            File.WriteAllText(tempCookiePath!, "updated_cookie_from_ytdlp");
+        }
+
+        // After dispose: temp file deleted and session released with updated cookies
+        File.Exists(tempCookiePath).Should().BeFalse();
+
+        var reobtained = client.ObtainSession("LeaseTest", YouTubeSessionType.Quick);
+        reobtained.Status.Should().Be(KifaActionStatus.OK);
+        reobtained.Value.Checked().Cookies.Should().Be("updated_cookie_from_ytdlp");
+    }
+
+    [Fact]
+    public async Task YouTubeSessionLease_RenewsReservationPeriodically() {
+        var account = new YouTubeAccount {
+            Id = "RenewTest"
+        };
+        client.Set(account);
+        client.AddSession("RenewTest", "renew_cookie");
+
+        YouTubeSessionLease.QuickKeepSessionInterval = TimeSpan.FromMilliseconds(50);
+        try {
+            using var lease = YouTubeAccount.ObtainLease(YouTubeSessionType.Quick, "RenewTest");
+            lease.Should().NotBeNull();
+
+            var initialAccount = client.Get("RenewTest").Checked();
+            var initialReserved = initialAccount.Sessions[0].Reserved;
+
+            await Task.Delay(150);
+
+            var refreshedAccount = client.Get("RenewTest").Checked();
+            refreshedAccount.Sessions[0].Reserved.Should().BeAfter(initialReserved);
+        } finally {
+            YouTubeSessionLease.QuickKeepSessionInterval = TimeSpan.FromMinutes(1);
+        }
     }
 }

@@ -76,16 +76,20 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         return result.Distinct().ToList();
     }
 
-    public static OptionSet GetOptionSet(bool flatPlaylist = false) {
+    public static OptionSet GetOptionSet(bool flatPlaylist = false, string? cookieFile = null) {
         var options = new OptionSet {
             FlatPlaylist = flatPlaylist,
             EmbedMetadata = !flatPlaylist,
             EmbedThumbnail = !flatPlaylist
         };
 
-        try {
-            options.Cookies = CookiesPath;
-        } catch (NullReferenceException) {
+        if (cookieFile != null) {
+            options.Cookies = cookieFile;
+        } else {
+            try {
+                options.Cookies = CookiesPath;
+            } catch (NullReferenceException) {
+            }
         }
 
         if (PluginPath != null) {
@@ -102,8 +106,8 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
     public static OptionSet OptionSet => GetOptionSet();
 
     public static OptionSet GetTrackDownloadOptionSet(string parentFolder, string basePrefix,
-        YouTubeVideo? video = null) {
-        var options = GetOptionSet();
+        YouTubeVideo? video = null, string? cookieFile = null) {
+        var options = GetOptionSet(cookieFile: cookieFile);
         options.Paths = parentFolder;
         options.EmbedMetadata = false;
         options.EmbedThumbnail = false;
@@ -203,7 +207,9 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
             var ytdl = YoutubeDL;
             ytdl.OutputFolder = parentFolder;
 
-            var options = GetTrackDownloadOptionSet(parentFolder, basePrefix, video);
+            using var lease = YouTubeAccount.ObtainLease(YouTubeSessionType.Download);
+            var options = GetTrackDownloadOptionSet(parentFolder, basePrefix, video,
+                cookieFile: lease?.CookieFile);
 
             var result = ytdl.RunVideoDownload(videoId, overrideOptions: options).GetAwaiter()
                 .GetResult();
@@ -688,7 +694,9 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
             => error.Contains(pattern, StringComparison.OrdinalIgnoreCase));
 
     void FillWithYoutubeDl() {
-        var metadata = YoutubeDL.RunVideoDataFetch(Id, overrideOptions: OptionSet).GetAwaiter()
+        using var lease = YouTubeAccount.ObtainLease(YouTubeSessionType.Quick);
+        var options = GetOptionSet(cookieFile: lease?.CookieFile);
+        var metadata = YoutubeDL.RunVideoDataFetch(Id, overrideOptions: options).GetAwaiter()
             .GetResult();
         if (!metadata.Success) {
             var error = metadata.ErrorOutput.JoinBy("\n");

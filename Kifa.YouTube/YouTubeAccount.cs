@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Kifa.Service;
+using NLog;
 
 namespace Kifa.YouTube;
 
@@ -15,6 +16,8 @@ public class YouTubeSessionReservation {
 }
 
 public class YouTubeAccount : DataModel, WithModelId<YouTubeAccount> {
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     public static string ModelId => "youtube/accounts";
 
     #region Clients
@@ -113,6 +116,30 @@ public class YouTubeAccount : DataModel, WithModelId<YouTubeAccount> {
 
     public static int MaxDownloadSessions { get; set; } = 2;
     public static int MaxQuickSessions { get; set; } = 5;
+
+    public static string? Account { get; set; } = "default";
+
+    public static YouTubeSessionLease? ObtainLease(YouTubeSessionType type,
+        string? accountId = null) {
+        accountId ??= Account;
+        if (accountId == null) {
+            return null;
+        }
+
+        try {
+            var result = Client.ObtainSession(accountId, type);
+            if (result.Status == KifaActionStatus.OK && result.Value != null) {
+                return new YouTubeSessionLease(accountId, result.Value, type);
+            }
+
+            Logger.Warn(
+                $"Failed to obtain {type} session for account {accountId}: {result.Message}");
+        } catch (Exception ex) {
+            Logger.Warn(ex, $"Exception obtaining {type} session for account {accountId}.");
+        }
+
+        return null;
+    }
 
     public static int GetSessionLimit(YouTubeSessionType type)
         => type switch {

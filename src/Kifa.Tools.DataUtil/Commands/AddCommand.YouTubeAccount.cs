@@ -122,10 +122,10 @@ public partial class AddCommand {
 
     public static IWebDriver GetYouTubeDriver() {
         var options = new ChromeOptions();
-        options.AddArgument(
-            "--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.41 Safari/537.36");
         options.AddArgument("--disable-blink-features=AutomationControlled");
+        options.AddArgument("--disable-infobars");
         options.AddExcludedArgument("enable-automation");
+        options.AddExcludedArgument("enable-logging");
         options.AddAdditionalOption("useAutomationExtension", false);
 
         if (YouTubeWebDriverUrl != null) {
@@ -133,7 +133,17 @@ public partial class AddCommand {
                 YouTubeWebDriverTimeout);
         }
 
-        return new ChromeDriver(options);
+        var driver = new ChromeDriver(options);
+        try {
+            driver.ExecuteCdpCommand("Page.addScriptToEvaluateOnNewDocument",
+                new Dictionary<string, object> {
+                    ["source"] =
+                        "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
+                });
+        } catch {
+        }
+
+        return driver;
     }
 
     public static string ToNetscapeCookieFormat(IEnumerable<Cookie> cookies) {

@@ -82,7 +82,8 @@ public class YouTubeUploader : DataModel, WithModelId<YouTubeUploader> {
     public override void Fill(bool deep = false) {
         var url = GetFetchUrl(Id.Checked());
 
-        var options = YouTubeVideo.GetOptionSet(flatPlaylist: true);
+        using var lease = YouTubeAccount.ObtainLease(YouTubeSessionType.Quick);
+        var options = YouTubeVideo.GetOptionSet(flatPlaylist: true, cookieFile: lease?.CookieFile);
         options.PlaylistItems = "0";
         var result = YouTubeVideo.YoutubeDL.RunVideoDataFetch(url, overrideOptions: options)
             .GetAwaiter().GetResult();

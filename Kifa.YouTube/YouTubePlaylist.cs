@@ -60,7 +60,8 @@ public class YouTubePlaylist : DataModel, WithModelId<YouTubePlaylist> {
 
     static (string? title, string? author, List<string> videos) FetchPlaylistData(
         string playlistUrl, int? start = null, int? count = null) {
-        var options = YouTubeVideo.GetOptionSet(flatPlaylist: true);
+        using var lease = YouTubeAccount.ObtainLease(YouTubeSessionType.Quick);
+        var options = YouTubeVideo.GetOptionSet(flatPlaylist: true, cookieFile: lease?.CookieFile);
         if (start != null && count != null) {
             options.PlaylistItems = $"{start}:{start + count - 1}";
         }

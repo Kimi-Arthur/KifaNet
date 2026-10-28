@@ -55,7 +55,8 @@ public class YouTubeUploaderVideos : DataModel, WithModelId<YouTubeUploaderVideo
     }
 
     List<string> FetchSectionData(string url, int? start = null, int? count = null) {
-        var options = YouTubeVideo.GetOptionSet(flatPlaylist: true);
+        using var lease = YouTubeAccount.ObtainLease(YouTubeSessionType.Quick);
+        var options = YouTubeVideo.GetOptionSet(flatPlaylist: true, cookieFile: lease?.CookieFile);
         if (start != null && count != null) {
             options.PlaylistItems = $"{start}:{start + count - 1}";
         }
