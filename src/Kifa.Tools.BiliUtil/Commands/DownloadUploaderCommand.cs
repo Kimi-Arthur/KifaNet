@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
@@ -15,6 +16,9 @@ public class DownloadUploaderCommand : DownloadCommand {
 
     [Value(0, Required = true, HelpText = "Uploader ID.")]
     public string UploaderId { get; set; }
+
+    [Option('g', "category", HelpText = "Category of the videos to download.")]
+    public string? Category { get; set; }
 
     [Option('f', "folder",
         HelpText =
@@ -51,16 +55,6 @@ public class DownloadUploaderCommand : DownloadCommand {
             aids = aids.Where(aid => !subfolderAids.Contains(aid)).ToList();
         }
 
-        var videos = SelectMany(BilibiliVideo.Client.Get(aids).ExceptNull().ToList(),
-            FormatVideoChoice, "videos to download");
-        if (videos.Status == KifaActionStatus.OK) {
-            DownloadVideos(uploader, videos.Value);
-        }
-
-        if (BreakOnExisting && LastItemAlreadyExists) {
-            return LogSummary();
-        }
-
         var removedAids = OldestFirst
             ? uploaderVideos.RemovedAids
             : Enumerable.Reverse(uploaderVideos.RemovedAids).ToList();
@@ -68,19 +62,33 @@ public class DownloadUploaderCommand : DownloadCommand {
             removedAids = removedAids.Where(aid => !subfolderAids.Contains(aid)).ToList();
         }
 
-        var deletedVideos = SelectMany(BilibiliVideo.Client.Get(removedAids).ExceptNull().ToList(),
-            FormatVideoChoice, "deleted videos to download");
-        if (deletedVideos.Status == KifaActionStatus.OK) {
-            DownloadVideos(uploader, deletedVideos.Value);
+        var allVideos = BilibiliVideo.Client.Get(aids).ExceptNull()
+            .Select(v => (Video: v, IsDeleted: false))
+            .Concat(BilibiliVideo.Client.Get(removedAids).ExceptNull()
+                .Select(v => (Video: v, IsDeleted: true)))
+            .ToList();
+
+        if (Category != null) {
+            allVideos = allVideos
+                .Where(v => string.Equals(v.Video.Category, Category, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        var summary = Category != null ? $"{Category} videos to download" : "videos to download";
+        var videos = SelectMany(allVideos, FormatVideoChoice, summary);
+        if (videos.Status == KifaActionStatus.OK && videos.Value != null) {
+            DownloadVideos(uploader, videos.Value.Select(v => v.Video).ToList());
         }
 
         return LogSummary();
     }
 
-    static string FormatVideoChoice(BilibiliVideo video)
-        => string.IsNullOrEmpty(video.Category)
-            ? $"{video.Id} {video.Title} ({video.Pages.Count})"
-            : $"{video.Id} [{video.Category}] {video.Title} ({video.Pages.Count})";
+    static string FormatVideoChoice((BilibiliVideo Video, bool IsDeleted) item) {
+        var (video, isDeleted) = item;
+        var categoryPart = string.IsNullOrEmpty(video.Category) ? "" : $" [{video.Category}]";
+        var deletedPart = isDeleted ? " [DELETED]" : "";
+        return $"{video.Id}{categoryPart}{deletedPart} {video.Title} ({video.Pages.Count})";
+    }
 
     public KifaFile GetUploaderFolder(BilibiliUploader uploader)
         => BaseFolder.GetFile(uploader.GetUploaderFolder());
