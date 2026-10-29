@@ -85,9 +85,10 @@ public class DownloadUploaderCommand : DownloadCommand {
 
     static string FormatVideoChoice((BilibiliVideo Video, bool IsDeleted) item) {
         var (video, isDeleted) = item;
-        var categoryPart = string.IsNullOrEmpty(video.Category) ? "" : $" [{video.Category}]";
+        var categoryPart = string.IsNullOrEmpty(video.Category) ? "" : $"[{video.Category}]\t";
+        var datePart = video.Uploaded != null ? $"{video.Uploaded:yyyy-MM-dd} " : "";
         var deletedPart = isDeleted ? " [DELETED]" : "";
-        return $"{video.Id}{categoryPart}{deletedPart} {video.Title} ({video.Pages.Count})";
+        return $"{categoryPart}{datePart}{video.Id}{deletedPart} {video.Title} ({video.Pages.Count})";
     }
 
     public KifaFile GetUploaderFolder(BilibiliUploader uploader)
