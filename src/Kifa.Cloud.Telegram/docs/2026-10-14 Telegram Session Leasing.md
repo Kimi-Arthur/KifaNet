@@ -152,7 +152,9 @@ class CellClientEntry {
   5. Upon successful creation, sets `InitTask.SetResult(client)` to unblock all parallel callers. If creation throws, removes the entry from `CellClients` and calls `InitTask.SetException(ex)`.
 - **Reference-Counted Release (`ReturnCellClient`)**:
   1. Decrements `Holders` under lock.
-  2. When `Holders` drops to 0, removes `(CellId, type)` from `CellClients` and releases the client (`client.Release()`).
+  2. Captures `preferredSessionId` from `entry.Client.Session.Id` to maintain session affinity for subsequent requests.
+  3. When `Holders` drops to 0, removes `(CellId, type)` from `CellClients` and releases the client (`client.Release()`).
+- **Sticky Session Affinity**: Each [`TelegramStorageClient`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Cloud.Telegram/TelegramStorageClient.cs) instance tracks `preferredSessionId`. When acquiring a new session (`Cell.CreateClient(type, preferredSessionId)`), the client passes its last successful session ID. If that session is idle on the server, it is immediately re-leased without rotating its ID; if busy or flooded, the server automatically allocates another available session.
 
 ### 2. Failure Handling & Storage Cell Failover
 In [`TelegramStorageCell.CreateClient`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Cloud.Telegram/TelegramStorageCell.cs#L29-L54):
@@ -165,6 +167,12 @@ In [`TelegramStorageCell.CreateClient`](file:///Users/kimi/Projects/KifaNet/src/
 ### 3. Background Lease Keepalive & Process Termination
 - **Periodic Lease Renewal**: In [`TelegramCellClient.KeepSessionReserved`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Cloud.Telegram/TelegramCellClient.cs#L107-L123), an asynchronous background task periodically invokes `TelegramAccount.Client.RenewSession(Account.Id, sessionId)` at fixed intervals (1 minute for `Quick`, 5 minutes for `Upload` / `Download`) while the client is active.
 - **Process Shutdown Hook**: `TelegramCellClient` registers a process cleanup handler via `KifaShutdown.RegisterCleanup(ReleaseAll)`. If a CLI process is terminated (`Ctrl-C`, SIGTERM, normal exit), all active client leases are immediately released via the server's `$release_session` endpoint rather than leaving orphan leases until expiration.
+
+### 4. Flood Wait Handling & Dynamic Session Re-obtaining
+When Telegram's MTProto API returns an `RpcException(420)` with a flood wait delay (`FLOOD_WAIT_X`):
+- **Flood Threshold Check**: If the requested delay `X` exceeds `TelegramStorageClient.MaxAllowedFloodWait` (default 30 seconds) or the operation has exceeded `TelegramStorageClient.MaxFloodWaitRetries` (default 3 attempts), waiting inline under the lock would degrade throughput for all concurrent requests.
+- **Session Release with Flood Penalty**: The client calls `TelegramAccount.Client.ReleaseSession(accountId, sessionId, floodWaitSeconds)`. On the server, `TelegramAccountJsonServiceClient.ReleaseSession` marks the session `Reserved = UtcNow + TimeSpan.FromSeconds(floodWaitSeconds)` and sets `Type = TelegramSessionType.Refresh`. This temporarily bans only the flooded session from subsequent leases while waking queued waiters to allocate other healthy sessions.
+- **Client Session Re-obtaining**: [`TelegramCellClient.ReobtainSession`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Cloud.Telegram/TelegramCellClient.cs) releases the flooded session, requests a new session from the pool for the same account, re-initializes the MTProto `Client`, and restarts the background keepalive task. Subsequent retries seamlessly proceed using the newly obtained session.
 
 ---
 

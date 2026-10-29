@@ -23,7 +23,8 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
             TelegramSessionType type, int? sessionId = null,
             CancellationToken cancellationToken = default);
         public KifaActionResult RenewSession(string accountId, int sessionId);
-        public KifaActionResult ReleaseSession(string accountId, int sessionId);
+        public KifaActionResult ReleaseSession(string accountId, int sessionId,
+            int? floodWaitSeconds = null);
         public KifaActionResult UpdateSession(string accountId, int sessionId, byte[] sessionData);
     }
 
@@ -46,6 +47,7 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
     public class ReleaseSessionRequest {
         public required string AccountId { get; set; }
         public required int SessionId { get; set; }
+        public int? FloodWaitSeconds { get; set; }
     }
 
     public class UpdateSessionRequest {
@@ -80,10 +82,12 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
                 SessionId = sessionId
             });
 
-        public KifaActionResult ReleaseSession(string accountId, int sessionId)
+        public KifaActionResult ReleaseSession(string accountId, int sessionId,
+            int? floodWaitSeconds = null)
             => Call("release_session", new ReleaseSessionRequest {
                 AccountId = accountId,
-                SessionId = sessionId
+                SessionId = sessionId,
+                FloodWaitSeconds = floodWaitSeconds
             });
 
         public KifaActionResult UpdateSession(string accountId, int sessionId, byte[] sessionData)

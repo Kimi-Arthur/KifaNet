@@ -61,7 +61,7 @@ public class
     [HttpPost("$release_session")]
     public KifaApiActionResult
         ReleaseSession([FromBody] TelegramAccount.ReleaseSessionRequest request)
-        => Client.ReleaseSession(request.AccountId, request.SessionId);
+        => Client.ReleaseSession(request.AccountId, request.SessionId, request.FloodWaitSeconds);
 
     [HttpPost("$update_session")]
     public KifaApiActionResult
@@ -215,7 +215,8 @@ public partial class TelegramAccountJsonServiceClient : KifaServiceJsonClient<Te
         }
     }
 
-    public KifaActionResult ReleaseSession(string accountId, int sessionId) {
+    public KifaActionResult ReleaseSession(string accountId, int sessionId,
+        int? floodWaitSeconds = null) {
         using (AcquireLock(accountId)) {
             var account = Get(accountId).Checked();
             var session = account.Sessions.FirstOrDefault(s => s.Id == sessionId);
@@ -226,10 +227,17 @@ public partial class TelegramAccountJsonServiceClient : KifaServiceJsonClient<Te
                 };
             }
 
-            // Set as now so that it will be least likely to be reserved again. So that we can
-            // rotate accounts.
-            session.Reserved = DateTimeOffset.UtcNow;
-            session.Type = null;
+            if (floodWaitSeconds is > 0) {
+                session.Reserved =
+                    DateTimeOffset.UtcNow + TimeSpan.FromSeconds(floodWaitSeconds.Value);
+                session.Type = TelegramSessionType.Refresh;
+            } else {
+                // Set as now so that it will be least likely to be reserved again. So that we can
+                // rotate accounts.
+                session.Reserved = DateTimeOffset.UtcNow;
+                session.Type = null;
+            }
+
             Update(account);
 
             NotifyWaiters(accountId);

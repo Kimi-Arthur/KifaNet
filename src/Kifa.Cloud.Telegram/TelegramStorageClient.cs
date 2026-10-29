@@ -51,6 +51,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     static readonly object CellClientLock = new();
     static readonly Dictionary<(string CellId, TelegramSessionType Type), CellClientEntry> CellClients = new();
 
+    int? preferredSessionId;
+
     TelegramCellClient ObtainCellClient(TelegramSessionType type) {
         var key = (CellId, type);
         Task<TelegramCellClient>? waitTask = null;
@@ -61,6 +63,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             if (CellClients.TryGetValue(key, out var existing)) {
                 existing.Holders++;
                 if (existing.Client != null) {
+                    preferredSessionId = existing.Client.Session.Id;
                     return existing.Client;
                 }
 
@@ -78,7 +81,9 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
         if (waitTask != null) {
             try {
-                return waitTask.GetAwaiter().GetResult();
+                var c = waitTask.GetAwaiter().GetResult();
+                preferredSessionId = c.Session.Id;
+                return c;
             } catch {
                 ReturnCellClient(type);
                 throw;
@@ -87,7 +92,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
         TelegramCellClient client;
         try {
-            client = Cell.CreateClient(type);
+            client = Cell.CreateClient(type, preferredSessionId);
+            preferredSessionId = client.Session.Id;
         } catch (Exception ex) {
             lock (CellClientLock) {
                 CellClients.Remove(key);
@@ -121,6 +127,10 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         lock (CellClientLock) {
             var key = (CellId, type);
             if (CellClients.TryGetValue(key, out var entry)) {
+                if (entry.Client != null) {
+                    preferredSessionId = entry.Client.Session.Id;
+                }
+
                 entry.Holders--;
                 if (entry.Holders <= 0) {
                     clientToRelease = entry.Client;
@@ -182,7 +192,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
             var result = Retry
                 .Run(() => cellClient.Client.DeleteMessages(cellClient.Channel, message.id),
-                    HandleFloodExceptionFunc).GetAwaiter().GetResult();
+                    GetFloodHandler(cellClient)).GetAwaiter().GetResult();
             if (result.pts_count != 1) {
                 Logger.Debug($"Delete of {path} is not successful, but is ignored.");
             }
@@ -255,7 +265,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                         }).WaitAsync(MergeTimeout),
                     new Func<Exception, Dictionary<string, int>?, Task<Dictionary<string, int>?>>((
                             exception, failures)
-                        => HandleMergeExceptions(exception, failures, GetUploadBlockTask)))
+                        => HandleMergeExceptions(exception, failures, GetUploadBlockTask, cellClient)))
                 .GetAwaiter()
                 .GetResult();
 
@@ -353,7 +363,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
                 return await cellClient.Client.Upload_SaveBigFilePart(fileId, partIndex, totalParts,
                     buffer).WaitAsync(UploadTimeout);
-            }, HandleFloodExceptionFunc, isValid: result => result);
+            }, GetFloodHandler(cellClient), isValid: result => result);
 
             if (!partResult) {
                 throw new Exception($"Failed to upload part {partIndex} for {fileId}.");
@@ -377,25 +387,41 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     public static int Failure503Count { get; set; } = 3;
     public static int FailureOtherCount { get; set; } = 20;
     public static TimeSpan FloodWarnThreshold { get; set; } = TimeSpan.FromSeconds(50);
+    public static TimeSpan MaxAllowedFloodWait { get; set; } = TimeSpan.FromSeconds(30);
+    public static int MaxFloodWaitRetries { get; set; } = 3;
+
+    public static Func<Exception, Dictionary<string, int>?, Task<Dictionary<string, int>?>>
+        GetFloodHandler(TelegramCellClient? cellClient = null)
+        => (ex, failures) => HandleFloodException(ex, failures, cellClient);
 
     public static readonly Func<Exception, Dictionary<string, int>?, Task<Dictionary<string, int>?>>
-        HandleFloodExceptionFunc = HandleFloodException;
+        HandleFloodExceptionFunc = GetFloodHandler();
 
     public static async Task<Dictionary<string, int>?> HandleFloodException(Exception ex,
-        Dictionary<string, int>? failures) {
+        Dictionary<string, int>? failures, TelegramCellClient? cellClient = null) {
         failures ??= new Dictionary<string, int>();
         switch (ex) {
             case RpcException {
                 Code: 420
             } rpcException: {
                 var count = failures.GetValueOrDefault(Failure420Key, 0) + 1;
+                failures[Failure420Key] = count;
+
+                var waitSeconds = rpcException.X;
+                if (cellClient != null && (waitSeconds > MaxAllowedFloodWait.TotalSeconds ||
+                                           count > MaxFloodWaitRetries)) {
+                    Logger.Warn(ex,
+                        $"Flood wait of {waitSeconds}s (try {count}) exceeded threshold (max wait: {MaxAllowedFloodWait.TotalSeconds}s, max tries: {MaxFloodWaitRetries}). Re-requesting session...");
+                    cellClient.ReobtainSession(waitSeconds, cellClient.Session.Id);
+                    failures.Remove(Failure420Key);
+                    return failures;
+                }
+
                 if (count > Failure420Count) {
                     Logger.Error(
                         $"Failed to avoid RpcException 420 after {Failure420Count} tries.");
                     throw ex;
                 }
-
-                failures[Failure420Key] = count;
 
                 var extraWait = 1 + Random.Shared.NextDouble() * 15;
                 var nextRequest = DateTime.Now + TimeSpan.FromSeconds(rpcException.X + extraWait);
@@ -482,7 +508,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     }
 
     public static async Task<Dictionary<string, int>?> HandleMergeExceptions(Exception ex,
-        Dictionary<string, int>? failures, Func<int, Task> getUploadBlockTask) {
+        Dictionary<string, int>? failures, Func<int, Task> getUploadBlockTask,
+        TelegramCellClient? cellClient = null) {
         if (ex is RpcException {
             Code: 400,
             Message: "FILE_PART_X_MISSING",
@@ -495,7 +522,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             return failures;
         }
 
-        return await HandleFloodException(ex, failures);
+        return await HandleFloodException(ex, failures, cellClient);
     }
 
     public override Stream OpenRead(string path) {
@@ -687,6 +714,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 Logger.Trace($"Waiting for start semaphore to download from {offset}...");
                 await WaitPacingAsync();
 
+                var client = await cellClient.GetClientForDC(dcId);
                 try {
                     return await client.Upload_GetFile(location, offset: requestStart,
                         limit: BlockSize).WaitAsync(DownloadTimeout);
@@ -695,7 +723,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                     return await client.Upload_GetFile(location, offset: requestStart,
                         limit: BlockSize).WaitAsync(DownloadTimeout);
                 }
-            }, HandleFloodExceptionFunc);
+            }, GetFloodHandler(cellClient));
 
             if (downloadResult is not Upload_File uploadFile) {
                 throw new Exception($"Response is not {nameof(Upload_File)}");
@@ -738,7 +766,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     Message? GetMessageByHistory(TelegramCellClient cellClient, string path) {
         var messages = Retry
             .Run(() => cellClient.Client.Messages_GetHistory(cellClient.Channel),
-                HandleFloodExceptionFunc).GetAwaiter().GetResult().Messages;
+                GetFloodHandler(cellClient)).GetAwaiter().GetResult().Messages;
         while (messages?.Length > 0) {
             try {
                 var message = messages.Select(m => m as Message)
@@ -759,7 +787,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             var lastMessageId = messages[^1].ID;
             messages = Retry
                 .Run(() => cellClient.Client.Messages_GetHistory(cellClient.Channel, lastMessageId),
-                    HandleFloodExceptionFunc).GetAwaiter().GetResult().Messages;
+                    GetFloodHandler(cellClient)).GetAwaiter().GetResult().Messages;
         }
 
         return null;
@@ -770,7 +798,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             return Retry
                 .Run(
                     () => cellClient.Client.Messages_Search<InputMessagesFilterDocument>(
-                        cellClient.Channel, path), HandleFloodExceptionFunc).GetAwaiter()
+                        cellClient.Channel, path),
+                    GetFloodHandler(cellClient)).GetAwaiter()
                 .GetResult().Messages.Select(m => m as Message)
                 .SingleOrDefault(m => m?.message == path);
         } catch (InvalidOperationException) {

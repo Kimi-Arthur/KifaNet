@@ -26,11 +26,12 @@ public class TelegramStorageCell : DataModel, WithModelId<TelegramStorageCell> {
 
     static readonly TimeSpan SessionWaitInterval = TimeSpan.FromSeconds(10);
 
-    public TelegramCellClient CreateClient(TelegramSessionType type) {
+    public TelegramCellClient CreateClient(TelegramSessionType type, int? sessionId = null) {
         while (true) {
             try {
-                Logger.Debug($"Obtaining {type} session for account {Account.Id}...");
-                var response = TelegramAccount.Client.ObtainSession(Account.Id, type);
+                Logger.Debug(
+                    $"Obtaining {type} session{(sessionId != null ? $" (preferred: {sessionId})" : "")} for account {Account.Id}...");
+                var response = TelegramAccount.Client.ObtainSession(Account.Id, type, sessionId);
                 if (response.Status != KifaActionStatus.OK) {
                     throw new KifaActionFailedException(response);
                 }

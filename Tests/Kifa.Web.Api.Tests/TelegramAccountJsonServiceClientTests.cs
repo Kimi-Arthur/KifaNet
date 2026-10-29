@@ -629,4 +629,75 @@ public class TelegramAccountJsonServiceClientTests : IDisposable {
         result.Status.Should().Be(KifaActionStatus.BadRequest);
         result.Message.Should().Contain("has no session type assigned");
     }
+
+    [Fact]
+    public void ReleaseSession_WithFloodWait_SetsReservedAndTypeRefresh() {
+        var account = CreateAccountWithSessions("release_flood_wait", 1);
+        var obtainResult = client.ObtainSession(account.Id.Checked(), TelegramSessionType.Quick);
+        obtainResult.Status.Should().Be(KifaActionStatus.OK);
+        var sessionId = obtainResult.Value.Checked().Id;
+
+        var releaseResult = client.ReleaseSession(account.Id.Checked(), sessionId, floodWaitSeconds: 300);
+        releaseResult.Status.Should().Be(KifaActionStatus.OK);
+
+        var updatedAccount = client.Get(account.Id.Checked()).Checked();
+        var session = updatedAccount.Sessions.First(s => s.Id == sessionId);
+        session.Type.Should().Be(TelegramSessionType.Refresh);
+        session.Reserved.Should().BeCloseTo(DateTimeOffset.UtcNow + TimeSpan.FromSeconds(300), TimeSpan.FromSeconds(5));
+
+        // When obtaining next session, since the only session is flooded, returns Pending
+        var nextResult = client.ObtainSession(account.Id.Checked(), TelegramSessionType.Quick);
+        nextResult.Status.Should().Be(KifaActionStatus.Pending);
+        nextResult.Message.Should().Be("All 1 sessions are reserved.");
+    }
+
+    [Fact]
+    public void ReleaseSession_WithFloodWait_AllowsOtherAvailableSessionToBeObtained() {
+        var account = CreateAccountWithSessions("release_flood_wait_multi", 2);
+        var obtainResult1 = client.ObtainSession(account.Id.Checked(), TelegramSessionType.Quick);
+        obtainResult1.Status.Should().Be(KifaActionStatus.OK);
+        var session1Id = obtainResult1.Value.Checked().Id;
+
+        // Release session 1 with flood wait
+        var releaseResult = client.ReleaseSession(account.Id.Checked(), session1Id, floodWaitSeconds: 600);
+        releaseResult.Status.Should().Be(KifaActionStatus.OK);
+
+        // Obtain next session - should successfully lease session 2
+        var obtainResult2 = client.ObtainSession(account.Id.Checked(), TelegramSessionType.Quick);
+        obtainResult2.Status.Should().Be(KifaActionStatus.OK);
+        obtainResult2.Value.Checked().Id.Should().NotBe(session1Id);
+        obtainResult2.Value.Checked().Type.Should().Be(TelegramSessionType.Quick);
+    }
+
+    [Fact]
+    public void ObtainSession_WithPreferredSessionId_ReleasesSameSessionWithoutRotatingId() {
+        var account = CreateAccountWithSessions("sticky_session_test", 3);
+        var initial = client.ObtainSession(account.Id.Checked(), TelegramSessionType.Quick);
+        initial.Status.Should().Be(KifaActionStatus.OK);
+        var sessionId = initial.Value.Checked().Id;
+
+        // Release the session normally
+        var releaseResult = client.ReleaseSession(account.Id.Checked(), sessionId);
+        releaseResult.Status.Should().Be(KifaActionStatus.OK);
+
+        // Re-obtain with preferred sessionId
+        var reobtain = client.ObtainSession(account.Id.Checked(), TelegramSessionType.Upload, sessionId: sessionId);
+        reobtain.Status.Should().Be(KifaActionStatus.OK);
+        reobtain.Value.Checked().Id.Should().Be(sessionId);
+        reobtain.Value.Checked().Type.Should().Be(TelegramSessionType.Upload);
+    }
+
+    [Fact]
+    public void ObtainSession_WithPreferredSessionId_WhenReserved_FallsBackToAnotherAvailableSession() {
+        var account = CreateAccountWithSessions("sticky_fallback_test", 2);
+        var first = client.ObtainSession(account.Id.Checked(), TelegramSessionType.Quick);
+        first.Status.Should().Be(KifaActionStatus.OK);
+        var firstSessionId = first.Value.Checked().Id;
+
+        // First session is still reserved (not released). Request with firstSessionId as preferred.
+        var second = client.ObtainSession(account.Id.Checked(), TelegramSessionType.Quick, sessionId: firstSessionId);
+        second.Status.Should().Be(KifaActionStatus.OK);
+        second.Value.Checked().Id.Should().NotBe(firstSessionId);
+        second.Value.Checked().Type.Should().Be(TelegramSessionType.Quick);
+    }
 }

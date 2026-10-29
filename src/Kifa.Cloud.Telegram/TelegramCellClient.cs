@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Kifa.IO;
 using Kifa.Service;
 using NLog;
 using TL;
@@ -15,7 +16,8 @@ public class TelegramCellClient : IDisposable {
 
     TelegramAccount Account { get; set; }
     string ChannelId { get; set; }
-    TelegramSession Session { get; set; }
+    public TelegramSession Session { get; private set; }
+    public TelegramSessionType Type { get; }
 
     public Client Client { get; set; }
     public InputPeer Channel { get; set; }
@@ -54,6 +56,7 @@ public class TelegramCellClient : IDisposable {
         Account = account;
         ChannelId = channelId;
         Session = session;
+        Type = type;
 
         lock (ActiveClientsLock) {
             ActiveClients.Add(this);
@@ -69,7 +72,7 @@ public class TelegramCellClient : IDisposable {
             Helpers.Log = (_, message) => wTelegramLogger.Log(LogLevel.FromOrdinal(0), message);
         }
 
-        KeepSessionReserved(Session.Id, type);
+        _ = KeepSessionReserved(Session.Id, type);
 
         try {
             CreateClient();
@@ -118,7 +121,7 @@ public class TelegramCellClient : IDisposable {
         while (true) {
             await Task.Delay(interval);
 
-            if (disposed || !Reserved) {
+            if (disposed || !Reserved || Session.Id != sessionId) {
                 break;
             }
 
@@ -135,6 +138,79 @@ public class TelegramCellClient : IDisposable {
         CreateClient();
     }
 
+    static readonly TimeSpan SessionWaitInterval = TimeSpan.FromSeconds(10);
+    readonly object reobtainLock = new();
+
+    public void ReobtainSession(int? floodWaitSeconds = null, int? expectedSessionId = null) {
+        lock (reobtainLock) {
+            if (disposed) {
+                throw new ObjectDisposedException(nameof(TelegramCellClient));
+            }
+
+            if (expectedSessionId != null && Session.Id != expectedSessionId) {
+                Logger.Debug(
+                    $"Session was already reobtained (current: {Session.Id}, expected: {expectedSessionId}).");
+                return;
+            }
+
+            var oldSessionId = Session.Id;
+            Logger.Warn(
+                $"Re-obtaining session for account {Account.Id}. Releasing old session {oldSessionId} (flood wait: {floodWaitSeconds}s)...");
+
+            Reserved = false;
+            try {
+                TelegramAccount.Client.ReleaseSession(Account.Id.Checked(), oldSessionId, floodWaitSeconds);
+            } catch (Exception ex) {
+                Logger.Warn(ex,
+                    $"Failed to release old session {oldSessionId} for account {Account.Id}.");
+            }
+
+            try {
+                Client?.Dispose();
+            } catch (Exception ex) {
+                Logger.Trace(ex, "Exception disposing old client.");
+            }
+
+            Session = ObtainNewSession();
+            Reserved = true;
+
+            _ = KeepSessionReserved(Session.Id, Type);
+
+            CreateClient();
+            Logger.Info(
+                $"Successfully re-obtained new session {Session.Id} for account {Account.Id}.");
+        }
+    }
+
+    TelegramSession ObtainNewSession() {
+        while (true) {
+            try {
+                Logger.Debug($"Obtaining {Type} session for account {Account.Id}...");
+                var response = TelegramAccount.Client.ObtainSession(Account.Id.Checked(), Type);
+                if (response.Status != KifaActionStatus.OK || response.Value == null) {
+                    throw new KifaActionFailedException(response);
+                }
+
+                Logger.Debug(
+                    $"Obtained {Type} session {response.Value.Checked().Id} for account {Account.Id}.");
+                return response.Value;
+            } catch (KifaActionFailedException ex) {
+                if (ex.ActionResult.IsRetryable) {
+                    Logger.Warn(ex,
+                        $"Failed to obtain {Type} session for account {Account.Id}: {ex.ActionResult.Message}. Retrying...");
+                    if (ex.ActionResult.Status != KifaActionStatus.Pending) {
+                        Thread.Sleep(SessionWaitInterval);
+                    }
+
+                    continue;
+                }
+
+                throw new InsufficientStorageException(
+                    $"Failed to locate a session to use for account {Account.Id}: {ex.ActionResult.Message}");
+            }
+        }
+    }
+
     public void Release() {
         if (!Reserved && disposed) {
             return;
@@ -142,7 +218,7 @@ public class TelegramCellClient : IDisposable {
 
         Reserved = false;
         try {
-            TelegramAccount.Client.ReleaseSession(Account.Id, Session.Id);
+            TelegramAccount.Client.ReleaseSession(Account.Id.Checked(), Session.Id);
         } catch (Exception ex) {
             Logger.Warn(ex, $"Failed to release session {Session.Id} for account {Account.Id}.");
         }
