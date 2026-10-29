@@ -17,10 +17,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Kifa.YouTube\Kifa.YouTube.csproj"/>
-        <ProjectReference Include="..\src\Kifa.Tools\Kifa.Tools.csproj"/>
+        <ProjectReference Include="..\..\Kifa.YouTube\Kifa.YouTube.csproj"/>
+        <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj"/>
     </ItemGroup>
     <ItemGroup>
-        <None Include="..\resources\KifaYoutubeUtil.png" Pack="true" PackagePath=""/>
+        <None Include="..\..\resources\KifaYoutubeUtil.png" Pack="true" PackagePath=""/>
     </ItemGroup>
 </Project>
