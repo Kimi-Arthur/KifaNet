@@ -18,6 +18,10 @@ public class UpgradeCommand : KifaCommand {
 
     public virtual string? PackageId => Assembly.GetEntryAssembly()?.GetName().Name;
 
+    public virtual string? CurrentVersion
+        => Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion.Split('+')[0]
+           ?? Assembly.GetEntryAssembly()?.GetName().Version?.ToString();
+
     public virtual ExecutionResult RunDotnetCommand(string arguments)
         => Executor.Run("dotnet", arguments);
 
@@ -56,6 +60,21 @@ public class UpgradeCommand : KifaCommand {
         }
 
         var output = result.StandardOutput.Trim();
+        if (output.Contains("is already installed") || !output.Contains("was successfully updated")) {
+            var message = output.Length > 0
+                ? (CurrentVersion != null && !output.Contains(CurrentVersion)
+                    ? $"{output} (Current version: {CurrentVersion})"
+                    : output)
+                : (CurrentVersion != null
+                    ? $"Tool '{packageId}' (version '{CurrentVersion}') is already installed."
+                    : $"Tool '{packageId}' is already installed.");
+
+            return new KifaActionResult {
+                Status = KifaActionStatus.Skipped,
+                Message = message
+            };
+        }
+
         return new KifaActionResult {
             Status = KifaActionStatus.OK,
             Message = output.Length > 0 ? output : $"Successfully upgraded {packageId}."
