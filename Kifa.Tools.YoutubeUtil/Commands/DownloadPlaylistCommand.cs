@@ -22,6 +22,10 @@ public class DownloadPlaylistCommand : DownloadCommand {
     public bool OldestFirst { get; set; } = false;
 
     public override int Execute(KifaTask? task = null) {
+        if (Account != null) {
+            YouTubeAccount.Account = Account;
+        }
+
         var playlist = YouTubePlaylist.Client.Get(PlaylistId, new() {
             Refresh = Refresh
         });

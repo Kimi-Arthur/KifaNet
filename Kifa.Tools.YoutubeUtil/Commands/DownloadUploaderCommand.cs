@@ -20,6 +20,10 @@ public class DownloadUploaderCommand : DownloadCommand {
     public bool OldestFirst { get; set; } = false;
 
     public override int Execute(KifaTask? task = null) {
+        if (Account != null) {
+            YouTubeAccount.Account = Account;
+        }
+
         var uploader = YouTubeUploader.Resolve(UploaderId, refresh: Refresh);
         if (uploader == null) {
             Logger.Fatal($"Cannot find uploader ({UploaderId}). Exiting.");

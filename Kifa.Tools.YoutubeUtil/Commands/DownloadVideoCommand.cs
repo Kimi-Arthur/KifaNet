@@ -19,6 +19,10 @@ public class DownloadVideoCommand : DownloadCommand {
     public bool UseVideoNameFolder { get; set; } = false;
 
     public override int Execute(KifaTask? task = null) {
+        if (Account != null) {
+            YouTubeAccount.Account = Account;
+        }
+
         foreach (var id in Ids) {
             ExecuteItem(id, () => DownloadVideo(id));
             if (BreakOnExisting && LastItemAlreadyExists) {

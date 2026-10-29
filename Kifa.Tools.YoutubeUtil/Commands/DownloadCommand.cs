@@ -10,6 +10,9 @@ namespace Kifa.Tools.YoutubeUtil.Commands;
 public abstract class DownloadCommand : YoutubeCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
+    [Option('a', "account", HelpText = "Account to use for YouTube sessions. Defaults to 'default'.")]
+    public string? Account { get; set; }
+
     [Option('r', "refresh", HelpText = "Force refresh server data before downloading.")]
     public bool Refresh { get; set; } = false;
 
@@ -36,6 +39,10 @@ public abstract class DownloadCommand : YoutubeCommand {
 
     protected KifaActionResult Download(YouTubeVideo video, string? alternativeFolder = null,
         string? extraFolder = null, YouTubeUploader? uploader = null) {
+        if (Account != null) {
+            YouTubeAccount.Account = Account;
+        }
+
         LastItemAlreadyExists = false;
         uploader ??= EnsureUploaderInfo(video);
 
