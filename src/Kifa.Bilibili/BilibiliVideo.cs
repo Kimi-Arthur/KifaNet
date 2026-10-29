@@ -138,6 +138,9 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
         throw new DataNotFoundException();
     }
 
+    // Category partition references:
+    // - Modern zone mappings: https://github.com/huang3292/bilibili-API-collect-save/blob/master/docs/video/video_zone.md
+    // - Historical zone mappings: https://github.com/Vespa314/bilibili-api/blob/master/api.md
     public static readonly Dictionary<long, string> KnownCategories = new() {
         { 1, "动画" },
         { 24, "MAD·AMV" },
