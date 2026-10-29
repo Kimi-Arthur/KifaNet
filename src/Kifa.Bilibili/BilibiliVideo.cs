@@ -105,7 +105,7 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
 
     public override TimeSpan? RefreshInterval => TimeSpan.FromDays(365);
 
-    public override DataVersion? ForceRefreshBefore => new(2026, 10, 30);
+    public override DataVersion? ForceRefreshBefore => new(2026, 10, 29);
 
     public override void Fill(bool deep = false) {
         try {
@@ -298,18 +298,20 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
 
         var data = response.Data.Checked();
 
-        List<string> tags = [];
+        List<string>? tags = null;
         try {
-            tags = client.Call(new VideoTagRpc(Id))?.Data?.Select(t => t.TagName).OrderBy(t => t).ToList() ?? [];
+            tags = client.Call(new VideoTagRpc(Id))?.Data?.Select(t => t.TagName).OrderBy(t => t).ToList();
         } catch (Exception ex) {
-            Logger.Warn(ex, $"Failed to retrieve tags for video {Id}. Continuing without tags.");
+            Logger.Warn(ex, $"Failed to retrieve tags for video {Id}. Keeping existing tags.");
         }
 
         Title = data.Title;
         Author = data.Owner.Name;
         AuthorId = data.Owner.Mid.ToString();
         Description = data.Desc;
-        Tags = tags;
+        if (tags != null) {
+            Tags = tags;
+        }
         Category = ResolveCategory(data.Tname, data.TnameV2, data.Tid, data.TidV2);
         Cover = data.Pic;
         Pages = data.Pages.Select(p => new BilibiliChat {
