@@ -263,7 +263,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             }
 
             var contentChanged = isNewItem ||
-                                 originalContent.Metadata?.Status == DataStatus.NotFound ||
+                                 originalContent.Metadata?.Status != DataStatus.OK ||
                                  !data.Equals(originalContent);
 
             data.Metadata ??= new DataMetadata();

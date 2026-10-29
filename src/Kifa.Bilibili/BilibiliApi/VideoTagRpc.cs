@@ -42,7 +42,7 @@ public sealed class VideoTagRpc : KifaJsonParameterizedRpc<VideoTagRpc.Response>
 
     #endregion
 
-    protected override string Url => "http://api.bilibili.com/x/tag/archive/tags?aid={aid}";
+    protected override string Url => "https://api.bilibili.com/x/tag/archive/tags?aid={aid}";
 
     protected override HttpMethod Method => HttpMethod.Get;
 

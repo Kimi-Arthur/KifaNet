@@ -26,7 +26,9 @@ public class HttpClients {
                     Proxy = new WebProxy(CnProxy)
                 });
                 bilibiliCnClient.Timeout = TimeSpan.FromMinutes(10);
-                bilibiliCnClient.DefaultRequestHeaders.Add("cookie", BilibiliCookies);
+                if (!string.IsNullOrEmpty(BilibiliCookies)) {
+                    bilibiliCnClient.DefaultRequestHeaders.Add("cookie", BilibiliCookies);
+                }
                 bilibiliCnClient.DefaultRequestHeaders.Referrer =
                     new Uri("https://m.bilibili.com/");
                 bilibiliCnClient.DefaultRequestHeaders.UserAgent.ParseAdd(
@@ -46,7 +48,9 @@ public class HttpClients {
                     Proxy = new WebProxy(HkProxy)
                 });
                 bilibiliHkClient.Timeout = TimeSpan.FromMinutes(10);
-                bilibiliHkClient.DefaultRequestHeaders.Add("cookie", BilibiliCookies);
+                if (!string.IsNullOrEmpty(BilibiliCookies)) {
+                    bilibiliHkClient.DefaultRequestHeaders.Add("cookie", BilibiliCookies);
+                }
                 bilibiliHkClient.DefaultRequestHeaders.Referrer =
                     new Uri("https://m.bilibili.com/");
                 bilibiliHkClient.DefaultRequestHeaders.UserAgent.ParseAdd(
@@ -64,7 +68,9 @@ public class HttpClients {
             if (bilibiliDirectClient == null) {
                 bilibiliDirectClient = new HttpClient();
                 bilibiliDirectClient.Timeout = TimeSpan.FromMinutes(10);
-                bilibiliDirectClient.DefaultRequestHeaders.Add("cookie", BilibiliCookies);
+                if (!string.IsNullOrEmpty(BilibiliCookies)) {
+                    bilibiliDirectClient.DefaultRequestHeaders.Add("cookie", BilibiliCookies);
+                }
                 bilibiliDirectClient.DefaultRequestHeaders.Referrer =
                     new Uri("https://m.bilibili.com/");
                 bilibiliDirectClient.DefaultRequestHeaders.UserAgent.ParseAdd(
@@ -92,7 +98,9 @@ public class HttpClients {
                 biliplusClient = new HttpClient {
                     Timeout = TimeSpan.FromMinutes(10)
                 };
-                biliplusClient.DefaultRequestHeaders.Add("cookie", BiliplusCookies);
+                if (!string.IsNullOrEmpty(BiliplusCookies)) {
+                    biliplusClient.DefaultRequestHeaders.Add("cookie", BiliplusCookies);
+                }
                 biliplusClient.DefaultRequestHeaders.UserAgent.ParseAdd(
                     "Mozilla/5.0 (Windows NT 6.2; WOW64; rv:19.0) Gecko/20100101 Firefox/19.0");
             }

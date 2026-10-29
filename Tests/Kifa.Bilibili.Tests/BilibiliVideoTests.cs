@@ -60,6 +60,8 @@ public class BilibiliVideoTests {
     [Theory]
     [InlineData("av115015885586587", "演奏")]
     [InlineData("av113368950116186", "演奏")]
+    [InlineData("av27570734", "日常")]
+    [InlineData("av114088139035292", "足球")]
     public void CategoryFillTest(string id, string category) {
         var video = new BilibiliVideo {
             Id = id

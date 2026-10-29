@@ -105,14 +105,17 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
 
     public override TimeSpan? RefreshInterval => TimeSpan.FromDays(365);
 
-    public override DataVersion? ForceRefreshBefore => new(2026, 10, 29);
+    public override DataVersion? ForceRefreshBefore => new(2026, 10, 30);
 
     public override void Fill(bool deep = false) {
         try {
             FillWithBilibili();
             return;
+        } catch (BilibiliVideoNotFoundException) {
+            Logger.Debug($"Video {Id} not found from bilibili API.");
         } catch (Exception e) {
-            Logger.Debug(e, $"Unable to find video {Id} from bilibili API.");
+            Logger.Warn(e, $"Failed to fill video {Id} from bilibili API due to unexpected or transient error.");
+            throw new FailedToFillException($"Failed to fill video {Id} from bilibili API.", e);
         }
 
         try {
@@ -283,14 +286,30 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
             response = HttpClients.GetBilibiliClient(BilibiliRegion.Cn).Call(new VideoRpc(Id));
         }
 
-        var data = response?.Data.Checked();
+        if (response?.Code is -404 or 62002 or 62004) {
+            throw new BilibiliVideoNotFoundException(
+                $"Video {Id} not found on Bilibili ({response.Code}: {response.Message}).");
+        }
 
-        var tags = client.Call(new VideoTagRpc(Id))?.Data;
+        if (response == null || response.Code != 0) {
+            throw new FailedToFillException(
+                $"Bilibili API returned error for {Id} ({response?.Code}: {response?.Message}).");
+        }
+
+        var data = response.Data.Checked();
+
+        List<string> tags = [];
+        try {
+            tags = client.Call(new VideoTagRpc(Id))?.Data?.Select(t => t.TagName).OrderBy(t => t).ToList() ?? [];
+        } catch (Exception ex) {
+            Logger.Warn(ex, $"Failed to retrieve tags for video {Id}. Continuing without tags.");
+        }
+
         Title = data.Title;
         Author = data.Owner.Name;
         AuthorId = data.Owner.Mid.ToString();
         Description = data.Desc;
-        Tags = tags?.Select(t => t.TagName).OrderBy(t => t).ToList() ?? [];
+        Tags = tags;
         Category = ResolveCategory(data.Tname, data.TnameV2, data.Tid, data.TidV2);
         Cover = data.Pic;
         Pages = data.Pages.Select(p => new BilibiliChat {

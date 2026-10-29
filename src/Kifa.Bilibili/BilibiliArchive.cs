@@ -27,28 +27,36 @@ public class BilibiliArchive : DataModel, WithModelId<BilibiliArchive> {
 
         var info = HttpClients.GetBilibiliClient().Call(new UploaderInfoWebRpc(AuthorId));
         if (info == null) {
-            throw new DataNotFoundException(
-                $"Failed to retrieve data for uploader ({Id}) from bilibili,");
+            throw new FailedToFillException(
+                $"Failed to retrieve data for uploader ({AuthorId}) from bilibili.");
         }
 
         Author = info.Space.Info.Name;
-        var data = HttpClients.GetBilibiliClient()
-            .Call(new ArchiveRpc(uploaderId: AuthorId, seasonId: SeasonId)).Data;
-        if (data == null) {
-            throw new DataNotFoundException($"Failed to find archive ({Id}).");
+        var response = HttpClients.GetBilibiliClient()
+            .Call(new ArchiveRpc(uploaderId: AuthorId, seasonId: SeasonId));
+        if (response?.Code is -404 or -400 or 12002) {
+            throw new DataNotFoundException($"Failed to find archive ({Id}): {response?.Message}.");
         }
 
+        if (response?.Data == null) {
+            throw new FailedToFillException(
+                $"Failed to retrieve archive ({Id}): {response?.Message} ({response?.Code}).");
+        }
+
+        var data = response.Data;
         Title = data.Meta.Checked().Name;
 
         Videos = data.Aids.Select(m => $"av{m}").ToList();
         var page = 1;
         while (Videos.Count < data.Page.Checked().Total) {
-            data = HttpClients.GetBilibiliClient()
-                .Call(new ArchiveRpc(uploaderId: AuthorId, seasonId: SeasonId, page: ++page)).Data;
-            if (data == null) {
-                throw new DataNotFoundException($"Failed to find playlist ({Id}).");
+            response = HttpClients.GetBilibiliClient()
+                .Call(new ArchiveRpc(uploaderId: AuthorId, seasonId: SeasonId, page: ++page));
+            if (response?.Data == null) {
+                throw new FailedToFillException(
+                    $"Failed to retrieve archive ({Id}) page {page}: {response?.Message} ({response?.Code}).");
             }
 
+            data = response.Data;
             Videos.AddRange(data.Aids.Select(m => $"av{m}"));
         }
     }
