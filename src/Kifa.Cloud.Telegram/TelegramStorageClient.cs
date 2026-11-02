@@ -22,6 +22,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     public static int DownloadThread { get; set; } = 8;
     public static int UploadThread { get; set; } = 8;
 
+    public static TimeSpan QuickTimeout { get; set; } = TimeSpan.FromMinutes(1);
     public static TimeSpan DownloadTimeout { get; set; } = TimeSpan.FromMinutes(10);
     public static TimeSpan UploadTimeout { get; set; } = TimeSpan.FromMinutes(10);
     public static TimeSpan MergeTimeout { get; set; } = TimeSpan.FromMinutes(10);
@@ -191,7 +192,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             }
 
             var result = Retry
-                .Run(() => cellClient.Client.DeleteMessages(cellClient.Channel, message.id),
+                .Run(() => cellClient.Client.DeleteMessages(cellClient.Channel, message.id).WaitAsync(QuickTimeout),
                     GetFloodHandler(cellClient)).GetAwaiter().GetResult();
             if (result.pts_count != 1) {
                 Logger.Debug($"Delete of {path} is not successful, but is ignored.");
@@ -389,6 +390,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     public static TimeSpan FloodWarnThreshold { get; set; } = TimeSpan.FromSeconds(50);
     public static TimeSpan MaxAllowedFloodWait { get; set; } = TimeSpan.FromSeconds(30);
     public static int MaxFloodWaitRetries { get; set; } = 3;
+    public static int MaxTimeoutRetries { get; set; } = 3;
 
     public static Func<Exception, Dictionary<string, int>?, Task<Dictionary<string, int>?>>
         GetFloodHandler(TelegramCellClient? cellClient = null)
@@ -490,6 +492,14 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 or RetryValidationException: {
                 var failureKey = ex.GetType().ToString();
                 var count = failures.GetValueOrDefault(failureKey, 0) + 1;
+                if (cellClient != null && count > MaxTimeoutRetries) {
+                    Logger.Warn(ex,
+                        $"Network/timeout error (try {count}) exceeded threshold ({MaxTimeoutRetries}). Re-requesting session...");
+                    cellClient.ReobtainSession(expectedSessionId: cellClient.Session.Id);
+                    failures.Remove(failureKey);
+                    return failures;
+                }
+
                 if (count > FailureOtherCount) {
                     Logger.Error(
                         $"Failed to avoid unexpected exception after {FailureOtherCount} tries.");
@@ -497,6 +507,13 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 }
 
                 failures[failureKey] = count;
+                if (cellClient != null) {
+                    try {
+                        cellClient.Relogin();
+                    } catch (Exception reloginEx) {
+                        Logger.Warn(reloginEx, "Failed to relogin cell client after socket/timeout error.");
+                    }
+                }
 
                 Logger.Warn(ex, $"Sleeping 30s for unexpected exception ({count})...");
                 await Task.Delay(TimeSpan.FromSeconds(30));
@@ -765,7 +782,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
     Message? GetMessageByHistory(TelegramCellClient cellClient, string path) {
         var messages = Retry
-            .Run(() => cellClient.Client.Messages_GetHistory(cellClient.Channel),
+            .Run(() => cellClient.Client.Messages_GetHistory(cellClient.Channel).WaitAsync(QuickTimeout),
                 GetFloodHandler(cellClient)).GetAwaiter().GetResult().Messages;
         while (messages?.Length > 0) {
             try {
@@ -786,7 +803,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
             var lastMessageId = messages[^1].ID;
             messages = Retry
-                .Run(() => cellClient.Client.Messages_GetHistory(cellClient.Channel, lastMessageId),
+                .Run(() => cellClient.Client.Messages_GetHistory(cellClient.Channel, lastMessageId).WaitAsync(QuickTimeout),
                     GetFloodHandler(cellClient)).GetAwaiter().GetResult().Messages;
         }
 
@@ -798,7 +815,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             return Retry
                 .Run(
                     () => cellClient.Client.Messages_Search<InputMessagesFilterDocument>(
-                        cellClient.Channel, path),
+                        cellClient.Channel, path).WaitAsync(QuickTimeout),
                     GetFloodHandler(cellClient)).GetAwaiter()
                 .GetResult().Messages.Select(m => m as Message)
                 .SingleOrDefault(m => m?.message == path);

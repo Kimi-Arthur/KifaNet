@@ -91,7 +91,7 @@ public class TelegramCellClient : IDisposable {
         Client.FloodRetryThreshold = 0;
 
         try {
-            var result = Retry.Run(() => Client.Login(Account.Phone),
+            var result = Retry.Run(() => Client.Login(Account.Phone).WaitAsync(TelegramStorageClient.QuickTimeout),
                 TelegramStorageClient.HandleFloodExceptionFunc).GetAwaiter().GetResult();
             if (result != null) {
                 throw new DriveNotFoundException(
@@ -99,7 +99,7 @@ public class TelegramCellClient : IDisposable {
             }
 
             Channel = Retry
-                .Run(() => Client.Messages_GetAllChats(),
+                .Run(() => Client.Messages_GetAllChats().WaitAsync(TelegramStorageClient.QuickTimeout),
                     TelegramStorageClient.HandleFloodExceptionFunc).GetAwaiter().GetResult()
                 .chats[long.Parse(ChannelId)].Checked();
         } catch {
@@ -131,7 +131,7 @@ public class TelegramCellClient : IDisposable {
     }
 
     public async Task<Client> GetClientForDC(int dcId)
-        => dcId == 0 ? Client : await Client.GetClientForDC(-Math.Abs(dcId), true);
+        => dcId == 0 ? Client : await Client.GetClientForDC(-Math.Abs(dcId), true).WaitAsync(TelegramStorageClient.QuickTimeout);
 
     public void Relogin() {
         Client.Dispose();
