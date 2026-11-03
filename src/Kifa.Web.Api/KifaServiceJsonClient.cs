@@ -141,7 +141,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             .GetFiles("*.json",
                 recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
             .Where(p => folder != "" || !p.FullName.StartsWith(virtualItemPrefix)).AsParallel()
-            .Select(i => Read(i.FullName[prefix.Length..^5])).ExceptNull()
+            .Select(i => Read(i.FullName[prefix.Length..^5], checkId: false)).ExceptNull()
             .Where(i => folder != "" || !i.Id.StartsWith(DataModel.VirtualItemPrefix))
             .Where(i => i.Metadata?.Status != DataStatus.NotFound)
             .ToDictionary(i => i.Id, i => i);
@@ -159,6 +159,12 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 var value = items.TryGetValue(target, out var item)
                     ? item.Clone()
                     : Read(target).Checked();
+
+                if (value.Metadata?.Linking?.Links?.Contains(i.Key) != true &&
+                    value.Metadata?.Linking?.VirtualLinks?.Contains(i.Key) != true) {
+                    throw new DataCorruptedException(
+                        $"Target {target} does not contain link {i.Key}.");
+                }
 
                 // source.Metadata.Linking has to exist, to contain Links at least.
                 value.Metadata.Checked().Linking.Checked().Target = value.Id;
@@ -197,7 +203,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
 
                 // TODO: Not sure...
                 return FormatData(result, options);
-            } catch (Exception ex) {
+            } catch (Exception ex) when (ex is not DataCorruptedException) {
                 Logger.Error(ex, $"Failed to get {id}.");
                 return null;
             }
@@ -288,7 +294,15 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         }
 
         if (data.Metadata?.Linking?.Target != null) {
-            data = Read(data.Metadata.Linking.Target);
+            var target = data.Metadata.Linking.Target;
+            data = Read(target);
+            if (data == null ||
+                (data.Metadata?.Linking?.Links?.Contains(id) != true &&
+                 data.Metadata?.Linking?.VirtualLinks?.Contains(id) != true)) {
+                throw new DataCorruptedException(
+                    $"Target {target} does not contain link {id}.");
+            }
+
             data.Metadata.Linking.Target = data.Id;
             data.Id = id;
         }
@@ -511,7 +525,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         }
     }
 
-    TDataModel? Read(string id) {
+    TDataModel? Read(string id, bool checkId = true) {
         var rawData = ReadRaw(id);
         Logger.Trace($"Read {id}");
         Logger.Notice(() => $"{rawData ?? "null"}");
@@ -524,6 +538,10 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             // still have external properties embedded directly in the JSON to be read into the model
             // so they can be migrated and extracted into separate files on rewrite.
             var data = rawData.FromJson<TDataModel>().Checked();
+            if (checkId ? data.Id != id : data.Id?.Trim('/') != id.Trim('/')) {
+                throw new DataCorruptedException(
+                    $"Data ID {data.Id} does not match requested ID {id}.");
+            }
 
             ReadAndFillExternalProperties(data);
             return data;

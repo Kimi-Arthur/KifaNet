@@ -490,6 +490,21 @@ public class BasicTests : IDisposable {
         result.Message.Should().Contain("exceeds the maximum allowed length of 255 UTF-8 bytes");
     }
 
+    [Fact]
+    public void GetMismatchedIdThrowsDataCorruptedExceptionTest() {
+        Directory.CreateDirectory($"{folder}/tests");
+        var id = nameof(GetMismatchedIdThrowsDataCorruptedExceptionTest);
+        File.WriteAllText($"{folder}/tests/{id}.json", JsonConvert.SerializeObject(
+            new TestDataModel {
+                Id = "wrong_id",
+                Data = "good data"
+            }, KifaJsonSerializerSettings.Pretty));
+
+        var act = () => client.Get(id);
+        act.Should().Throw<DataCorruptedException>()
+            .WithMessage($"*Data ID wrong_id does not match requested ID {id}*");
+    }
+
     public void Dispose() {
         if (Directory.Exists(folder)) {
             Directory.Delete(folder, true);

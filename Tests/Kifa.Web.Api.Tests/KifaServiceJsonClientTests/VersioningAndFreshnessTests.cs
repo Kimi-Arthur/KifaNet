@@ -661,7 +661,7 @@ public class VersioningAndFreshnessTests : IDisposable {
         Directory.CreateDirectory($"{folder}/test_fills");
         var id = nameof(FailedToFillPreservesStatusAndDoesNotWriteTombstone);
         var filePath = $"{folder}/test_fills/{id}.json";
-        File.WriteAllText(filePath, "{\n  \"content\": \"original legacy content\"\n}");
+        File.WriteAllText(filePath, $"{{\n  \"id\": \"{id}\",\n  \"content\": \"original legacy content\"\n}}");
 
         var model = new TestFillDataModel {
             Id = id,

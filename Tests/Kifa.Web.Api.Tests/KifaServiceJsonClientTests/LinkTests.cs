@@ -425,6 +425,30 @@ public class LinkTests : IDisposable {
         conflictCount.Should().Be(8);
     }
 
+    [Fact]
+    public void GetUnlistedLinkThrowsDataCorruptedExceptionTest() {
+        var id = nameof(GetUnlistedLinkThrowsDataCorruptedExceptionTest);
+        client.Set(new TestDataModelWithVirtualLinks {
+            Id = id,
+            Data = "very good data"
+        });
+
+        var rogueLinkId = "rogue_link";
+        var roguePath = $"{folder}/link_tests/{rogueLinkId}.json";
+        File.WriteAllText(roguePath, new TestDataModelWithVirtualLinks {
+            Id = rogueLinkId,
+            Metadata = new DataMetadata {
+                Linking = new LinkingMetadata {
+                    Target = id
+                }
+            }
+        }.ToJson());
+
+        var act = () => client.Get(rogueLinkId);
+        act.Should().Throw<DataCorruptedException>()
+            .WithMessage($"*Target {id} does not contain link {rogueLinkId}*");
+    }
+
     public void Dispose() {
         if (Directory.Exists(folder)) {
             Directory.Delete(folder, true);
