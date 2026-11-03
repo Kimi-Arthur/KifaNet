@@ -63,7 +63,7 @@ The server-side implementation is split between the primary controller and servi
 When a session is requested via [`ObtainSession`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Web.Api/Controllers/TelegramAccountController.cs#L88-L164):
 1. **Account Locking**: Acquires a distributed file lock for the target account via `AcquireLock(accountId)` to guarantee atomicity.
 2. **Type Quota Enforcement**: Calculates the active sessions of the requested type (`s.Reserved > now && s.Type == type`). If `count >= GetSessionLimit(type)`, returns `KifaActionStatus.Pending` (`"All {limit} {type} sessions are reserved."`).
-3. **Explicit Session Reuse**: If a `sessionId` is specified, checks if the session is currently idle/expired (`Reserved <= now`). If valid, refreshes MTProto credentials if expired, updates `Reserved = now + GetLeaseDuration(type)`, sets `Type = type`, persists to disk, and returns the session.
+3. **Explicit Session Reuse**: If a `sessionId` is specified and the session is currently idle/expired (`Reserved <= now`), refreshes MTProto credentials if expired, updates `Reserved = now + GetLeaseDuration(type)`, sets `Type = type`, persists to disk without rotating `Id`, and returns the session.
 4. **LRU Allocation**: If type quota allows, filters available idle sessions (`Reserved <= now`) and selects the coldest session (minimum `Reserved`). If no sessions are available, returns `KifaActionStatus.Pending` (`"All {count} sessions are reserved."`).
 5. **ID Rotation & Lease Granting**:
    - Generates a new random session ID (`Random.Shared.Next()`) to invalidate any previous stale lease holders.
@@ -138,23 +138,29 @@ To avoid spinning up redundant MTProto connections for parallel operations, [`Te
 static readonly Dictionary<(string CellId, TelegramSessionType Type), CellClientEntry> CellClients = new();
 
 class CellClientEntry {
-    public int Holders { get; set; }
+    public required string CellId { get; init; }
+    public required TelegramSessionType Type { get; set; }
     public TelegramCellClient? Client { get; set; }
+    public int Holders { get; set; }
+    public long BytesRead { get; set; }
     public TaskCompletionSource<TelegramCellClient>? InitTask { get; set; }
 }
 ```
 
 - **Thread-Safe Acquisition (`ObtainCellClient`)**:
-  1. Under `lock (CellClientLock)`, checks if an entry exists for `(CellId, type)`.
-  2. If an entry exists and is ready (`Client != null`), increments `Holders` and returns immediately.
+  1. Under `lock (CellClientLock)`, checks if an entry exists for `(CellId, type)` (or reuses an active `(CellId, Download)` entry when `type == Quick`).
+  2. If an entry exists and is ready (`Client != null`), increments `Holders` and returns the `CellClientEntry` immediately.
   3. If an entry is currently initializing, increments `Holders` and captures `waitTask = InitTask.Task`. Awaits `waitTask` outside the lock.
   4. If no entry exists, creates `tcs = new TaskCompletionSource<TelegramCellClient>()` with `Holders = 1`, stores it in `CellClients`, and creates the client outside the lock.
   5. Upon successful creation, sets `InitTask.SetResult(client)` to unblock all parallel callers. If creation throws, removes the entry from `CellClients` and calls `InitTask.SetException(ex)`.
+- **Shared Session Switching (`SwitchCellClient`)**:
+  1. All shard streams opened by `OpenRead` (and any `Quick` requests) for a cell share the same `CellClientEntry` instance.
+  2. Once cumulative `entry.BytesRead + requestedCount` exceeds `QuickSessionThreshold` (1 KiB), `SwitchCellClient` releases the `Quick` client (`oldClient.Release()`), obtains a new `Download` client passing `oldClient.Session.Id` as the preferred session ID (`Cell.CreateClient(Download, oldSessionId)`), updates `entry.Client` and `entry.Type`, and moves `entry` in `CellClients` from `(CellId, Quick)` to `(CellId, Download)`.
+  3. Because all existing holders (e.g., all shards of `OpenRead`) and any subsequent `Quick` callers share `entry`, they all immediately use the new `Download` session without holding a second `Quick` session or repeating switches per shard.
 - **Reference-Counted Release (`ReturnCellClient`)**:
-  1. Decrements `Holders` under lock.
-  2. Captures `preferredSessionId` from `entry.Client.Session.Id` to maintain session affinity for subsequent requests.
-  3. When `Holders` drops to 0, removes `(CellId, type)` from `CellClients` and releases the client (`client.Release()`).
-- **Sticky Session Affinity**: Each [`TelegramStorageClient`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Cloud.Telegram/TelegramStorageClient.cs) instance tracks `preferredSessionId`. When acquiring a new session (`Cell.CreateClient(type, preferredSessionId)`), the client passes its last successful session ID. If that session is idle on the server, it is immediately re-leased without rotating its ID; if busy or flooded, the server automatically allocates another available session.
+  1. Decrements `entry.Holders` under lock.
+  2. When `entry.Holders` drops to 0, captures `preferredSessionId` from `entry.Client.Session.Id` to maintain session affinity for subsequent sequential requests, removes `(entry.CellId, entry.Type)` from `CellClients`, and releases the client (`client.Release()`).
+- **Sticky Session Affinity**: Each [`TelegramStorageClient`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Cloud.Telegram/TelegramStorageClient.cs) instance tracks `preferredSessionId` when a session is released. When acquiring a new session (`Cell.CreateClient(type, sessionToPrefer)`), the client passes its last released session ID. If that session is idle on the server, it is immediately re-leased without rotating its ID; if busy or flooded, the server automatically allocates another available session.
 
 ### 2. Failure Handling & Storage Cell Failover
 In [`TelegramStorageCell.CreateClient`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Cloud.Telegram/TelegramStorageCell.cs#L29-L54):

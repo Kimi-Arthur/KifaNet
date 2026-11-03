@@ -44,8 +44,11 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     }
 
     class CellClientEntry {
+        public required string CellId { get; init; }
+        public required TelegramSessionType Type { get; set; }
         public TelegramCellClient? Client { get; set; }
         public int Holders { get; set; }
+        public long BytesRead { get; set; }
         public TaskCompletionSource<TelegramCellClient>? InitTask { get; set; }
     }
 
@@ -54,50 +57,61 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
     int? preferredSessionId;
 
-    TelegramCellClient ObtainCellClient(TelegramSessionType type) {
-        var key = (CellId, type);
+    CellClientEntry ObtainCellClient(TelegramSessionType type) {
         Task<TelegramCellClient>? waitTask = null;
         CellClientEntry? entry = null;
         TaskCompletionSource<TelegramCellClient>? tcs = null;
+        int? sessionToPrefer = null;
 
         lock (CellClientLock) {
-            if (CellClients.TryGetValue(key, out var existing)) {
-                existing.Holders++;
-                if (existing.Client != null) {
-                    preferredSessionId = existing.Client.Session.Id;
-                    return existing.Client;
+            if (type == TelegramSessionType.Quick &&
+                CellClients.TryGetValue((CellId, TelegramSessionType.Download), out var downloadEntry)) {
+                entry = downloadEntry;
+            } else {
+                CellClients.TryGetValue((CellId, type), out entry);
+            }
+
+            if (entry != null) {
+                entry.Holders++;
+                if (entry.Client != null) {
+                    return entry;
                 }
 
-                waitTask = existing.InitTask.Checked().Task;
+                waitTask = entry.InitTask.Checked().Task;
             } else {
                 tcs = new TaskCompletionSource<TelegramCellClient>(
                     TaskCreationOptions.RunContinuationsAsynchronously);
                 entry = new CellClientEntry {
+                    CellId = CellId,
+                    Type = type,
                     Holders = 1,
                     InitTask = tcs
                 };
-                CellClients[key] = entry;
+                CellClients[(CellId, type)] = entry;
+                sessionToPrefer = preferredSessionId;
+                preferredSessionId = null;
             }
         }
 
         if (waitTask != null) {
             try {
-                var c = waitTask.GetAwaiter().GetResult();
-                preferredSessionId = c.Session.Id;
-                return c;
+                waitTask.GetAwaiter().GetResult();
+                return entry.Checked();
             } catch {
-                ReturnCellClient(type);
+                ReturnCellClient(entry.Checked());
                 throw;
             }
         }
 
+        var key = (CellId, type);
         TelegramCellClient client;
         try {
-            client = Cell.CreateClient(type, preferredSessionId);
-            preferredSessionId = client.Session.Id;
+            client = Cell.CreateClient(type, sessionToPrefer);
         } catch (Exception ex) {
             lock (CellClientLock) {
-                CellClients.Remove(key);
+                if (CellClients.TryGetValue(key, out var current) && current == entry) {
+                    CellClients.Remove(key);
+                }
             }
 
             tcs.Checked().SetException(ex);
@@ -107,7 +121,11 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         TelegramCellClient? clientToRelease = null;
         lock (CellClientLock) {
             if (entry.Checked().Holders <= 0) {
-                CellClients.Remove(key);
+                if (CellClients.TryGetValue(key, out var current) && current == entry) {
+                    CellClients.Remove(key);
+                }
+
+                preferredSessionId = client.Session.Id;
                 clientToRelease = client;
             } else {
                 entry.Checked().Client = client;
@@ -120,21 +138,21 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             throw new Exception("Session client was released because holders reached 0.");
         }
 
-        return client;
+        return entry.Checked();
     }
 
-    void ReturnCellClient(TelegramSessionType type) {
+    void ReturnCellClient(CellClientEntry entry) {
         TelegramCellClient? clientToRelease = null;
         lock (CellClientLock) {
-            var key = (CellId, type);
-            if (CellClients.TryGetValue(key, out var entry)) {
+            entry.Holders--;
+            if (entry.Holders <= 0) {
                 if (entry.Client != null) {
                     preferredSessionId = entry.Client.Session.Id;
                 }
 
-                entry.Holders--;
-                if (entry.Holders <= 0) {
-                    clientToRelease = entry.Client;
+                clientToRelease = entry.Client;
+                var key = (entry.CellId, entry.Type);
+                if (CellClients.TryGetValue(key, out var current) && current == entry) {
                     CellClients.Remove(key);
                 }
             }
@@ -168,21 +186,22 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     }
 
     public override long Length(string path) {
-        var cellClient = ObtainCellClient(TelegramSessionType.Quick);
+        var entry = ObtainCellClient(TelegramSessionType.Quick);
         try {
-            var document = GetDocument(cellClient, path);
+            var document = GetDocument(entry.Client.Checked(), path);
             if (document == null) {
                 throw new FileNotFoundException();
             }
 
             return document.size;
         } finally {
-            ReturnCellClient(TelegramSessionType.Quick);
+            ReturnCellClient(entry);
         }
     }
 
     public override void Delete(string path) {
-        var cellClient = ObtainCellClient(TelegramSessionType.Quick);
+        var entry = ObtainCellClient(TelegramSessionType.Quick);
+        var cellClient = entry.Client.Checked();
 
         try {
             var message = GetMessage(cellClient, path);
@@ -198,7 +217,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 Logger.Debug($"Delete of {path} is not successful, but is ignored.");
             }
         } finally {
-            ReturnCellClient(TelegramSessionType.Quick);
+            ReturnCellClient(entry);
         }
     }
 
@@ -219,7 +238,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             ? TelegramSessionType.Quick
             : TelegramSessionType.Upload;
 
-        var cellClient = ObtainCellClient(sessionType);
+        var entry = ObtainCellClient(sessionType);
+        var cellClient = entry.Client.Checked();
 
         try {
             // This is to ensure we don't simultaneously read the input when uploading to avoid conflict.
@@ -275,7 +295,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                     $"Failed to upload {path} in the finalization step: {finalResult}.");
             }
         } finally {
-            ReturnCellClient(sessionType);
+            ReturnCellClient(entry);
         }
     }
 
@@ -543,63 +563,73 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     }
 
     public override Stream OpenRead(string path) {
-        var state = new DownloadState {
-            SessionType = TelegramSessionType.Quick,
-            CellClient = ObtainCellClient(TelegramSessionType.Quick)
-        };
+        var entry = ObtainCellClient(TelegramSessionType.Quick);
 
         try {
-            var document = GetDocument(state.CellClient, path);
+            var document = GetDocument(entry.Client.Checked(), path);
             if (document == null) {
                 throw new FileNotFoundException(
                     $"{path} is not found in {this} because the document is not found in search.");
             }
 
             var fileSize = document.size;
+            var state = new DownloadState {
+                Entry = entry
+            };
             return new SeekableReadStream<DownloadState>(fileSize,
                 (buffer, bufferOffset, offset, count, s) => Download(buffer, path,
                     bufferOffset, offset, count, s), state,
                 disposer: () => {
+                    CellClientEntry? entryToReturn;
                     lock (state) {
-                        if (state.CellClient != null) {
-                            ReturnCellClient(state.SessionType);
-                            state.CellClient = null;
-                        }
+                        entryToReturn = state.Entry;
+                        state.Entry = null;
+                    }
+
+                    if (entryToReturn != null) {
+                        ReturnCellClient(entryToReturn);
                     }
                 });
         } catch {
-            lock (state) {
-                if (state.CellClient != null) {
-                    ReturnCellClient(state.SessionType);
-                    state.CellClient = null;
-                }
-            }
-
+            ReturnCellClient(entry);
             throw;
         }
     }
 
     class DownloadState {
-        public TelegramSessionType SessionType = TelegramSessionType.Quick;
-        public TelegramCellClient? CellClient;
-        public long BytesRead;
+        public CellClientEntry? Entry;
         public readonly byte[] LastBlock = new byte[BlockSize];
         public long LastBlockStart = -1;
         public Exception? LastException;
     }
 
-    void UpgradeCellClient(DownloadState state, TelegramSessionType targetType) {
-        lock (state) {
-            if (state.SessionType == targetType || state.CellClient == null) {
+    void SwitchCellClient(CellClientEntry entry, TelegramSessionType targetType) {
+        lock (entry) {
+            if (entry.Type == targetType || entry.Client == null) {
                 return;
             }
 
+            var oldClient = entry.Client;
+            var oldSessionId = oldClient.Session.Id;
             Logger.Debug(
-                $"Upgrading session from {state.SessionType} to {targetType} for cell {this}.");
-            ReturnCellClient(state.SessionType);
-            state.CellClient = null;
-            state.SessionType = targetType;
-            state.CellClient = ObtainCellClient(targetType);
+                $"Releasing {entry.Type} session {oldSessionId} and obtaining {targetType} session for cell {this}.");
+            oldClient.Release();
+            try {
+                entry.Client = Cell.CreateClient(targetType, oldSessionId);
+            } catch {
+                entry.Client = null;
+                throw;
+            }
+
+            lock (CellClientLock) {
+                var oldKey = (entry.CellId, entry.Type);
+                if (CellClients.TryGetValue(oldKey, out var current) && current == entry) {
+                    CellClients.Remove(oldKey);
+                }
+
+                entry.Type = targetType;
+                CellClients[(entry.CellId, targetType)] = entry;
+            }
         }
     }
 
@@ -616,19 +646,23 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
         var requestedCount = count;
 
-        TelegramCellClient? cellClient;
+        CellClientEntry? entry;
         lock (state) {
-            if (state.SessionType == TelegramSessionType.Quick &&
-                state.BytesRead + requestedCount > QuickSessionThreshold) {
-                UpgradeCellClient(state, TelegramSessionType.Download);
-            }
-
-            cellClient = state.CellClient;
+            entry = state.Entry;
         }
 
-        if (cellClient == null) {
+        if (entry?.Client == null) {
             throw new ObjectDisposedException(nameof(SeekableReadStream));
         }
+
+        lock (entry) {
+            if (entry.Type == TelegramSessionType.Quick &&
+                entry.BytesRead + requestedCount > QuickSessionThreshold) {
+                SwitchCellClient(entry, TelegramSessionType.Download);
+            }
+        }
+
+        var cellClient = entry.Client.Checked();
 
         var totalRead = 0;
 
@@ -646,8 +680,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
         if (count == 0) {
             // Even though the next loop can handle this, return early so we don't mess lastBlock.
-            lock (state) {
-                state.BytesRead += totalRead;
+            lock (entry) {
+                entry.BytesRead += totalRead;
             }
 
             return totalRead;
@@ -689,8 +723,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             throw ex;
         }
 
-        lock (state) {
-            state.BytesRead += totalRead;
+        lock (entry) {
+            entry.BytesRead += totalRead;
         }
 
         return totalRead;
