@@ -52,13 +52,21 @@ public class KifaDataControllerFeatureProvider : IApplicationFeatureProvider<Con
 
     static IEnumerable<Type> GetAllDataModels() {
         return AppDomain.CurrentDomain.GetAssemblies().SelectMany(assembly
-            => assembly.GetExportedTypes().Where(x
+            => GetExportedTypes(assembly).Where(x
                 => x.GetInterfaces().Any(i
                     => i.FullName?.StartsWith("Kifa.Service.WithModelId`1[") ?? false)));
     }
 
     static IEnumerable<Type> GetImplementingControllers() {
-        return AppDomain.CurrentDomain.GetAssemblies().SelectMany(assembly => assembly
-            .GetExportedTypes().Select(x => x.GetDataControllerType())).ExceptNull();
+        return AppDomain.CurrentDomain.GetAssemblies().SelectMany(assembly => GetExportedTypes(assembly)
+            .Select(x => x.GetDataControllerType())).ExceptNull();
+    }
+
+    static IEnumerable<Type> GetExportedTypes(Assembly assembly) {
+        try {
+            return assembly.GetExportedTypes();
+        } catch {
+            return [];
+        }
     }
 }

@@ -28,18 +28,32 @@ public abstract partial class KifaCommand {
             return;
         }
 
+        var queue = new Queue<Assembly>(AppDomain.CurrentDomain.GetAssemblies());
+        var visited = queue.Select(a => a.FullName).ExceptNull().ToHashSet();
+
         foreach (var file in Directory.EnumerateFiles(baseDir, "*.dll")) {
             try {
                 var assembly = Assembly.LoadFrom(file);
-                foreach (var referenced in assembly.GetReferencedAssemblies()) {
-                    try {
-                        Assembly.Load(referenced);
-                    } catch {
-                        // Ignore optional or unresolvable references.
-                    }
+                if (assembly.FullName != null && visited.Add(assembly.FullName)) {
+                    queue.Enqueue(assembly);
                 }
             } catch {
                 // Ignore non-.NET or incompatible native files.
+            }
+        }
+
+        while (queue.Count > 0) {
+            var assembly = queue.Dequeue();
+            foreach (var referenced in assembly.GetReferencedAssemblies()) {
+                if (!visited.Add(referenced.FullName)) {
+                    continue;
+                }
+
+                try {
+                    queue.Enqueue(Assembly.Load(referenced));
+                } catch {
+                    // Ignore optional or unresolvable references.
+                }
             }
         }
     }

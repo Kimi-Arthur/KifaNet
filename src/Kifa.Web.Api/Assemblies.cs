@@ -13,27 +13,39 @@ public static class Assemblies {
     public static List<string> Namespaces { get; set; } = new();
 
     public static void LoadAll() {
-        if (Namespaces.Count == 0) {
-            Logger.Warn("No extra assemblies requested to be loaded.");
+        var baseDir = AppContext.BaseDirectory;
+        if (!Directory.Exists(baseDir)) {
             return;
         }
 
-        Logger.Trace(
-            $"Loading extra assemblies with names starting with {string.Join(", ", Namespaces)} from {AppDomain.CurrentDomain.BaseDirectory}...");
+        Logger.Trace($"Preloading all assemblies and references from {baseDir}...");
 
-        var loaded = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.Location).ToHashSet();
+        var queue = new Queue<Assembly>(AppDomain.CurrentDomain.GetAssemblies());
+        var visited = queue.Select(a => a.FullName).ExceptNull().ToHashSet();
 
-        Logger.Trace("Already loaded assemblies");
-        foreach (var ass in loaded) {
-            Logger.Trace($"\t{ass}");
+        foreach (var file in Directory.EnumerateFiles(baseDir, "*.dll")) {
+            try {
+                var assembly = Assembly.LoadFrom(file);
+                if (assembly.FullName != null && visited.Add(assembly.FullName)) {
+                    queue.Enqueue(assembly);
+                }
+            } catch {
+                // Ignore non-.NET or incompatible native files.
+            }
         }
 
-        foreach (var file in Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.dll")
-                     .Where(f => !loaded.Contains(f))) {
-            var fileName = file[(file.LastIndexOf("/") + 1)..];
-            if (Namespaces.Any(ns => fileName.StartsWith(ns + "."))) {
-                Logger.Trace($"Loading assembly {file}...");
-                Assembly.LoadFrom(file);
+        while (queue.Count > 0) {
+            var assembly = queue.Dequeue();
+            foreach (var referenced in assembly.GetReferencedAssemblies()) {
+                if (!visited.Add(referenced.FullName)) {
+                    continue;
+                }
+
+                try {
+                    queue.Enqueue(Assembly.Load(referenced));
+                } catch {
+                    // Ignore optional or unresolvable references.
+                }
             }
         }
     }
