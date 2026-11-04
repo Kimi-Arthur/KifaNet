@@ -78,6 +78,7 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
 
     public static OptionSet GetOptionSet(bool flatPlaylist = false, string? cookieFile = null) {
         var options = new OptionSet {
+            IgnoreConfig = true,
             FlatPlaylist = flatPlaylist,
             EmbedMetadata = !flatPlaylist,
             EmbedThumbnail = !flatPlaylist

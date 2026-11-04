@@ -55,6 +55,7 @@ public class YouTubeVideoTests {
             ["youtube:player_client=ios,android", "youtubetab:approximate_date"];
         var options = YouTubeVideo.GetOptionSet();
         var flags = options.GetOptionFlags().ToList();
+        flags.Should().Contain("--ignore-config");
         flags.Should().ContainMatch("*--extractor-args*");
         flags.Should().ContainMatch("*youtube:player_client=ios,android*");
         flags.Should().ContainMatch("*youtubetab:approximate_date*");
