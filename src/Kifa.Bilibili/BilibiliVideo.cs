@@ -464,7 +464,7 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
     }
 
     static readonly Regex FileNamePattern =
-        new(@"[-./](av\d+)(p\d+)?\.(c\d+)\.(\d+)(?:-(\w+))?.mp4");
+        new(@"[-./](av\d+)(p\d+)?\.(c\d+)(?:\.(\d+)(?:-(\w+))?)?.mp4");
 
     public static (string? Aid, int Pid, int Quality, int Codec) ParseParts(string file) {
         var match = FileNamePattern.Match(file);
@@ -549,8 +549,9 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
 
     static string GetSuffix(string? aid, int pid, string cid, int quality, int codec) {
         var codecString = codec is DefaultCodec or MissingCodec ? "" : $"-{CodecNames[codec]}";
+        var qualityString = quality == 0 ? "" : $".{quality}";
         var aidString = aid == null ? "" : $"{aid}p{pid}.";
-        return $"{aidString}c{cid}.{quality}{codecString}";
+        return $"{aidString}c{cid}{qualityString}{codecString}";
     }
 
     public (string extension, int quality, int codec, Func<Stream> videoStreamGetter,

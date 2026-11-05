@@ -123,6 +123,7 @@ public class BilibiliVideoTests {
     [Theory]
     [InlineData("/Downloads/bilibili/$/c279786.64.mp4", null, 0, null, 0)]
     [InlineData("/Downloads/bilibili/$/av170001p1.c279786.64.mp4", "av170001", 1, "279786", 64)]
+    [InlineData("/Downloads/bilibili/$/av170001p1.c279786.mp4", "av170001", 1, "279786", 0)]
     [InlineData("/Downloads/bilibili/冰封.虾子-122541/【MV】保加利亚妖王AZIS视频合辑.av170001p1.c279786.64.mp4",
         "av170001", 1, "279786", 64)]
     [InlineData("/Downloads/bilibili/冰封.虾子-122541/【MV】保加利亚妖王AZIS视频合辑-av170001p2.c279786.64.mp4",
@@ -185,6 +186,9 @@ public class BilibiliVideoTests {
 
         var desiredName = video.GetDesiredName(1, 64, 0, includePageTitle: true);
         Assert.Equal("冰封.虾子.122541.bilibili/【MV】保加利亚妖王AZIS视频合辑 P1 Хоп.av170001p1.c279786.64", desiredName);
+
+        var desiredNameWithoutQuality = video.GetDesiredName(1, 0, 0, includePageTitle: true);
+        Assert.Equal("冰封.虾子.122541.bilibili/【MV】保加利亚妖王AZIS视频合辑 P1 Хоп.av170001p1.c279786", desiredNameWithoutQuality);
 
         var desiredNameWithFolder = video.GetDesiredName(2, 64, 0, includePageTitle: false,
             extraFolder: "Extra/Sub", prefix: "2020-01-01");
