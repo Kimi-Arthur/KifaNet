@@ -133,9 +133,25 @@ public class TelegramCellClient : IDisposable {
     public async Task<Client> GetClientForDC(int dcId)
         => dcId == 0 ? Client : await Client.GetClientForDC(-Math.Abs(dcId), true).WaitAsync(TelegramStorageClient.QuickTimeout);
 
-    public void Relogin() {
-        Client.Dispose();
-        CreateClient();
+    public void Relogin(Client? expectedClient = null) {
+        lock (reobtainLock) {
+            if (disposed) {
+                throw new ObjectDisposedException(nameof(TelegramCellClient));
+            }
+
+            if (expectedClient != null && Client != expectedClient) {
+                Logger.Debug("Client was already relogged in.");
+                return;
+            }
+
+            try {
+                Client?.Dispose();
+            } catch (Exception ex) {
+                Logger.Trace(ex, "Exception disposing old client.");
+            }
+
+            CreateClient();
+        }
     }
 
     static readonly TimeSpan SessionWaitInterval = TimeSpan.FromSeconds(10);

@@ -509,7 +509,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 }
                 return failures;
             case TimeoutException or IOException or WTException or TaskCanceledException
-                or RetryValidationException: {
+                or ObjectDisposedException or RetryValidationException: {
                 var failureKey = ex.GetType().ToString();
                 var count = failures.GetValueOrDefault(failureKey, 0) + 1;
                 if (cellClient != null && count > MaxTimeoutRetries) {
@@ -527,9 +527,9 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 }
 
                 failures[failureKey] = count;
-                if (cellClient != null) {
+                if (cellClient != null && ex is not ObjectDisposedException) {
                     try {
-                        cellClient.Relogin();
+                        cellClient.Relogin(cellClient.Client);
                     } catch (Exception reloginEx) {
                         Logger.Warn(reloginEx, "Failed to relogin cell client after socket/timeout error.");
                     }
@@ -756,7 +756,6 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 return;
             }
 
-            var client = await cellClient.GetClientForDC(dcId);
             var downloadResult = await Retry.Run(async () => {
                 if (cts.IsCancellationRequested || !exceptions.IsEmpty) {
                     throw new OperationCanceledException();
