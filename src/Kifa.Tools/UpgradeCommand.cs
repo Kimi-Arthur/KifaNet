@@ -1,4 +1,8 @@
+using System;
+using System.IO;
+using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using CommandLine;
 using Kifa.Jobs;
 using Kifa.Service;
@@ -25,6 +29,40 @@ public class UpgradeCommand : KifaCommand {
     public virtual ExecutionResult RunDotnetCommand(string arguments)
         => Executor.Run("dotnet", arguments);
 
+    public virtual DateTime? GetVersionTime(string packageId, string version) {
+        var entryLocation = Assembly.GetEntryAssembly()?.Location;
+        if (entryLocation != null && string.Equals(Path.GetFileNameWithoutExtension(entryLocation),
+                packageId, StringComparison.OrdinalIgnoreCase)) {
+            if (version == CurrentVersion && File.Exists(entryLocation)) {
+                return File.GetLastWriteTime(entryLocation);
+            }
+
+            if (CurrentVersion != null) {
+                var candidatePath = entryLocation
+                    .Replace($"/{CurrentVersion}/", $"/{version}/")
+                    .Replace($"\\{CurrentVersion}\\", $"\\{version}\\");
+                if (File.Exists(candidatePath)) {
+                    return File.GetLastWriteTime(candidatePath);
+                }
+            }
+        }
+
+        var storeVersionDir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".dotnet", "tools",
+            ".store", packageId.ToLowerInvariant(), version.ToLowerInvariant());
+        if (Directory.Exists(storeVersionDir)) {
+            var dllPath = Directory
+                .EnumerateFiles(storeVersionDir, "*.dll", SearchOption.AllDirectories)
+                .FirstOrDefault(f => string.Equals(Path.GetFileName(f), $"{packageId}.dll",
+                    StringComparison.OrdinalIgnoreCase));
+            if (dllPath != null) {
+                return File.GetLastWriteTime(dllPath);
+            }
+        }
+
+        return null;
+    }
+
     public override int Execute(KifaTask? task = null) {
         var packageId = PackageId;
         if (packageId == null) {
@@ -36,7 +74,13 @@ public class UpgradeCommand : KifaCommand {
         return LogSummary();
     }
 
+    const string TimeFormat = "yyyy-MM-dd HH:mm:ss";
+    static readonly Regex VersionPattern = new(@"version '(?<version>[^']+)'(?<closingParen>\))?", RegexOptions.Compiled);
+
     KifaActionResult UpgradeTool(string packageId) {
+        var currentVersion = CurrentVersion;
+        var currentVersionTime = currentVersion != null ? GetVersionTime(packageId, currentVersion) : null;
+
         var arguments = $"tool update -g {packageId}";
         if (Version != null) {
             arguments += $" --version {Version}";
@@ -59,14 +103,22 @@ public class UpgradeCommand : KifaCommand {
             };
         }
 
-        var output = result.StandardOutput.Trim();
-        if (output.Contains("is already installed") || !output.Contains("was successfully updated")) {
+        var rawOutput = result.StandardOutput.Trim();
+        var output = FormatOutputWithTimestamps(packageId, rawOutput, currentVersion, currentVersionTime);
+
+        if (rawOutput.Contains("is already installed") || !rawOutput.Contains("was successfully updated")) {
+            var currentVersionLabel = currentVersion != null
+                ? (currentVersionTime != null
+                    ? $"{currentVersion}, {currentVersionTime.Value.ToString(TimeFormat)}"
+                    : currentVersion)
+                : null;
+
             var message = output.Length > 0
-                ? (CurrentVersion != null && !output.Contains(CurrentVersion)
-                    ? $"{output} (Current version: {CurrentVersion})"
+                ? (currentVersion != null && !rawOutput.Contains(currentVersion)
+                    ? $"{output} (Current version: {currentVersionLabel})"
                     : output)
-                : (CurrentVersion != null
-                    ? $"Tool '{packageId}' (version '{CurrentVersion}') is already installed."
+                : (currentVersion != null
+                    ? $"Tool '{packageId}' (version '{currentVersion}'{(currentVersionTime != null ? $", {currentVersionTime.Value.ToString(TimeFormat)}" : "")}) is already installed."
                     : $"Tool '{packageId}' is already installed.");
 
             return new KifaActionResult {
@@ -80,4 +132,20 @@ public class UpgradeCommand : KifaCommand {
             Message = output.Length > 0 ? output : $"Successfully upgraded {packageId}."
         };
     }
+
+    string FormatOutputWithTimestamps(string packageId, string output, string? currentVersion, DateTime? currentVersionTime)
+        => VersionPattern.Replace(output, match => {
+            var version = match.Groups["version"].Value;
+            var time = version == currentVersion && currentVersionTime != null
+                ? currentVersionTime
+                : GetVersionTime(packageId, version);
+            if (time == null) {
+                return match.Value;
+            }
+
+            var formattedTime = time.Value.ToString(TimeFormat);
+            return match.Groups["closingParen"].Success
+                ? $"version '{version}', {formattedTime})"
+                : $"version '{version}' ({formattedTime})";
+        });
 }
