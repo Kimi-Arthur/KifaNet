@@ -208,6 +208,13 @@ public abstract class DownloadCommand : BiliCommand {
     };
 
     protected BilibiliRegion GetRegion() => Regions[Region];
+
+    protected static string FormatVideoChoice(BilibiliVideo video, string? tag = null) {
+        var categoryPart = string.IsNullOrEmpty(video.Category) ? "" : $"[{video.Category}]\t";
+        var datePart = video.Uploaded != null ? $"{video.Uploaded:yyyy-MM-dd} " : "";
+        var tagPart = string.IsNullOrEmpty(tag) ? "" : $" [{tag}]";
+        return $"{categoryPart}{datePart}{video.Id}{tagPart} {video.Title} ({video.Pages.Count})";
+    }
 }
 
 public enum PageTitleOption {

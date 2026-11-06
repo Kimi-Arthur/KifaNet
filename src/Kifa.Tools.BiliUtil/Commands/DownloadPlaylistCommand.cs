@@ -26,22 +26,26 @@ public class DownloadPlaylistCommand : DownloadCommand {
             return 1;
         }
 
-        foreach (var videoId in playlist.Videos.Reverse<string>()) {
-            ExecuteItem(videoId, () => DownloadVideo(playlist, videoId));
-            if (BreakOnExisting && LastItemAlreadyExists) {
-                Logger.Info($"Stopping early: video ({videoId}) already exists.");
-                break;
+        var aids = playlist.Videos.Reverse<string>().ToList();
+        var videos = SelectMany(BilibiliVideo.Client.Get(aids).ExceptNull().ToList(),
+            v => FormatVideoChoice(v), "videos to download");
+        if (videos.Status == KifaActionStatus.OK && videos.Value != null) {
+            foreach (var video in videos.Value) {
+                ExecuteItem(video.Id, () => DownloadVideo(playlist, video));
+                if (BreakOnExisting && LastItemAlreadyExists) {
+                    Logger.Info($"Stopping early: video ({video.Id}) already exists.");
+                    break;
+                }
             }
         }
 
         return LogSummary();
     }
 
-    KifaActionResult DownloadVideo(BilibiliPlaylist playlist, string videoId) {
-        var video = BilibiliVideo.Client.Get(videoId);
-        if (video?.Pages == null) {
+    KifaActionResult DownloadVideo(BilibiliPlaylist playlist, BilibiliVideo video) {
+        if (video.Pages == null || video.Pages.Count == 0) {
             LastItemAlreadyExists = false;
-            return KifaActionResult.Error($"Cannot find video ({videoId}).");
+            return KifaActionResult.Error($"No pages found for video ({video.Id}).");
         }
 
         var allPagesExisted = true;

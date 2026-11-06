@@ -75,20 +75,13 @@ public class DownloadUploaderCommand : DownloadCommand {
         }
 
         var summary = Category != null ? $"{Category} videos to download" : "videos to download";
-        var videos = SelectMany(allVideos, FormatVideoChoice, summary);
+        var videos = SelectMany(allVideos,
+            item => FormatVideoChoice(item.Video, item.IsDeleted ? "DELETED" : null), summary);
         if (videos.Status == KifaActionStatus.OK && videos.Value != null) {
             DownloadVideos(uploader, videos.Value.Select(v => v.Video).ToList());
         }
 
         return LogSummary();
-    }
-
-    static string FormatVideoChoice((BilibiliVideo Video, bool IsDeleted) item) {
-        var (video, isDeleted) = item;
-        var categoryPart = string.IsNullOrEmpty(video.Category) ? "" : $"[{video.Category}]\t";
-        var datePart = video.Uploaded != null ? $"{video.Uploaded:yyyy-MM-dd} " : "";
-        var deletedPart = isDeleted ? " [DELETED]" : "";
-        return $"{categoryPart}{datePart}{video.Id}{deletedPart} {video.Title} ({video.Pages.Count})";
     }
 
     public KifaFile GetUploaderFolder(BilibiliUploader uploader)

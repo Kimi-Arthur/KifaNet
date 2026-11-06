@@ -31,21 +31,24 @@ public class DownloadBangumiCommand : DownloadCommand {
             return 1;
         }
 
-        foreach (var videoId in bangumi.Aids.Distinct()) {
-            ExecuteItem(videoId, () => DownloadVideo(bangumi, videoId, extraFolder: null));
-            if (BreakOnExisting && LastItemAlreadyExists) {
-                Logger.Info($"Stopping early: video ({videoId}) already exists.");
-                break;
-            }
+        var allVideos = BilibiliVideo.Client.Get(bangumi.Aids.Distinct().ToList()).ExceptNull()
+            .Select(v => (Video: v, IsExtra: false))
+            .ToList();
+
+        if (IncludeExtras) {
+            allVideos.AddRange(BilibiliVideo.Client.Get(bangumi.ExtraAids.Distinct().ToList())
+                .ExceptNull().Select(v => (Video: v, IsExtra: true)));
         }
 
-        if (IncludeExtras && !(BreakOnExisting && LastItemAlreadyExists)) {
-            Logger.Info("Download extra video files.");
-
-            foreach (var videoId in bangumi.ExtraAids.Distinct()) {
-                ExecuteItem(videoId, () => DownloadVideo(bangumi, videoId, extraFolder: "Extras"));
+        var videos = SelectMany(allVideos,
+            item => FormatVideoChoice(item.Video, item.IsExtra ? "EXTRA" : null),
+            "videos to download");
+        if (videos.Status == KifaActionStatus.OK && videos.Value != null) {
+            foreach (var (video, isExtra) in videos.Value) {
+                ExecuteItem(video.Id,
+                    () => DownloadVideo(bangumi, video, extraFolder: isExtra ? "Extras" : null));
                 if (BreakOnExisting && LastItemAlreadyExists) {
-                    Logger.Info($"Stopping early: video ({videoId}) already exists.");
+                    Logger.Info($"Stopping early: video ({video.Id}) already exists.");
                     break;
                 }
             }
@@ -54,11 +57,10 @@ public class DownloadBangumiCommand : DownloadCommand {
         return LogSummary();
     }
 
-    KifaActionResult DownloadVideo(BilibiliBangumi bangumi, string videoId, string? extraFolder) {
-        var video = BilibiliVideo.Client.Get(videoId);
-        if (video?.Pages == null) {
+    KifaActionResult DownloadVideo(BilibiliBangumi bangumi, BilibiliVideo video, string? extraFolder) {
+        if (video.Pages == null || video.Pages.Count == 0) {
             LastItemAlreadyExists = false;
-            return KifaActionResult.Error($"Cannot find video ({videoId}).");
+            return KifaActionResult.Error($"No pages found for video ({video.Id}).");
         }
 
         var allPagesExisted = true;
