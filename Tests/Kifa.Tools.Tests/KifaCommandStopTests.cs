@@ -388,4 +388,17 @@ public class KifaCommandStopTests {
         Assert.False(suspendCalled);
         Assert.True(cmd.PauseRequested);
     }
+
+    [Fact]
+    public void ExecuteItem_RunsTaskCleanupsInFinally() {
+        var cleanupRuns = 0;
+        KifaShutdown.RegisterTaskCleanup(() => cleanupRuns++);
+
+        var cmd = new TestCommand { StopRequested = false };
+        cmd.RunItemAction("test_cleanup_1", () => { });
+        Assert.Equal(1, cleanupRuns);
+
+        cmd.RunItemFunc("test_cleanup_2", () => KifaActionResult.Success());
+        Assert.Equal(2, cleanupRuns);
+    }
 }

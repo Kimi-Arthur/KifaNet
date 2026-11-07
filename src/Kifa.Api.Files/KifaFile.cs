@@ -322,7 +322,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
             try {
                 var candidateId = FileInformation.GetId(location);
-                var candidate = new KifaFile(location, id: candidateId,
+                using var candidate = new KifaFile(location, id: candidateId,
                     fileInfo: candidateId == info.Id ? info : new FileInformation {
                         Id = candidateId,
                         Size = info.Size
@@ -712,7 +712,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             };
         }
 
-        var source = new KifaFile(sourceUri, fileInfo: info);
+        using var source = new KifaFile(sourceUri, fileInfo: info);
         source.Add();
 
         source.Copy(this);

@@ -114,6 +114,7 @@ public abstract partial class KifaCommand {
         Console.Write(messages.JoinBy("\n"));
 
         try {
+            KifaShutdown.RunTaskCleanups();
             IsPrompting = true;
             while (true) {
                 if (StopRequested) {
@@ -189,6 +190,7 @@ public abstract partial class KifaCommand {
             }
         } finally {
             IsPrompting = false;
+            KifaShutdown.RunTaskCleanups();
         }
     }
 
@@ -264,6 +266,7 @@ public abstract partial class KifaCommand {
         string? firstFilter = null;
 
         try {
+            KifaShutdown.RunTaskCleanups();
             IsPrompting = true;
             while (true) {
                 if (StopRequested) {
@@ -441,6 +444,7 @@ public abstract partial class KifaCommand {
             }
         } finally {
             IsPrompting = false;
+            KifaShutdown.RunTaskCleanups();
         }
     }
 
@@ -531,6 +535,7 @@ public abstract partial class KifaCommand {
         }
 
         try {
+            KifaShutdown.RunTaskCleanups();
             IsPrompting = true;
             while (true) {
                 if (StopRequested) {
@@ -568,6 +573,7 @@ public abstract partial class KifaCommand {
             }
         } finally {
             IsPrompting = false;
+            KifaShutdown.RunTaskCleanups();
         }
     }
 
@@ -594,6 +600,7 @@ public abstract partial class KifaCommand {
         }
 
         try {
+            KifaShutdown.RunTaskCleanups();
             IsPrompting = true;
             while (true) {
                 if (StopRequested) {
@@ -653,6 +660,7 @@ public abstract partial class KifaCommand {
             }
         } finally {
             IsPrompting = false;
+            KifaShutdown.RunTaskCleanups();
         }
     }
 }

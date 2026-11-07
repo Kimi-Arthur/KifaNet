@@ -240,7 +240,7 @@ public partial class KifaFile {
 
         if (!removeLinkOnly) {
             foreach (var location in info.Locations.Keys) {
-                var file = new KifaFile(location);
+                using var file = new KifaFile(location);
 
                 var toRemove = file.Id == info.Id && !file.IsCloud || onlyFile && force;
                 if (!toRemove && (onlyFile || file.Id == info.Id)) {

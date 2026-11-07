@@ -11,6 +11,7 @@ public static class KifaShutdown {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     static readonly ConcurrentBag<Action> Cleanups = [];
+    static readonly ConcurrentBag<Action> TaskCleanups = [];
 
     static readonly TimeSpan MaxCleanupWait = TimeSpan.FromSeconds(3);
 
@@ -22,6 +23,20 @@ public static class KifaShutdown {
 
     public static void RegisterCleanup(Action cleanup) {
         Cleanups.Add(cleanup);
+    }
+
+    public static void RegisterTaskCleanup(Action cleanup) {
+        TaskCleanups.Add(cleanup);
+    }
+
+    public static void RunTaskCleanups() {
+        foreach (var cleanup in TaskCleanups) {
+            try {
+                cleanup();
+            } catch (Exception ex) {
+                Logger.Warn(ex, "Failed to run task cleanup.");
+            }
+        }
     }
 
     public static void RunCleanups() {

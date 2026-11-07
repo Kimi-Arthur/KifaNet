@@ -9,6 +9,12 @@ public class ShardedStorageClient : StorageClient {
     public long ShardSize { get; set; }
     public required List<StorageClient> Clients { get; set; }
 
+    public override void Dispose() {
+        foreach (var client in Clients.Distinct()) {
+            client.Dispose();
+        }
+    }
+
     public override string Type => "sharded";
     public override string Id => "";
 

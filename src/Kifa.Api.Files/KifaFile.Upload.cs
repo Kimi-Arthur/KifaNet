@@ -102,7 +102,7 @@ public partial class KifaFile {
             };
         }
 
-        var destination = new KifaFile(destinationLocation);
+        using var destination = new KifaFile(destinationLocation);
 
         var targetKey = (FileInfo.Checked().Sha256.Checked(), target.ToString());
         if (CheckedTargets.Contains(targetKey)) {

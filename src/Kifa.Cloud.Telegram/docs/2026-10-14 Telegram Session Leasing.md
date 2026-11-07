@@ -132,10 +132,11 @@ sequenceDiagram
 The client-side storage implementation is handled by [`TelegramStorageClient`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Cloud.Telegram/TelegramStorageClient.cs), [`TelegramStorageCell`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Cloud.Telegram/TelegramStorageCell.cs), and [`TelegramCellClient`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Cloud.Telegram/TelegramCellClient.cs).
 
 ### 1. Cell Client Multiplexing & Deduplication
-To avoid spinning up redundant MTProto connections for parallel operations, [`TelegramStorageClient`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Cloud.Telegram/TelegramStorageClient.cs#L54-L133) maintains an in-memory cache keyed by `(CellId, Type)`:
+To avoid spinning up redundant MTProto connections or holding multiple sessions for the same cell during a task, [`TelegramStorageClient`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Cloud.Telegram/TelegramStorageClient.cs#L50-L165) maintains a single in-memory cache entry per `CellId`:
 
 ```csharp
-static readonly Dictionary<(string CellId, TelegramSessionType Type), CellClientEntry> CellClients = new();
+static readonly Dictionary<string, CellClientEntry> CellClients = new();
+static readonly Dictionary<string, int> PreferredSessionIds = new();
 
 class CellClientEntry {
     public required string CellId { get; init; }
@@ -147,20 +148,20 @@ class CellClientEntry {
 }
 ```
 
-- **Thread-Safe Acquisition (`ObtainCellClient`)**:
-  1. Under `lock (CellClientLock)`, checks if an entry exists for `(CellId, type)` (or reuses an active `(CellId, Download)` entry when `type == Quick`).
-  2. If an entry exists and is ready (`Client != null`), increments `Holders` and returns the `CellClientEntry` immediately.
-  3. If an entry is currently initializing, increments `Holders` and captures `waitTask = InitTask.Task`. Awaits `waitTask` outside the lock.
-  4. If no entry exists, creates `tcs = new TaskCompletionSource<TelegramCellClient>()` with `Holders = 1`, stores it in `CellClients`, and creates the client outside the lock.
+- **Single Session Per Cell (`ObtainCellClient`)**:
+  1. Under `lock (CellClientLock)`, checks if an entry exists for `CellId`.
+  2. If an entry exists and is ready (`Client != null`), increments `Holders`. Outside the lock, if `type != Quick` and `entry.Type != type`, transitions the session in-place via `SwitchCellClient(entry, type)` before returning `entry`. (If `type == Quick`, any existing session type—`Quick`, `Download`, or `Upload`—is reused directly without obtaining a second session.)
+  3. If an entry is currently initializing, increments `Holders`, awaits `InitTask.Task` outside the lock, and switches session type if needed.
+  4. If no entry exists, creates `tcs = new TaskCompletionSource<TelegramCellClient>()` with `Holders = 1`, stores it in `CellClients[CellId]`, and creates the client outside the lock.
   5. Upon successful creation, sets `InitTask.SetResult(client)` to unblock all parallel callers. If creation throws, removes the entry from `CellClients` and calls `InitTask.SetException(ex)`.
 - **Shared Session Switching (`SwitchCellClient`)**:
-  1. All shard streams opened by `OpenRead` (and any `Quick` requests) for a cell share the same `CellClientEntry` instance.
-  2. Once cumulative `entry.BytesRead + requestedCount` exceeds `QuickSessionThreshold` (1 KiB), `SwitchCellClient` releases the `Quick` client (`oldClient.Release()`), obtains a new `Download` client passing `oldClient.Session.Id` as the preferred session ID (`Cell.CreateClient(Download, oldSessionId)`), updates `entry.Client` and `entry.Type`, and moves `entry` in `CellClients` from `(CellId, Quick)` to `(CellId, Download)`.
-  3. Because all existing holders (e.g., all shards of `OpenRead`) and any subsequent `Quick` callers share `entry`, they all immediately use the new `Download` session without holding a second `Quick` session or repeating switches per shard.
-- **Reference-Counted Release (`ReturnCellClient`)**:
-  1. Decrements `entry.Holders` under lock.
-  2. When `entry.Holders` drops to 0, captures `preferredSessionId` from `entry.Client.Session.Id` to maintain session affinity for subsequent sequential requests, removes `(entry.CellId, entry.Type)` from `CellClients`, and releases the client (`client.Release()`).
-- **Sticky Session Affinity**: Each [`TelegramStorageClient`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Cloud.Telegram/TelegramStorageClient.cs) instance tracks `preferredSessionId` when a session is released. When acquiring a new session (`Cell.CreateClient(type, sessionToPrefer)`), the client passes its last released session ID. If that session is idle on the server, it is immediately re-leased without rotating its ID; if busy or flooded, the server automatically allocates another available session.
+  1. All operations and shard streams for a cell share the same `CellClientEntry` instance.
+  2. When switching session types (either when cumulative `entry.BytesRead + requestedCount` exceeds `QuickSessionThreshold` (1 KiB) during `Download`, or when `Write` requires an `Upload` session after an `Exists` check obtained a `Quick` session), `SwitchCellClient` releases the current session (`oldClient.Release()`) and obtains a new session of `targetType` passing `oldClient.Session.Id` as the preferred session ID (`Cell.CreateClient(targetType, oldSessionId)`).
+  3. Because the old session is released before the new one is acquired and all callers share `entry`, a task never holds two sessions simultaneously for the same cell.
+- **Task-Scoped Retention & Release (`ReturnCellClient` & `ReleaseIdleCellClients`)**:
+  1. `ReturnCellClient` decrements `entry.Holders` under lock and records `PreferredSessionIds[entry.CellId] = entry.Client.Session.Id`, keeping the entry in `CellClients` so consecutive shard operations (`Length`, `Exists`, `Write`, `Delete`) within the same task reuse the active client and session without repeated lease/login cycles.
+  2. At the end of each task (`ExecuteItem` completion via `KifaShutdown.RegisterTaskCleanup(ReleaseIdleCellClients)`) or when `TelegramStorageClient.Dispose()` is called, any idle entries (`Holders <= 0`) are removed from `CellClients` and their underlying sessions are released (`client.Release()`).
+- **Sticky Session Affinity**: `PreferredSessionIds` tracks the last used session ID per `CellId`. When acquiring a new session (`Cell.CreateClient(type, sessionToPrefer)`), the client passes its last released session ID. If that session is idle on the server, it is immediately re-leased without rotating its ID; if busy or flooded, the server automatically allocates another available session.
 
 ### 2. Failure Handling & Storage Cell Failover
 In [`TelegramStorageCell.CreateClient`](file:///Users/kimi/Projects/KifaNet/src/Kifa.Cloud.Telegram/TelegramStorageCell.cs#L29-L54):

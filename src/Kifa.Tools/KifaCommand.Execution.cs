@@ -60,6 +60,7 @@ public abstract partial class KifaCommand {
             }
         } finally {
             CurrentItem = null;
+            KifaShutdown.RunTaskCleanups();
         }
     }
 
@@ -102,6 +103,7 @@ public abstract partial class KifaCommand {
             }
         } finally {
             CurrentItem = null;
+            KifaShutdown.RunTaskCleanups();
         }
     }
 
