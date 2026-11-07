@@ -61,7 +61,8 @@ public class
     [HttpPost("$release_session")]
     public KifaApiActionResult
         ReleaseSession([FromBody] TelegramAccount.ReleaseSessionRequest request)
-        => Client.ReleaseSession(request.AccountId, request.SessionId, request.FloodWaitSeconds);
+        => Client.ReleaseSession(request.AccountId, request.SessionId, request.FloodWaitSeconds,
+            request.Invalid);
 
     [HttpPost("$update_session")]
     public KifaApiActionResult
@@ -161,11 +162,11 @@ public partial class TelegramAccountJsonServiceClient : KifaServiceJsonClient<Te
             Update(account);
             leasedSession = session;
             return true;
-        } catch (RpcException ex) when (ex.Code == 401 || ex.Message is "AUTH_KEY_UNREGISTERED" or "SESSION_REVOKED" or "SESSION_EXPIRED") {
+        } catch (Exception ex) when (TelegramAccount.IsInvalidSessionException(ex)) {
             Logger.Error(ex,
                 $"Dead session {session.Id} for account {account.Id}. Removing dead session.");
             account.Sessions.Remove(session);
-            Update(account);
+            Set(account);
             return false;
         } catch (RpcException ex) when (ex.Code == 420 || ex.Message.StartsWith("FLOOD_WAIT_") || ex.X > 0) {
             var waitSeconds = ex.X > 0 ? ex.X + 1 : 60;
@@ -216,7 +217,7 @@ public partial class TelegramAccountJsonServiceClient : KifaServiceJsonClient<Te
     }
 
     public KifaActionResult ReleaseSession(string accountId, int sessionId,
-        int? floodWaitSeconds = null) {
+        int? floodWaitSeconds = null, bool invalid = false) {
         using (AcquireLock(accountId)) {
             var account = Get(accountId).Checked();
             var session = account.Sessions.FirstOrDefault(s => s.Id == sessionId);
@@ -224,6 +225,18 @@ public partial class TelegramAccountJsonServiceClient : KifaServiceJsonClient<Te
                 return new KifaActionResult {
                     Status = KifaActionStatus.Warning,
                     Message = $"Session {sessionId} is not found."
+                };
+            }
+
+            if (invalid) {
+                Logger.Error(
+                    $"Invalid session {session.Id} reported for account {account.Id}. Removing invalid session.");
+                account.Sessions.Remove(session);
+                Set(account);
+                NotifyWaiters(accountId);
+                return new KifaActionResult {
+                    Status = KifaActionStatus.OK,
+                    Message = $"Invalid session {sessionId} is removed."
                 };
             }
 

@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Kifa.Service;
+using TL;
 using WTelegram;
 
 namespace Kifa.Cloud.Telegram;
@@ -24,7 +25,7 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
             CancellationToken cancellationToken = default);
         public KifaActionResult RenewSession(string accountId, int sessionId);
         public KifaActionResult ReleaseSession(string accountId, int sessionId,
-            int? floodWaitSeconds = null);
+            int? floodWaitSeconds = null, bool invalid = false);
         public KifaActionResult UpdateSession(string accountId, int sessionId, byte[] sessionData);
     }
 
@@ -48,6 +49,7 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
         public required string AccountId { get; set; }
         public required int SessionId { get; set; }
         public int? FloodWaitSeconds { get; set; }
+        public bool Invalid { get; set; }
     }
 
     public class UpdateSessionRequest {
@@ -83,11 +85,12 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
             });
 
         public KifaActionResult ReleaseSession(string accountId, int sessionId,
-            int? floodWaitSeconds = null)
+            int? floodWaitSeconds = null, bool invalid = false)
             => Call("release_session", new ReleaseSessionRequest {
                 AccountId = accountId,
                 SessionId = sessionId,
-                FloodWaitSeconds = floodWaitSeconds
+                FloodWaitSeconds = floodWaitSeconds,
+                Invalid = invalid
             });
 
         public KifaActionResult UpdateSession(string accountId, int sessionId, byte[] sessionData)
@@ -133,8 +136,33 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
         => configKey switch {
             "api_id" => ApiId.ToString(),
             "api_hash" => ApiHash,
+            "phone_number" => Phone,
             _ => null
         };
+
+    public static bool IsInvalidSessionException(Exception ex)
+        => ex is RpcException {
+            Code: 401
+        } or RpcException {
+            Message: "AUTH_KEY_UNREGISTERED" or "AUTH_KEY_INVALID" or "AUTH_KEY_PERM_EMPTY"
+            or "AUTH_KEY_DUPLICATED" or "SESSION_REVOKED" or "SESSION_EXPIRED"
+            or "USER_DEACTIVATED" or "USER_DEACTIVATED_BAN"
+        } or DriveNotFoundException || ex is WTException {
+            Message: var msg
+        } && msg.Contains("mismatched user_id or phone_number");
+
+    public async Task<User> VerifySessionAsync(Client client) {
+        if (client.UserId == 0) {
+            throw new RpcException(401, "AUTH_KEY_UNREGISTERED");
+        }
+
+        await client.ConnectAsync();
+        if (client.UserId == 0) {
+            throw new RpcException(401, "AUTH_KEY_UNREGISTERED");
+        }
+
+        return await client.LoginUserIfNeeded(reloginOnFailedResume: false);
+    }
 
     static readonly TimeSpan RefreshInterval = TimeSpan.FromDays(1);
 
@@ -148,11 +176,8 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
         sessionStream.Seek(0, SeekOrigin.Begin);
         using var client = new Client(ConfigProvider, sessionStream);
 
-        var result = client.Checked().Login(Phone).GetAwaiter().GetResult();
-        if (result != null) {
-            throw new DriveNotFoundException(
-                $"Telegram drive {Id} is not accessible. Requesting {result}.");
-        }
+        VerifySessionAsync(client.Checked()).WaitAsync(TelegramStorageClient.QuickTimeout)
+            .GetAwaiter().GetResult();
 
         session.Data = sessionStream.ToByteArray();
         session.Refreshed = DateTimeOffset.UtcNow;

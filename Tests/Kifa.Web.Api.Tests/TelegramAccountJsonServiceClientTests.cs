@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Kifa.Cloud.Telegram;
+using Kifa.IO;
 using Kifa.Service;
 using Kifa.Web.Api.Controllers;
 using Xunit;
@@ -699,5 +700,137 @@ public class TelegramAccountJsonServiceClientTests : IDisposable {
         second.Status.Should().Be(KifaActionStatus.OK);
         second.Value.Checked().Id.Should().NotBe(firstSessionId);
         second.Value.Checked().Type.Should().Be(TelegramSessionType.Quick);
+    }
+
+    [Fact]
+    public void ObtainSession_WhenSessionIsUnauthenticatedDuringRefresh_RemovesInvalidSessionAndRelocates() {
+        var now = DateTimeOffset.UtcNow;
+        var account = new TelegramAccount {
+            Id = "remove_invalid_test",
+            Phone = "+1234567890",
+            ApiId = 12345,
+            ApiHash = "0123456789abcdef0123456789abcdef",
+            Sessions = new List<TelegramSession> {
+                new() {
+                    Id = 401,
+                    Data = [],
+                    Refreshed = now - TimeSpan.FromDays(2),
+                    Reserved = Date.Zero
+                },
+                new() {
+                    Id = 402,
+                    Data = [1, 2, 3, 4],
+                    Refreshed = now,
+                    Reserved = Date.Zero.AddSeconds(1)
+                }
+            }
+        };
+        client.Set(account);
+
+        var result = client.ObtainSession("remove_invalid_test", TelegramSessionType.Quick);
+        result.Status.Should().Be(KifaActionStatus.OK);
+        result.Value.Should().NotBeNull();
+        result.Value.Checked().Type.Should().Be(TelegramSessionType.Quick);
+
+        var updatedAccount = client.Get("remove_invalid_test").Checked();
+        updatedAccount.Sessions.Should().HaveCount(1);
+        updatedAccount.Sessions[0].Type.Should().Be(TelegramSessionType.Quick);
+    }
+
+    [Fact]
+    public void ObtainSession_WhenAllSessionsAreInvalidDuringRefresh_RemovesAllAndReturnsBadRequest() {
+        var now = DateTimeOffset.UtcNow;
+        var account = new TelegramAccount {
+            Id = "remove_all_invalid_test",
+            Phone = "+1234567890",
+            ApiId = 12345,
+            ApiHash = "0123456789abcdef0123456789abcdef",
+            Sessions = new List<TelegramSession> {
+                new() {
+                    Id = 501,
+                    Data = [],
+                    Refreshed = now - TimeSpan.FromDays(2),
+                    Reserved = Date.Zero
+                },
+                new() {
+                    Id = 502,
+                    Data = [],
+                    Refreshed = now - TimeSpan.FromDays(3),
+                    Reserved = Date.Zero.AddSeconds(1)
+                }
+            }
+        };
+        client.Set(account);
+
+        var result = client.ObtainSession("remove_all_invalid_test", TelegramSessionType.Quick);
+        result.Status.Should().Be(KifaActionStatus.BadRequest);
+        result.Message.Should().Contain("No valid sessions remaining");
+
+        var updatedAccount = client.Get("remove_all_invalid_test").Checked();
+        updatedAccount.Sessions.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ReleaseSession_WithInvalidTrue_RemovesSessionAndNotifiesWaiters() {
+        var account = CreateAccountWithSessions("release_invalid_test", 1);
+        var obtainResult = client.ObtainSession(account.Id.Checked(), TelegramSessionType.Quick);
+        obtainResult.Status.Should().Be(KifaActionStatus.OK);
+        var sessionId = obtainResult.Value.Checked().Id;
+
+        var waiter = client.ObtainSessionAsync(account.Id.Checked(), TelegramSessionType.Quick);
+        waiter.IsCompleted.Should().BeFalse();
+
+        var releaseResult = client.ReleaseSession(account.Id.Checked(), sessionId, invalid: true);
+        releaseResult.Status.Should().Be(KifaActionStatus.OK);
+
+        var updatedAccount = client.Get(account.Id.Checked()).Checked();
+        updatedAccount.Sessions.Should().BeEmpty();
+
+        var waiterResult = await waiter;
+        waiterResult.Status.Should().Be(KifaActionStatus.BadRequest);
+        waiterResult.Message.Should().Contain("No valid sessions remaining");
+    }
+
+    [Fact]
+    public void TelegramCellClient_WhenLeasedSessionIsInvalid_ReportsInvalidAndReobtainsUntilNoneRemain() {
+        var originalClient = TelegramAccount.Client;
+        TelegramAccount.Client = client;
+        try {
+            var now = DateTimeOffset.UtcNow;
+            var account = new TelegramAccount {
+                Id = "client_auto_remove_test",
+                Phone = "+1234567890",
+                ApiId = 12345,
+                ApiHash = "0123456789abcdef0123456789abcdef",
+                Sessions = new List<TelegramSession> {
+                    new() {
+                        Id = 601,
+                        Data = [],
+                        Refreshed = now, // Fresh on server, so server leases it without refreshing
+                        Reserved = Date.Zero
+                    },
+                    new() {
+                        Id = 602,
+                        Data = [],
+                        Refreshed = now,
+                        Reserved = Date.Zero.AddSeconds(1)
+                    }
+                }
+            };
+            client.Set(account);
+
+            var initialObtain = client.ObtainSession("client_auto_remove_test", TelegramSessionType.Quick);
+            initialObtain.Status.Should().Be(KifaActionStatus.OK);
+
+            var act = () => new TelegramCellClient(account, "123456", initialObtain.Value.Checked(),
+                TelegramSessionType.Quick);
+            act.Should().Throw<InsufficientStorageException>()
+                .WithMessage("*No valid sessions remaining*");
+
+            var updatedAccount = client.Get("client_auto_remove_test").Checked();
+            updatedAccount.Sessions.Should().BeEmpty();
+        } finally {
+            TelegramAccount.Client = originalClient;
+        }
     }
 }

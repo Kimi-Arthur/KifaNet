@@ -75,10 +75,35 @@ public class TelegramCellClient : IDisposable {
         _ = KeepSessionReserved(Session.Id, type);
 
         try {
-            CreateClient();
+            InitializeClient();
         } catch {
             Release();
             throw;
+        }
+    }
+
+    void InitializeClient() {
+        while (true) {
+            try {
+                CreateClient();
+                return;
+            } catch (Exception ex) when (TelegramAccount.IsInvalidSessionException(ex)) {
+                var oldSessionId = Session.Id;
+                Logger.Warn(ex,
+                    $"Session {oldSessionId} for account {Account.Id} is invalid. Removing invalid session and obtaining a new one...");
+                Reserved = false;
+                try {
+                    TelegramAccount.Client.ReleaseSession(Account.Id.Checked(), oldSessionId,
+                        invalid: true);
+                } catch (Exception releaseEx) {
+                    Logger.Warn(releaseEx,
+                        $"Failed to release invalid session {oldSessionId} for account {Account.Id}.");
+                }
+
+                Session = ObtainNewSession();
+                Reserved = true;
+                _ = KeepSessionReserved(Session.Id, Type);
+            }
         }
     }
 
@@ -91,12 +116,10 @@ public class TelegramCellClient : IDisposable {
         Client.FloodRetryThreshold = 0;
 
         try {
-            var result = Retry.Run(() => Client.Login(Account.Phone).WaitAsync(TelegramStorageClient.QuickTimeout),
+            Retry.Run(
+                () => Account.VerifySessionAsync(Client)
+                    .WaitAsync(TelegramStorageClient.QuickTimeout),
                 TelegramStorageClient.HandleFloodExceptionFunc).GetAwaiter().GetResult();
-            if (result != null) {
-                throw new DriveNotFoundException(
-                    $"Telegram drive {Account.Id} is not accessible. Requesting {result}.");
-            }
 
             Channel = Retry
                 .Run(() => Client.Messages_GetAllChats().WaitAsync(TelegramStorageClient.QuickTimeout),
@@ -150,14 +173,15 @@ public class TelegramCellClient : IDisposable {
                 Logger.Trace(ex, "Exception disposing old client.");
             }
 
-            CreateClient();
+            InitializeClient();
         }
     }
 
     static readonly TimeSpan SessionWaitInterval = TimeSpan.FromSeconds(10);
     readonly object reobtainLock = new();
 
-    public void ReobtainSession(int? floodWaitSeconds = null, int? expectedSessionId = null) {
+    public void ReobtainSession(int? floodWaitSeconds = null, int? expectedSessionId = null,
+        bool invalid = false) {
         lock (reobtainLock) {
             if (disposed) {
                 throw new ObjectDisposedException(nameof(TelegramCellClient));
@@ -171,11 +195,12 @@ public class TelegramCellClient : IDisposable {
 
             var oldSessionId = Session.Id;
             Logger.Warn(
-                $"Re-obtaining session for account {Account.Id}. Releasing old session {oldSessionId} (flood wait: {floodWaitSeconds}s)...");
+                $"Re-obtaining session for account {Account.Id}. Releasing old session {oldSessionId} (flood wait: {floodWaitSeconds}s, invalid: {invalid})...");
 
             Reserved = false;
             try {
-                TelegramAccount.Client.ReleaseSession(Account.Id.Checked(), oldSessionId, floodWaitSeconds);
+                TelegramAccount.Client.ReleaseSession(Account.Id.Checked(), oldSessionId,
+                    floodWaitSeconds, invalid);
             } catch (Exception ex) {
                 Logger.Warn(ex,
                     $"Failed to release old session {oldSessionId} for account {Account.Id}.");
@@ -192,7 +217,7 @@ public class TelegramCellClient : IDisposable {
 
             _ = KeepSessionReserved(Session.Id, Type);
 
-            CreateClient();
+            InitializeClient();
             Logger.Info(
                 $"Successfully re-obtained new session {Session.Id} for account {Account.Id}.");
         }
@@ -228,18 +253,18 @@ public class TelegramCellClient : IDisposable {
     }
 
     public void Release() {
-        if (!Reserved && disposed) {
-            return;
+        if (Reserved) {
+            Reserved = false;
+            try {
+                TelegramAccount.Client.ReleaseSession(Account.Id.Checked(), Session.Id);
+            } catch (Exception ex) {
+                Logger.Warn(ex, $"Failed to release session {Session.Id} for account {Account.Id}.");
+            }
         }
 
-        Reserved = false;
-        try {
-            TelegramAccount.Client.ReleaseSession(Account.Id.Checked(), Session.Id);
-        } catch (Exception ex) {
-            Logger.Warn(ex, $"Failed to release session {Session.Id} for account {Account.Id}.");
+        if (!disposed) {
+            Dispose();
         }
-
-        Dispose();
     }
 
     public void Dispose() {

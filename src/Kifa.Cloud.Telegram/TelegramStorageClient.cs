@@ -484,13 +484,23 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 await Task.Delay(TimeSpan.FromSeconds(sleepSeconds));
                 return failures;
             }
+            case var _ when TelegramAccount.IsInvalidSessionException(ex): {
+                if (cellClient != null) {
+                    Logger.Warn(ex,
+                        $"Telegram session {cellClient.Session.Id} authentication failed ({ex.Message}). Removing invalid session and re-obtaining...");
+                    cellClient.ReobtainSession(expectedSessionId: cellClient.Session.Id,
+                        invalid: true);
+                    return failures;
+                }
+
+                Logger.Error(ex,
+                    $"Permanent Telegram authentication error: {ex.Message}. Failing immediately.");
+                throw ex;
+            }
             case RpcException {
-                Code: 401 or 406
-            } or RpcException {
-                Message: "AUTH_KEY_DUPLICATED" or "AUTH_KEY_UNREGISTERED" or "SESSION_REVOKED"
-                or "SESSION_EXPIRED"
+                Code: 406
             }: {
-                Logger.Error(ex, $"Permanent Telegram authentication error: {ex.Message}. Failing immediately.");
+                Logger.Error(ex, $"Permanent Telegram error: {ex.Message}. Failing immediately.");
                 throw ex;
             }
             case WTException {
