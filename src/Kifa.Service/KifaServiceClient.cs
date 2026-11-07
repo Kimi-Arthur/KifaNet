@@ -44,7 +44,7 @@ public abstract class BaseKifaServiceClient<TDataModel> : KifaServiceClient<TDat
     public abstract TDataModel? Get(string id, KifaDataOptions? options = null);
 
     public virtual List<TDataModel?> Get(List<string> ids, KifaDataOptions? options = null)
-        => ids.Select(id => Get(id)).ToList();
+        => ids.Select(id => Get(id, options: options)).ToList();
 
     public abstract KifaActionResult Set(TDataModel data);
 

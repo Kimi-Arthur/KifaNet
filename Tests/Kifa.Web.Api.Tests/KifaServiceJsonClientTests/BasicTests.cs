@@ -505,6 +505,33 @@ public class BasicTests : IDisposable {
             .WithMessage($"*Data ID wrong_id does not match requested ID {id}*");
     }
 
+    [Fact]
+    public void BatchGetParallelWithDataFoldersPropagationTest() {
+        KifaServiceJsonClient.DefaultDataFolder = folder;
+        KifaServiceJsonClient.DataFolders = new Dictionary<string, string?> {
+            ["Kifa.Web.Api.Tests"] = null
+        };
+
+        var ids = Enumerable.Range(0, 32).Select(i => $"batch_item_{i:D2}").ToList();
+        foreach (var id in ids) {
+            client.Set(new TestDataModel {
+                Id = id,
+                Data = $"value_{id}"
+            });
+        }
+
+        // Fresh client without explicit DataFolder set (relies on KifaServiceJsonClient.DataFolders)
+        var freshClient = new KifaServiceJsonClient<TestDataModel>();
+        var results = freshClient.Get(ids);
+
+        results.Should().HaveCount(ids.Count);
+        for (var i = 0; i < ids.Count; i++) {
+            results[i].Should().NotBeNull();
+            results[i]!.Id.Should().Be(ids[i]);
+            results[i]!.Data.Should().Be($"value_{ids[i]}");
+        }
+    }
+
     public void Dispose() {
         if (Directory.Exists(folder)) {
             Directory.Delete(folder, true);

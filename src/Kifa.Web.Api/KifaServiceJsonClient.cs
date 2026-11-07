@@ -19,10 +19,15 @@ public class KifaServiceJsonClient {
         set => Late.Set(ref field, value);
     }
 
-    [field: ThreadStatic]
+    static readonly AsyncLocal<Dictionary<string, string?>?> dataFolders = new();
+
     public static Dictionary<string, string?> DataFolders {
-        get => Late.Get(field);
-        set => Late.Set(ref field, value);
+        get => Late.Get(dataFolders.Value);
+        set {
+            var v = dataFolders.Value;
+            Late.Set(ref v, value);
+            dataFolders.Value = v;
+        }
     }
 }
 
@@ -47,8 +52,8 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 throw new DataModelNotFoundException();
             }
 
-            return dataFolder = matchedFolders.MaxBy(kv => kv.Key.Length).Value ??
-                                KifaServiceJsonClient.DefaultDataFolder;
+            return matchedFolders.MaxBy(kv => kv.Key.Length).Value ??
+                   KifaServiceJsonClient.DefaultDataFolder;
         }
 
         set => dataFolder = value;
@@ -210,9 +215,8 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         }
     }
 
-    // TODO: Use parallel when DataFolder setup issue is solved.
     public override List<TDataModel?> Get(List<string> ids, KifaDataOptions? options = null)
-        => ids.Select(id => Get(id, options: options)).ToList();
+        => ids.AsParallel().AsOrdered().Select(id => Get(id, options: options)).ToList();
 
     // false -> no write needed.
     // true -> rewrite needed.
