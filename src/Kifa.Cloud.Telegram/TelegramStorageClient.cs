@@ -403,6 +403,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
     const string Failure420Key = "420";
     const string Failure503Key = "503";
+    const string SessionIdKey = "SessionId";
     public static int Failure420Count { get; set; } = 1000;
     public static int Failure503Count { get; set; } = 3;
     public static int FailureOtherCount { get; set; } = 20;
@@ -421,6 +422,18 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     public static async Task<Dictionary<string, int>?> HandleFloodException(Exception ex,
         Dictionary<string, int>? failures, TelegramCellClient? cellClient = null) {
         failures ??= new Dictionary<string, int>();
+        var expectedSessionId = cellClient?.Session.Id;
+        if (cellClient != null) {
+            if (failures.TryGetValue(SessionIdKey, out var recordedSessionId)) {
+                if (recordedSessionId != cellClient.Session.Id) {
+                    failures.Clear();
+                    expectedSessionId = recordedSessionId;
+                }
+            }
+
+            failures[SessionIdKey] = cellClient.Session.Id;
+        }
+
         switch (ex) {
             case RpcException {
                 Code: 420
@@ -429,12 +442,15 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 failures[Failure420Key] = count;
 
                 var waitSeconds = rpcException.X;
+                var isPremiumFloodWait =
+                    rpcException.Message.StartsWith("FLOOD_PREMIUM_WAIT", StringComparison.Ordinal);
                 if (cellClient != null && (waitSeconds > MaxAllowedFloodWait.TotalSeconds ||
-                                           count > MaxFloodWaitRetries)) {
+                                           (!isPremiumFloodWait && count > MaxFloodWaitRetries))) {
                     Logger.Warn(ex,
                         $"Flood wait of {waitSeconds}s (try {count}) exceeded threshold (max wait: {MaxAllowedFloodWait.TotalSeconds}s, max tries: {MaxFloodWaitRetries}). Re-requesting session...");
-                    cellClient.ReobtainSession(waitSeconds, cellClient.Session.Id);
+                    cellClient.ReobtainSession(waitSeconds, expectedSessionId);
                     failures.Remove(Failure420Key);
+                    failures[SessionIdKey] = cellClient.Session.Id;
                     return failures;
                 }
 
@@ -487,9 +503,10 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             case var _ when TelegramAccount.IsInvalidSessionException(ex): {
                 if (cellClient != null) {
                     Logger.Warn(ex,
-                        $"Telegram session {cellClient.Session.Id} authentication failed ({ex.Message}). Removing invalid session and re-obtaining...");
-                    cellClient.ReobtainSession(expectedSessionId: cellClient.Session.Id,
+                        $"Telegram session {expectedSessionId} authentication failed ({ex.Message}). Removing invalid session and re-obtaining...");
+                    cellClient.ReobtainSession(expectedSessionId: expectedSessionId,
                         invalid: true);
+                    failures[SessionIdKey] = cellClient.Session.Id;
                     return failures;
                 }
 
@@ -517,6 +534,13 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                     }
                 }
                 return failures;
+            case ObjectDisposedException when cellClient != null: {
+                Logger.Trace(ex,
+                    "Telegram client was disposed during session rotation or relogin. Waiting for active client...");
+                cellClient.WaitForReady();
+                failures[SessionIdKey] = cellClient.Session.Id;
+                return failures;
+            }
             case TimeoutException or IOException or WTException or TaskCanceledException
                 or ObjectDisposedException or RetryValidationException: {
                 var failureKey = ex.GetType().ToString();
@@ -524,8 +548,9 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 if (cellClient != null && count > MaxTimeoutRetries) {
                     Logger.Warn(ex,
                         $"Network/timeout error (try {count}) exceeded threshold ({MaxTimeoutRetries}). Re-requesting session...");
-                    cellClient.ReobtainSession(expectedSessionId: cellClient.Session.Id);
+                    cellClient.ReobtainSession(expectedSessionId: expectedSessionId);
                     failures.Remove(failureKey);
+                    failures[SessionIdKey] = cellClient.Session.Id;
                     return failures;
                 }
 

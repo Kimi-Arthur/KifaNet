@@ -25,6 +25,8 @@ public class TelegramCellClient : IDisposable {
     // TODO: More captured way to control this.
     public bool Reserved = true;
     bool disposed;
+    bool clientReady;
+    DateTime lastInitializedAt;
 
     static Logger? wTelegramLogger;
 
@@ -125,7 +127,10 @@ public class TelegramCellClient : IDisposable {
                 .Run(() => Client.Messages_GetAllChats().WaitAsync(TelegramStorageClient.QuickTimeout),
                     TelegramStorageClient.HandleFloodExceptionFunc).GetAwaiter().GetResult()
                 .chats[long.Parse(ChannelId)].Checked();
+            clientReady = true;
+            lastInitializedAt = DateTime.UtcNow;
         } catch {
+            clientReady = false;
             Client.Dispose();
             throw;
         }
@@ -156,6 +161,18 @@ public class TelegramCellClient : IDisposable {
     public async Task<Client> GetClientForDC(int dcId)
         => dcId == 0 ? Client : await Client.GetClientForDC(-Math.Abs(dcId), true).WaitAsync(TelegramStorageClient.QuickTimeout);
 
+    public void WaitForReady() {
+        lock (reobtainLock) {
+            if (disposed) {
+                throw new ObjectDisposedException(nameof(TelegramCellClient));
+            }
+
+            if (!clientReady) {
+                InitializeClient();
+            }
+        }
+    }
+
     public void Relogin(Client? expectedClient = null) {
         lock (reobtainLock) {
             if (disposed) {
@@ -167,6 +184,7 @@ public class TelegramCellClient : IDisposable {
                 return;
             }
 
+            clientReady = false;
             try {
                 Client?.Dispose();
             } catch (Exception ex) {
@@ -178,6 +196,7 @@ public class TelegramCellClient : IDisposable {
     }
 
     static readonly TimeSpan SessionWaitInterval = TimeSpan.FromSeconds(10);
+    static readonly TimeSpan ReobtainCooldown = TimeSpan.FromSeconds(5);
     readonly object reobtainLock = new();
 
     public void ReobtainSession(int? floodWaitSeconds = null, int? expectedSessionId = null,
@@ -193,10 +212,17 @@ public class TelegramCellClient : IDisposable {
                 return;
             }
 
+            if (!invalid && DateTime.UtcNow - lastInitializedAt < ReobtainCooldown) {
+                Logger.Debug(
+                    $"Session {Session.Id} was just initialized recently; skipping duplicate re-obtain.");
+                return;
+            }
+
             var oldSessionId = Session.Id;
             Logger.Warn(
                 $"Re-obtaining session for account {Account.Id}. Releasing old session {oldSessionId} (flood wait: {floodWaitSeconds}s, invalid: {invalid})...");
 
+            clientReady = false;
             Reserved = false;
             try {
                 TelegramAccount.Client.ReleaseSession(Account.Id.Checked(), oldSessionId,

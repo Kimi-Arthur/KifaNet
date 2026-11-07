@@ -25,9 +25,16 @@ public class BaiduCloudStorageClient : StorageClient, CanCreateStorageClient {
 
     public static int DownloadThreadCount { get; set; } = 4;
 
+    public static int MaxChunkSize { get; set; } = 1 << 18;
+
     public string AccountId { get; set; }
 
-    public BaiduAccount Account => BaiduAccount.Client.Get(AccountId);
+    public BaiduAccount Account {
+        get => field ??= BaiduAccount.Client.Get(AccountId).Checked();
+        private set => field = value;
+    }
+
+    BaiduAccount RefreshAccount() => Account = BaiduAccount.Client.Get(AccountId).Checked();
 
     public override string Type => "baidu";
 
@@ -65,30 +72,33 @@ public class BaiduCloudStorageClient : StorageClient, CanCreateStorageClient {
             count = buffer.Length - bufferOffset;
         }
 
-        var maxChunkSize = 1 << 20;
+        var maxChunkSize = MaxChunkSize;
 
         // The thread limit will help prevent errors with code 31326 and message like
         // "user is not authorized, hitcode:120".
         Parallel.For(0, (count - 1) / maxChunkSize + 1, new ParallelOptions {
             MaxDegreeOfParallelism = DownloadThreadCount
         }, i => {
-            Thread.Sleep(TimeSpan.FromSeconds(i * 4));
+            if (i < DownloadThreadCount) {
+                Thread.Sleep(TimeSpan.FromSeconds(i));
+            }
+
             var chunkOffset = i * maxChunkSize;
             var chunkSize = Math.Min(maxChunkSize, count - chunkOffset);
             var readCount = 0;
 
-            while (readCount != chunkSize) {
+            while (readCount < chunkSize) {
                 try {
-                    readCount = DownloadChunk(buffer, path, bufferOffset + chunkOffset,
-                        offset + chunkOffset, chunkSize);
-                    if (readCount != chunkSize) {
+                    readCount += DownloadChunk(buffer, path, bufferOffset + chunkOffset + readCount,
+                        offset + chunkOffset + readCount, chunkSize - readCount);
+                    if (readCount < chunkSize) {
                         Logger.Warn("Internal failure downloading {0} bytes from {1}: only got {2}",
                             chunkSize, offset + chunkOffset, readCount);
-                        Thread.Sleep(TimeSpan.FromSeconds(5));
+                        Thread.Sleep(TimeSpan.FromSeconds(2));
                     }
                 } catch (Exception ex) {
-                    Logger.Warn(ex, "Internal failure downloading {0} bytes from {1}:", chunkSize,
-                        offset + chunkOffset);
+                    Logger.Warn(ex, "Internal failure downloading {0} bytes from {1}:",
+                        chunkSize - readCount, offset + chunkOffset + readCount);
                     Thread.Sleep(TimeSpan.FromSeconds(5));
                 }
             }
@@ -104,28 +114,39 @@ public class BaiduCloudStorageClient : StorageClient, CanCreateStorageClient {
 
         while (true) {
             request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
-            using var response = client.SendAsync(request).Result;
+            using var response = client
+                .SendAsync(request, HttpCompletionOption.ResponseHeadersRead)
+                .GetAwaiter()
+                .GetResult();
             if (response.IsSuccessStatusCode) {
-                var memoryStream = new MemoryStream(buffer, bufferOffset, count, true);
-                response.Content.ReadAsStreamAsync().Result.CopyTo(memoryStream, count);
-                response.Dispose();
-                if (memoryStream.Position != count) {
-                    throw new Exception(
-                        $"Unexpected download length ({memoryStream.Position}, should be {count}): {response}");
+                var totalRead = 0;
+                try {
+                    using var stream = response.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
+                    while (totalRead < count) {
+                        var read = stream.Read(buffer, bufferOffset + totalRead, count - totalRead);
+                        if (read == 0) {
+                            break;
+                        }
+
+                        totalRead += read;
+                    }
+                } catch (Exception ex) when (totalRead > 0) {
+                    Logger.Debug(ex,
+                        $"Stream ended early after reading {totalRead}/{count} bytes from {offset}.");
+                    return totalRead;
                 }
 
-                return count;
+                return totalRead;
             }
 
             if (response.StatusCode >= HttpStatusCode.MultipleChoices &&
                 response.StatusCode < HttpStatusCode.BadRequest) {
                 Logger.Trace($"Redirecting to {response.Headers.Location}");
                 request = new HttpRequestMessage(HttpMethod.Get, response.Headers.Location);
-                response.Dispose();
             } else if (response.StatusCode == HttpStatusCode.Unauthorized) {
                 Logger.Warn(
                     $"Unauthorized access, refresh config: {response.Content.ReadAsStringAsync().Result}");
-                request = new DownloadFileRpc(RemotePathPrefix, path, Account.AccessToken)
+                request = new DownloadFileRpc(RemotePathPrefix, path, RefreshAccount().AccessToken)
                     .GetRequest();
                 Thread.Sleep(TimeSpan.FromSeconds(10));
             } else {
