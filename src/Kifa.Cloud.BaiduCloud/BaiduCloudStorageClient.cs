@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,13 +20,19 @@ public class BaiduCloudStorageClient : StorageClient, CanCreateStorageClient {
 
     public static string RemotePathPrefix { get; set; }
 
-    readonly HttpClient client = new() {
+    readonly HttpClient client = new(new SocketsHttpHandler {
+        AllowAutoRedirect = false
+    }) {
         Timeout = TimeSpan.FromMinutes(30)
     };
 
-    public static int DownloadThreadCount { get; set; } = 4;
+    public static int DownloadThreadCount { get; set; } = 2;
 
-    public static int MaxChunkSize { get; set; } = 1 << 18;
+    public static int MaxChunkSize { get; set; } = 1 << 17;
+
+    static readonly TimeSpan DownloadUriCacheDuration = TimeSpan.FromHours(4);
+
+    readonly ConcurrentDictionary<string, (Uri Uri, DateTime ExpiresAt)> downloadUris = new();
 
     public string AccountId { get; set; }
 
@@ -86,19 +93,45 @@ public class BaiduCloudStorageClient : StorageClient, CanCreateStorageClient {
             var chunkOffset = i * maxChunkSize;
             var chunkSize = Math.Min(maxChunkSize, count - chunkOffset);
             var readCount = 0;
+            var consecutiveEmptyReads = 0;
 
             while (readCount < chunkSize) {
                 try {
-                    readCount += DownloadChunk(buffer, path, bufferOffset + chunkOffset + readCount,
+                    var read = DownloadChunk(buffer, path, bufferOffset + chunkOffset + readCount,
                         offset + chunkOffset + readCount, chunkSize - readCount);
+                    if (read > 0) {
+                        readCount += read;
+                        consecutiveEmptyReads = 0;
+                    } else {
+                        consecutiveEmptyReads++;
+                    }
+
                     if (readCount < chunkSize) {
-                        Logger.Warn("Internal failure downloading {0} bytes from {1}: only got {2}",
-                            chunkSize, offset + chunkOffset, readCount);
+                        if (consecutiveEmptyReads >= 3) {
+                            Logger.Warn(
+                                "Internal failure downloading {0} bytes from {1}: only got {2} ({3} consecutive empty reads)",
+                                chunkSize, offset + chunkOffset, readCount, consecutiveEmptyReads);
+                        } else {
+                            Logger.Debug(
+                                "Partial download of {0} bytes from {1}: got {2}, continuing...",
+                                chunkSize, offset + chunkOffset, readCount);
+                        }
+
                         Thread.Sleep(TimeSpan.FromSeconds(2));
                     }
                 } catch (Exception ex) {
-                    Logger.Warn(ex, "Internal failure downloading {0} bytes from {1}:",
-                        chunkSize - readCount, offset + chunkOffset + readCount);
+                    consecutiveEmptyReads++;
+                    if (consecutiveEmptyReads >= 3) {
+                        Logger.Warn(ex, "Internal failure downloading {0} bytes from {1} (attempt {2}):",
+                            chunkSize - readCount, offset + chunkOffset + readCount,
+                            consecutiveEmptyReads);
+                    } else {
+                        Logger.Debug(ex,
+                            "Transient failure downloading {0} bytes from {1} (attempt {2}), retrying...",
+                            chunkSize - readCount, offset + chunkOffset + readCount,
+                            consecutiveEmptyReads);
+                    }
+
                     Thread.Sleep(TimeSpan.FromSeconds(5));
                 }
             }
@@ -107,10 +140,18 @@ public class BaiduCloudStorageClient : StorageClient, CanCreateStorageClient {
         return count;
     }
 
+    HttpRequestMessage CreateDownloadRequest(string path) {
+        if (downloadUris.TryGetValue(path, out var cached) && DateTime.UtcNow < cached.ExpiresAt) {
+            return new HttpRequestMessage(HttpMethod.Get, cached.Uri);
+        }
+
+        return new DownloadFileRpc(RemotePathPrefix, path, Account.AccessToken).GetRequest();
+    }
+
     int DownloadChunk(byte[] buffer, string path, int bufferOffset, long offset, int count) {
         Logger.Trace($"Download chunk: [{offset}, {offset + count})");
 
-        var request = new DownloadFileRpc(RemotePathPrefix, path, Account.AccessToken).GetRequest();
+        var request = CreateDownloadRequest(path);
 
         while (true) {
             request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
@@ -140,16 +181,23 @@ public class BaiduCloudStorageClient : StorageClient, CanCreateStorageClient {
             }
 
             if (response.StatusCode >= HttpStatusCode.MultipleChoices &&
-                response.StatusCode < HttpStatusCode.BadRequest) {
-                Logger.Trace($"Redirecting to {response.Headers.Location}");
-                request = new HttpRequestMessage(HttpMethod.Get, response.Headers.Location);
-            } else if (response.StatusCode == HttpStatusCode.Unauthorized) {
+                response.StatusCode < HttpStatusCode.BadRequest &&
+                response.Headers.Location != null) {
+                var redirectUri = response.Headers.Location.IsAbsoluteUri
+                    ? response.Headers.Location
+                    : new Uri(request.RequestUri.Checked(), response.Headers.Location);
+                Logger.Trace($"Redirecting to {redirectUri}");
+                downloadUris[path] = (redirectUri, DateTime.UtcNow + DownloadUriCacheDuration);
+                request = new HttpRequestMessage(HttpMethod.Get, redirectUri);
+            } else if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden) {
+                downloadUris.TryRemove(path, out _);
                 Logger.Warn(
-                    $"Unauthorized access, refresh config: {response.Content.ReadAsStringAsync().Result}");
+                    $"Unauthorized access ({response.StatusCode}), refresh config: {response.Content.ReadAsStringAsync().Result}");
                 request = new DownloadFileRpc(RemotePathPrefix, path, RefreshAccount().AccessToken)
                     .GetRequest();
                 Thread.Sleep(TimeSpan.FromSeconds(10));
             } else {
+                downloadUris.TryRemove(path, out _);
                 Logger.Fatal(response.Content.ReadAsStringAsync().Result);
                 throw new Exception($"Unexpected download response: {response}");
             }
