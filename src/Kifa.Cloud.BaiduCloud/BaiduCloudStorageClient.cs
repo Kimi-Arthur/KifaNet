@@ -21,7 +21,8 @@ public class BaiduCloudStorageClient : StorageClient, CanCreateStorageClient {
     public static string RemotePathPrefix { get; set; }
 
     readonly HttpClient client = new(new SocketsHttpHandler {
-        AllowAutoRedirect = false
+        AllowAutoRedirect = false,
+        ConnectTimeout = TimeSpan.FromSeconds(30)
     }) {
         Timeout = TimeSpan.FromMinutes(30)
     };
@@ -29,6 +30,8 @@ public class BaiduCloudStorageClient : StorageClient, CanCreateStorageClient {
     public static int DownloadThreadCount { get; set; } = 2;
 
     public static int MaxChunkSize { get; set; } = 1 << 17;
+
+    public static TimeSpan ChunkTimeout { get; set; } = TimeSpan.FromMinutes(1);
 
     static readonly TimeSpan DownloadUriCacheDuration = TimeSpan.FromHours(4);
 
@@ -122,6 +125,7 @@ public class BaiduCloudStorageClient : StorageClient, CanCreateStorageClient {
                 } catch (Exception ex) {
                     consecutiveEmptyReads++;
                     if (consecutiveEmptyReads >= 3) {
+                        downloadUris.TryRemove(path, out _);
                         Logger.Warn(ex, "Internal failure downloading {0} bytes from {1} (attempt {2}):",
                             chunkSize - readCount, offset + chunkOffset + readCount,
                             consecutiveEmptyReads);
@@ -155,21 +159,28 @@ public class BaiduCloudStorageClient : StorageClient, CanCreateStorageClient {
 
         while (true) {
             request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
+            using var cts = new CancellationTokenSource(ChunkTimeout);
             using var response = client
-                .SendAsync(request, HttpCompletionOption.ResponseHeadersRead)
+                .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token)
                 .GetAwaiter()
                 .GetResult();
             if (response.IsSuccessStatusCode) {
                 var totalRead = 0;
                 try {
-                    using var stream = response.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
+                    using var stream = response.Content.ReadAsStreamAsync(cts.Token).GetAwaiter()
+                        .GetResult();
                     while (totalRead < count) {
-                        var read = stream.Read(buffer, bufferOffset + totalRead, count - totalRead);
+                        var read = stream.ReadAsync(
+                                buffer.AsMemory(bufferOffset + totalRead, count - totalRead),
+                                cts.Token)
+                            .GetAwaiter()
+                            .GetResult();
                         if (read == 0) {
                             break;
                         }
 
                         totalRead += read;
+                        cts.CancelAfter(ChunkTimeout);
                     }
                 } catch (Exception ex) when (totalRead > 0) {
                     Logger.Debug(ex,
