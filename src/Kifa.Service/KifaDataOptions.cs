@@ -19,12 +19,16 @@ public class KifaDataOptions {
     // Only these fields should retrieve Link<> target values.
     public List<string> LinkedFields { get; set; } = [];
 
+    // Target language for sidecar translation overlay (e.g., "zh").
+    public Language? Translated { get; set; }
+
     public KifaDataOptions Clone() => new() {
         Refresh = Refresh,
         Deep = Deep,
         Rewrite = Rewrite,
         Fields = [..Fields],
-        LinkedFields = [..LinkedFields]
+        LinkedFields = [..LinkedFields],
+        Translated = Translated
     };
 
     public IEnumerable<(string Key, object? Value)> GetUrlParameters() {
@@ -38,6 +42,10 @@ public class KifaDataOptions {
 
         if (Rewrite) {
             yield return ("rewrite", "true");
+        }
+
+        if (Translated != null) {
+            yield return ("translated", Translated.Code);
         }
 
         foreach (var field in Fields) {

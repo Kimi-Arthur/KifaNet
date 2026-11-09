@@ -27,9 +27,18 @@ public class DataMetadata {
     // Overrides that will apply after Fill() is called.
     public Dictionary<string, object> Overrides { get; set; } = new();
 
+    // Languages that have sidecar translation files for this item (stored on the base item).
+    public SortedSet<Language>? Translations { get; set; }
+
+    public bool ShouldSerializeTranslations() => Translations != null && Translations.Count > 0;
+
+    // Target language when this instance is a sidecar translation overlay or translated view.
+    public Language? Translated { get; set; }
+
     public bool ShouldSerialize()
         => ShouldSerializeLinking() || Status != DataStatus.OK || Version != null ||
-           ShouldSerializeLastRefreshed() || Overrides.Count > 0;
+           ShouldSerializeLastRefreshed() || Overrides.Count > 0 ||
+           ShouldSerializeTranslations() || Translated != null;
 }
 
 public class LinkingMetadata {

@@ -24,17 +24,22 @@ Previously, `Translatable<T>` embedded a `[JsonProperty("$translations")] Dictio
 - **Translated Sidecar File**: `{DataFolder}/{ModelId}/{id}.${lang}.json` (e.g., `Languages/german/words/Bank.$zh.json`)
   - Uses KifaNet's reserved `$` prefix on the language suffix (`.$zh.json`) so it never collides with item IDs containing dots (such as `z. B..json` vs `z. B..$zh.json`) and remains valid `.json` for IDE syntax highlighting.
   - `KifaServiceJsonClient.List()` ignores `*.$*.json` when enumerating primary items.
-  - Contains a **sparse `TDataModel` tree** with only the translated fields populated, plus `$metadata.translated`.
+  - Contains a **sparse `TDataModel` tree** with `"id": "{id}.${lang}"` and only the translated fields populated (no `$metadata` stored on disk in the sidecar file).
 
-### 2.2 `Translated` in `DataMetadata` and `KifaDataOptions`
-To avoid ambiguity with an item's source/subject language, both the query parameter and `$metadata` field are named **`translated`** (typed as [`Kifa.Language?`](../src/Kifa/Cultures/Language.cs)):
+### 2.2 `Translations` and `Translated` in `DataMetadata` and `KifaDataOptions`
+To avoid ambiguity with an item's source/subject language, both the query parameter and `$metadata` fields use **`translations`** / **`translated`** (typed with [`Kifa.Language`](../src/Kifa/Cultures/Language.cs)):
 
 1. **`DataMetadata`** ([`DataMetadata.cs`](../src/Kifa.Service/DataModel/DataMetadata.cs)):
    ```csharp
+   // Languages that have sidecar translation files for this item (stored on the base item).
+   public SortedSet<Language>? Translations { get; set; }
+
+   // Target language when this instance is a sidecar translation overlay or translated view.
    public Language? Translated { get; set; }
    ```
-   - Omitted (`null`) in the base file (`Bank.json`).
-   - Present (`"$metadata": { "translated": "zh" }`) in `Bank.$zh.json` and in the merged response returned when `?translated=zh` is requested.
+   - In the base file (`Bank.json`): `Translations` lists available sidecar languages (`"$metadata": { "translations": ["zh"] }`), allowing $O(1)$ lookup without scanning directories on disk, while `Translated` is `null`.
+   - In the sidecar file on disk (`Bank.$zh.json`): `$metadata` is omitted (`null`), since the language is already encoded in `"id": "Bank.$zh"`.
+   - In the response returned in memory when `?translated=zh` (or direct `Get("Bank.$zh")`) is requested: `"$metadata": { "translated": "zh" }`.
 
 2. **`KifaDataOptions`** ([`KifaDataOptions.cs`](../src/Kifa.Service/KifaDataOptions.cs)):
    ```csharp
@@ -50,17 +55,34 @@ To avoid ambiguity with an item's source/subject language, both the query parame
 
 ---
 
-## 3. Recursive Tree Merging (`MergeTranslationTree`)
+## 3. Recursive Tree Merging (`TranslatableExtension.MergeTranslation`)
 
 When `GET /api/{ModelId}/{id}?translated=zh` is called:
 1. Read base `TDataModel` from `{id}.json`.
 2. Read sparse translation overlay from `{id}.$zh.json` (if it exists).
-3. Merge the sparse `JObject` tree onto the base `JObject` tree using recursive rules:
+3. Merge the sparse `JObject` tree onto the base `JObject` tree via [`TranslatableExtension.MergeTranslation()`](../src/Kifa.Service/DataModel/TranslatableExtension.cs):
    - **Scalar / Object Properties**: Non-null properties in the translation tree overwrite the corresponding properties on the base object (e.g., `meaning`, `usage_note`, `translation`, `translation_source`).
    - **Arrays (`JArray`)**:
      - **ID-Keyed Elements** (array items are `JObject`s with an `"id"` field, such as `lexemes` `"Bank#1"` or `entries` `"Bank#1.1"`): Match overlay elements to base elements by `"id"` and recursively merge. Unmatched base elements remain untouched.
      - **Positional Elements** (array items without `"id"`, such as `examples[i]` or `phrases[i]`): Match by index `i` and recursively merge.
-   - **Metadata**: Set `$metadata.translated = "zh"` on the merged result while preserving the base record's content `$metadata.version`.
+   - **Metadata**: Set `$metadata.translated = "zh"` on the merged result while preserving the base record's content `$metadata.version` and `linking`.
+
+### 3.1 Read, Write, Link, and Delete Lifecycle in `KifaServiceJsonClient`
+- **Locking (`GetLock`)**:
+  - Sidecar IDs (`Bank.$zh`) normalize to their `baseId` (`Bank`) when acquiring locks so `Bank.$zh` and `Bank` always share the same lock.
+- **`Get(id, options)` & `List(folder, recursive, options)`**:
+  - Requesting `Get("Bank", new KifaDataOptions { Translated = Language.Chinese })` returns the merged `"Bank"` object with `Metadata.Translated = Language.Chinese`.
+  - Requesting `Get("Bank.$zh")` directly returns the standalone sparse translation sidecar (with `Id = "Bank.$zh"` and `Metadata.Translated = Language.Chinese`).
+  - `List()` filters out `*.$*.json` sidecar files so they are never returned as standalone items.
+  - Inside `Read(id, checkId, language)`, for canonical target items (`data.Metadata?.Linking?.Target == null`), both external properties (`ReadAndFillExternalProperties`) and sidecar translations (`ReadAndFillTranslation`, when `language != null && language != TDataModel.DefaultLanguage && data.Metadata?.Translations?.Contains(language) == true`) are loaded in Pass 1 *before* link resolution in Pass 2. Linked items in `List()` simply clone the already-translated target item (`item.Clone()`).
+- **`Set(data)` & `Update(data)` via `{id}.${lang}`**:
+  - When `data.Id` is a sidecar ID (`Bank.$zh`), `Set()` registers `"zh"` in `Metadata.Translations` on `{RealId}.json` and writes the sparse translation model directly to `{RealId}.$zh.json` (with `"id": "{RealId}.$zh"` and no `$metadata` on disk) without overwriting `{RealId}.json` or invoking upstream `Fill()`.
+  - `Update()` with `data.Id = "Bank.$zh"` reads any existing `{RealId}.$zh.json`, merges the incoming translation fields via `MergeTranslation()`, and writes the updated sidecar file.
+- **Links & Deletion**:
+  - Linked aliases (`Bank_alias.$zh`) resolve `baseItem.RealId` (`Bank`), sharing the canonical target's sidecar translation files.
+  - Calling `Delete("Bank.$zh")` deletes only `{RealId}.$zh.json` and removes `"zh"` from `Metadata.Translations` on `{RealId}.json`.
+  - If a primary target is deleted (`Delete("Bank")`) and promoted to its next linked ID, any `{id}.$*.json` sidecar files are automatically migrated to `{nextId}.$*.json`.
+  - When the final item is deleted, all associated `{id}.$*.json` sidecar files are removed alongside `{id}.json`.
 
 ---
 
@@ -71,6 +93,9 @@ When `GET /api/{ModelId}/{id}?translated=zh` is called:
 {
   "id": "Bank",
   "$metadata": {
+    "translations": [
+      "zh"
+    ],
     "version": "20261107000000000000"
   },
   "lexemes": [
@@ -104,11 +129,7 @@ When `GET /api/{ModelId}/{id}?translated=zh` is called:
 ### Sidecar File (`Bank.$zh.json`)
 ```json
 {
-  "id": "Bank",
-  "$metadata": {
-    "translated": "zh",
-    "version": "20261107000500000000"
-  },
+  "id": "Bank.$zh",
   "lexemes": [
     {
       "id": "Bank#1",

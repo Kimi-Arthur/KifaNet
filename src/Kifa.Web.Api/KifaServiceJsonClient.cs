@@ -63,7 +63,9 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
 
     static ConcurrentDictionary<string, Link<TDataModel>> Locks = new();
 
-    protected static Link<TDataModel> GetLock(string id) => Locks.GetOrAdd(id, key => key);
+    protected static Link<TDataModel> GetLock(string id)
+        => Locks.GetOrAdd(id.TryParseTranslationId(out var baseId, out _) ? baseId : id,
+            key => key);
 
     protected static LockScope AcquireLock(string id, [CallerMemberName] string caller = "") {
         Logger.Trace($"Waiting for lock on {TDataModel.ModelId}/{id} in {caller}...");
@@ -145,8 +147,10 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         var items = directory
             .GetFiles("*.json",
                 recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
+            .Where(p => !IsTranslationFile(p.Name))
             .Where(p => folder != "" || !p.FullName.StartsWith(virtualItemPrefix)).AsParallel()
-            .Select(i => Read(i.FullName[prefix.Length..^5], checkId: false)).ExceptNull()
+            .Select(i => Read(i.FullName[prefix.Length..^5], checkId: false,
+                language: options?.Translated)).ExceptNull()
             .Where(i => folder != "" || !i.Id.StartsWith(DataModel.VirtualItemPrefix))
             .Where(i => i.Metadata?.Status != DataStatus.NotFound)
             .ToDictionary(i => i.Id, i => i);
@@ -163,7 +167,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
 
                 var value = items.TryGetValue(target, out var item)
                     ? item.Clone()
-                    : Read(target).Checked();
+                    : Read(target, language: options?.Translated).Checked();
 
                 if (value.Metadata?.Linking?.Links?.Contains(i.Key) != true &&
                     value.Metadata?.Linking?.VirtualLinks?.Contains(i.Key) != true) {
@@ -181,6 +185,41 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     public override TDataModel? Get(string id, KifaDataOptions? options = null) {
         using (AcquireLock(id)) {
             try {
+                if (id.TryParseTranslationId(out var baseId, out var language)) {
+                    if (!IsValidTranslationLanguage(language)) {
+                        Logger.Warn(
+                            $"Rejected Get for invalid translation language '{language.Code}' in {ModelId}/{id}.");
+                        return null;
+                    }
+
+                    var baseItem = Retrieve(baseId);
+                    if (baseItem == null || baseItem.Metadata?.Status == DataStatus.NotFound) {
+                        return null;
+                    }
+
+                    var targetId = baseItem.RealId!;
+                    using (AcquireLock(targetId)) {
+                        if (baseItem.Metadata?.Translations?.Contains(language) != true) {
+                            return null;
+                        }
+
+                        var translation = ReadTranslation(targetId, language);
+                        if (translation == null) {
+                            return null;
+                        }
+
+                        if (targetId != baseId) {
+                            translation.Metadata ??= new DataMetadata();
+                            translation.Metadata.Linking = new LinkingMetadata {
+                                Target = targetId.GetTranslationId(language)
+                            };
+                            translation.Id = baseId.GetTranslationId(language);
+                        }
+
+                        return FormatData(translation, options);
+                    }
+                }
+
                 var data = Retrieve(id);
 
                 if (Fill(ref data, id, options)) {
@@ -199,10 +238,11 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                     }
                 }
 
-                if (data?.Metadata?.Status == DataStatus.NotFound) {
+                if (data == null || data.Metadata?.Status == DataStatus.NotFound) {
                     return null;
                 }
 
+                ReadAndFillTranslation(ref data, options?.Translated);
                 return FormatData(data, options);
             } catch (Exception ex) when (ex is not DataCorruptedException) {
                 Logger.Error(ex, $"Failed to get {id}.");
@@ -315,11 +355,40 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         return data;
     }
 
-    public override KifaActionResult Set(TDataModel data)
-        => KifaActionResult.FromAction(() => {
+    public override KifaActionResult Set(TDataModel data) {
+        if (data.Id.TryParseTranslationId(out var baseId, out var language)) {
+            if (!IsValidTranslationLanguage(language)) {
+                return LogAndReturn(new KifaActionResult {
+                    Status = KifaActionStatus.BadRequest,
+                    Message =
+                        $"Cannot Set invalid translation language '{language.Code}' for {ModelId}/{data.Id}."
+                });
+            }
+
+            return KifaActionResult.FromAction(() => {
+                using (AcquireLock(baseId)) {
+                    Logger.Trace($"Set translation {ModelId}/{data.Id}");
+                    Logger.Notice(() => data.ToString());
+                    var existing = Retrieve(baseId);
+                    if (existing == null) {
+                        throw new DataNotFoundException(
+                            $"Cannot set translation for non-existent item {ModelId}/{baseId}.");
+                    }
+
+                    var targetId = existing.RealId!;
+                    using (AcquireLock(targetId)) {
+                        RegisterTranslationOnTarget(existing, language);
+                        WriteTranslation(data, targetId, language);
+                    }
+                }
+            });
+        }
+
+        return KifaActionResult.FromAction(() => {
             using (AcquireLock(data.Id)) {
                 Logger.Trace($"Set {ModelId}/{data.Id}");
                 Logger.Notice(() => data.ToString());
+                var existing = Retrieve(data.Id);
                 data = data.Clone();
                 // This is new data, we should Fill it.
                 var originalMetadata = data.Metadata?.Clone();
@@ -328,9 +397,15 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                     data.Metadata = originalMetadata;
                 }
 
-                WriteTarget(data, Retrieve(data.Id)?.Metadata?.Linking?.VirtualLinks);
+                if (existing?.Metadata?.Translations is { Count: > 0 } existingTranslations) {
+                    data.Metadata ??= new DataMetadata();
+                    data.Metadata.Translations = existingTranslations;
+                }
+
+                WriteTarget(data, existing?.Metadata?.Linking?.VirtualLinks);
             }
         });
+    }
 
     void WriteVirtualItems(TDataModel data, SortedSet<string> originalVirtualLinks,
         bool checkAllVirtualLinks = false) {
@@ -378,13 +453,46 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         }
     }
 
-    public override KifaActionResult Update(TDataModel data)
-        => KifaActionResult.FromAction(() => {
+    public override KifaActionResult Update(TDataModel data) {
+        if (data.Id.TryParseTranslationId(out var baseId, out var language)) {
+            if (!IsValidTranslationLanguage(language)) {
+                return LogAndReturn(new KifaActionResult {
+                    Status = KifaActionStatus.BadRequest,
+                    Message =
+                        $"Cannot Update invalid translation language '{language.Code}' for {ModelId}/{data.Id}."
+                });
+            }
+
+            return KifaActionResult.FromAction(() => {
+                using (AcquireLock(baseId)) {
+                    Logger.Trace($"Update translation {ModelId}/{data.Id}");
+                    Logger.Notice(() => data.ToString());
+                    var original = Retrieve(baseId);
+                    if (original == null) {
+                        throw new DataNotFoundException(
+                            $"Cannot update translation for non-existent item {ModelId}/{baseId}.");
+                    }
+
+                    var targetId = original.RealId!;
+                    using (AcquireLock(targetId)) {
+                        RegisterTranslationOnTarget(original, language);
+                        var existingTranslation = ReadTranslation(targetId, language);
+                        data = existingTranslation != null
+                            ? existingTranslation.MergeTranslation(data)
+                            : data.Clone();
+                        WriteTranslation(data, targetId, language);
+                    }
+                }
+            });
+        }
+
+        return KifaActionResult.FromAction(() => {
             using (AcquireLock(data.Id)) {
                 Logger.Trace($"Update {ModelId}/{data.Id}");
                 Logger.Notice(() => data.ToString());
-                // If it's new data, we should try Fill it.
                 var original = Retrieve(data.Id);
+
+                // If it's new data, we should try Fill it.
                 if (original == null) {
                     var originalMetadata = data.Metadata?.Clone();
                     data.ResetRefreshDate();
@@ -399,6 +507,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 WriteTarget(data);
             }
         });
+    }
 
     // Serializes data as the target object on disk without mutating the caller's link view.
     static string ToTargetDiskJson(TDataModel data) {
@@ -420,6 +529,38 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     }
 
     public override KifaActionResult Delete(string id) {
+        if (id.TryParseTranslationId(out var baseId, out var language)) {
+            if (!IsValidTranslationLanguage(language)) {
+                return LogAndReturn(new KifaActionResult {
+                    Status = KifaActionStatus.BadRequest,
+                    Message =
+                        $"Cannot Delete invalid translation language '{language.Code}' for {ModelId}/{id}."
+                });
+            }
+
+            using (AcquireLock(baseId)) {
+                var item = Retrieve(baseId);
+                if (item == null || item.Metadata?.Translations?.Contains(language) != true) {
+                    return LogAndReturn(new KifaActionResult {
+                        Status = KifaActionStatus.BadRequest,
+                        Message = $"Cannot find item {ModelId}/{id}"
+                    });
+                }
+
+                var targetId = item.RealId!;
+                using (AcquireLock(targetId)) {
+                    item.Metadata.Translations.Remove(language);
+                    if (item.Metadata.Translations.Count == 0) {
+                        item.Metadata.Translations = null;
+                    }
+
+                    WriteRaw($"{ToTargetDiskJson(item)}\n", targetId);
+                    Remove(targetId.GetTranslationId(language));
+                    return KifaActionResult.Success();
+                }
+            }
+        }
+
         using (AcquireLock(id)) {
             var item = Retrieve(id);
             if (item == null) {
@@ -449,6 +590,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                         linking.Target = null;
 
                         WriteTarget(nextItem);
+                        MoveTranslations(id, nextItem.Id!, item.Metadata?.Translations);
 
                         foreach (var link in links.Concat(linking.VirtualLinks ??
                                                           new SortedSet<string>())) {
@@ -469,12 +611,16 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                                 Remove(link);
                             }
                         }
+
+                        RemoveTranslations(id, item.Metadata?.Translations);
                     }
                 } else {
                     linking.Links!.Remove(id);
 
                     WriteTarget(item);
                 }
+            } else {
+                RemoveTranslations(id, item.Metadata?.Translations);
             }
 
             Remove(id);
@@ -483,6 +629,14 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     }
 
     public override KifaActionResult Link(string targetId, string linkId) {
+        if (targetId.TryParseTranslationId(out _, out _) ||
+            linkId.TryParseTranslationId(out _, out _)) {
+            return LogAndReturn(new KifaActionResult {
+                Status = KifaActionStatus.BadRequest,
+                Message =
+                    $"Cannot Link translation sidecar IDs ({ModelId}/{targetId}, {ModelId}/{linkId})."
+            });
+        }
         using (AcquireLock(linkId)) {
             using (AcquireLock(targetId)) {
                 var target = Retrieve(targetId);
@@ -537,7 +691,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         }
     }
 
-    TDataModel? Read(string id, bool checkId = true) {
+    TDataModel? Read(string id, bool checkId = true, Language? language = null) {
         var rawData = ReadRaw(id);
         Logger.Trace($"Read {id}");
         Logger.Notice(() => $"{rawData ?? "null"}");
@@ -557,6 +711,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
 
             if (data.Metadata?.Linking?.Target == null) {
                 ReadAndFillExternalProperties(data);
+                ReadAndFillTranslation(ref data, language);
             }
 
             return data;
@@ -621,9 +776,100 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         }
     }
 
+    void ReadAndFillTranslation(ref TDataModel data, Language? language) {
+        if (language != null && language != TDataModel.DefaultLanguage &&
+            data.Metadata?.Translations?.Contains(language) == true && data.RealId != null) {
+            var translation = ReadTranslation(data.RealId, language);
+            if (translation != null) {
+                data = data.MergeTranslation(translation);
+            }
+        }
+    }
+
     string? ReadRaw(string id, string suffix = "json") {
         var path = GetPath(id, suffix);
         return !File.Exists(path) ? null : File.ReadAllText(path);
+    }
+
+    static bool IsValidTranslationLanguage(Language language)
+        => language != Language.Unknown && language != TDataModel.DefaultLanguage;
+
+    static bool IsTranslationFile(string fileName)
+        => fileName.EndsWith(".json", StringComparison.Ordinal) &&
+           fileName[..^5].TryParseTranslationId(out _, out _);
+
+    TDataModel? ReadTranslation(string targetId, Language language) {
+        var translationId = targetId.GetTranslationId(language);
+        var rawData = ReadRaw(translationId);
+        Logger.Trace($"Read translation {translationId}");
+        try {
+            if (rawData == null) {
+                return null;
+            }
+
+            var data = rawData.FromJson<TDataModel>().Checked();
+            if (data.Id?.Trim('/') != translationId.Trim('/')) {
+                throw new DataCorruptedException(
+                    $"Translation data ID {data.Id} does not match requested ID {translationId}.");
+            }
+
+            data.Metadata ??= new DataMetadata();
+            data.Metadata.Translated = language;
+
+            return data;
+        } catch (JsonReaderException ex) {
+            Logger.Error(ex, $"Failed to read translation {ModelId}/{translationId}");
+            throw;
+        }
+    }
+
+    void RegisterTranslationOnTarget(TDataModel targetItem, Language language) {
+        targetItem.Metadata ??= new DataMetadata();
+        targetItem.Metadata.Translations ??= [];
+        if (targetItem.Metadata.Translations.Add(language)) {
+            WriteRaw($"{ToTargetDiskJson(targetItem)}\n", targetItem.RealId);
+        }
+    }
+
+    void WriteTranslation(TDataModel data, string targetId, Language language) {
+        var translationId = targetId.GetTranslationId(language);
+        var originalId = data.Id;
+        var originalMetadata = data.Metadata;
+        try {
+            data.Id = translationId;
+            data.Metadata = null;
+            Write(data);
+        } finally {
+            data.Id = originalId;
+            data.Metadata = originalMetadata;
+        }
+    }
+
+    void MoveTranslations(string fromId, string toId, SortedSet<Language>? translations) {
+        if (translations == null) {
+            return;
+        }
+
+        foreach (var language in translations) {
+            var fromTranslationId = fromId.GetTranslationId(language);
+            var rawData = ReadRaw(fromTranslationId);
+            if (rawData != null) {
+                var data = rawData.FromJson<TDataModel>().Checked();
+                WriteTranslation(data, toId, language);
+            }
+
+            Remove(fromTranslationId);
+        }
+    }
+
+    void RemoveTranslations(string id, SortedSet<Language>? translations) {
+        if (translations == null) {
+            return;
+        }
+
+        foreach (var language in translations) {
+            Remove(id.GetTranslationId(language));
+        }
     }
 
     void Remove(string id) {

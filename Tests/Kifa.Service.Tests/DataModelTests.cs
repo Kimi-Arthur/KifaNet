@@ -14,22 +14,87 @@ public class DataModelTests {
     }
 
     [Fact]
-    public void TranslateTest() {
-        var x = new FakeDataModel {
-            Id = "fake",
-            StrProp = "A",
+    public void MergeTranslationTest() {
+        var baseModel = new FakeDataModel {
+            Id = "Bank",
+            StrProp = "bank; bench",
             IntPROP = 123,
-            Translations = new Dictionary<string, FakeDataModel> {
-                ["zh"] = new() {
-                    StrProp = "中"
+            SubProp = new FakeSubDataModel {
+                SubProp1 = "english note",
+                Sub2 = ["en1", "en2"]
+            },
+            KeyedItems = [
+                new FakeKeyedItem {
+                    Id = "Bank#1.1",
+                    Meaning = "bench",
+                    Cefr = "A1",
+                    Examples = [
+                        new FakePositionalItem {
+                            Text = "Auf der Bank sitzen.",
+                            Translation = "Sit on the bench."
+                        },
+                        new FakePositionalItem {
+                            Text = "Eine Bank im Park.",
+                            Translation = "A bench in the park."
+                        }
+                    ]
+                },
+                new FakeKeyedItem {
+                    Id = "Bank#2.1",
+                    Meaning = "financial institution",
+                    Cefr = "A2"
                 }
-            }
+            ]
         };
 
-        Assert.Equal("中", x.GetTranslated("zh").StrProp);
-        Assert.Equal("A", x.GetTranslated("en").StrProp);
-        Assert.Equal(123, x.GetTranslated("zh").IntPROP);
-        Assert.Equal(123, x.GetTranslated("en").IntPROP);
+        var zhTranslation = new FakeDataModel {
+            Id = "Bank.$zh",
+            StrProp = "长椅；银行",
+            SubProp = new FakeSubDataModel {
+                SubProp1 = "中文注释"
+            },
+            KeyedItems = [
+                new FakeKeyedItem {
+                    Id = "Bank#2.1",
+                    Meaning = "银行"
+                },
+                new FakeKeyedItem {
+                    Id = "Bank#1.1",
+                    Meaning = "长椅",
+                    Examples = [
+                        new FakePositionalItem {
+                            Translation = "坐在长椅上。"
+                        }
+                    ]
+                }
+            ]
+        };
+
+        var merged = baseModel.MergeTranslation(zhTranslation);
+
+        Assert.Equal("Bank", merged.Id);
+        Assert.Equal(Language.Chinese, merged.Metadata?.Translated);
+        Assert.Equal("长椅；银行", merged.StrProp);
+        Assert.Equal(123, merged.IntPROP);
+        Assert.Equal("中文注释", merged.SubProp.SubProp1);
+        Assert.Equal(["en1", "en2"], merged.SubProp.Sub2);
+
+        // KeyedItems matched by Id regardless of order in overlay
+        Assert.Equal(2, merged.KeyedItems.Count);
+        Assert.Equal("Bank#1.1", merged.KeyedItems[0].Id);
+        Assert.Equal("长椅", merged.KeyedItems[0].Meaning);
+        Assert.Equal("A1", merged.KeyedItems[0].Cefr);
+
+        // Positional Examples matched by index; untouched index 1 preserved
+        Assert.Equal(2, merged.KeyedItems[0].Examples.Count);
+        Assert.Equal("Auf der Bank sitzen.", merged.KeyedItems[0].Examples[0].Text);
+        Assert.Equal("坐在长椅上。", merged.KeyedItems[0].Examples[0].Translation);
+        Assert.Equal("Eine Bank im Park.", merged.KeyedItems[0].Examples[1].Text);
+        Assert.Equal("A bench in the park.", merged.KeyedItems[0].Examples[1].Translation);
+
+        Assert.Equal("Bank#2.1", merged.KeyedItems[1].Id);
+        Assert.Equal("银行", merged.KeyedItems[1].Meaning);
+        Assert.Equal("A2", merged.KeyedItems[1].Cefr);
     }
 
     [Fact]

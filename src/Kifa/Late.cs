@@ -57,7 +57,7 @@ public static class Late {
     static readonly List<(string Type, string Method)> IgnoredMethods = new() {
         ("Newtonsoft.Json.Serialization.JsonSerializerInternalReader", "Deserialize"),
         ("Newtonsoft.Json.JsonSerializer", "Deserialize"),
-        ("Kifa.Service.TranslatableExtension", "GetTranslated")
+        ("Kifa.Service.TranslatableExtension", "MergeTranslation")
     };
 
     static bool ShouldNotThrow(StackTrace stackTrace)
