@@ -123,7 +123,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         var virtualItemPrefix = $"{prefix}{DataModel.VirtualItemPrefix}";
         if (File.Exists(subFolder + ".json")) {
             Logger.Trace($"{subFolder} is actually a file. Return one element instead.");
-            var data = Get(subFolder[prefix.Length..]);
+            var data = Get(subFolder[prefix.Length..], options);
             return new SortedDictionary<string, TDataModel> {
                 { data.Id, data }
             };
@@ -184,30 +184,26 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 var data = Retrieve(id);
 
                 if (Fill(ref data, id, options)) {
-                    WriteTarget(data.Clone());
+                    WriteTarget(data);
                 } else if (options?.Rewrite == true) {
                     if (data != null) {
                         var rawData = ReadRaw(data.RealId);
                         if (rawData != null) {
-                            var clonedForChecking = data.Clone();
-                            CleanupForWriting(clonedForChecking);
-                            var expectedRawData = $"{clonedForChecking.ToDiskJson()}\n";
+                            var expectedRawData = $"{ToTargetDiskJson(data)}\n";
                             if (rawData != expectedRawData) {
                                 Logger.Info(
                                     $"Rewriting {ModelId}/{data.RealId} as its JSON layout on disk did not match the expected structure.");
-                                WriteTarget(data.Clone());
+                                WriteTarget(data);
                             }
                         }
                     }
                 }
 
-                var result = Retrieve(id);
-                if (result?.Metadata?.Status == DataStatus.NotFound) {
+                if (data?.Metadata?.Status == DataStatus.NotFound) {
                     return null;
                 }
 
-                // TODO: Not sure...
-                return FormatData(result, options);
+                return FormatData(data, options);
             } catch (Exception ex) when (ex is not DataCorruptedException) {
                 Logger.Error(ex, $"Failed to get {id}.");
                 return null;
@@ -222,6 +218,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     // true -> rewrite needed.
     bool Fill([NotNullWhen(true)] ref TDataModel? data, string? id = null,
         KifaDataOptions? options = null) {
+        var originalContent = data?.Clone();
         data ??= new TDataModel {
             Id = id
         };
@@ -231,7 +228,6 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
 
         if (refresh || deep || data.NeedRefresh()) {
             var isNewItem = data.Metadata?.Version == null;
-            var originalContent = data.Clone();
             var now = DateTimeOffset.UtcNow;
 
             try {
@@ -245,13 +241,16 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 // New data is written in Link. No need to save more.
                 return false;
             } catch (NoNeedToFillException) {
+                data = originalContent;
                 return false;
             } catch (DataNotFoundException ex) {
                 Logger.Warn(ex, $"{ModelId}/{data.Id} was not found upstream.");
-                data = originalContent;
+                data = originalContent ?? new TDataModel {
+                    Id = id
+                };
                 data.Metadata ??= new DataMetadata();
-                var isEmpty = originalContent.Metadata?.Version == null && originalContent.IsEmpty();
-                if (isEmpty || originalContent.Metadata?.Status == DataStatus.NotFound) {
+                var isEmpty = data.Metadata.Version == null && data.IsEmpty();
+                if (isEmpty || data.Metadata.Status == DataStatus.NotFound) {
                     data.Metadata.Status = DataStatus.NotFound;
                     data.Metadata.Version = now;
                     data.Metadata.LastRefreshed = now;
@@ -273,7 +272,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             }
 
             var contentChanged = isNewItem ||
-                                 originalContent.Metadata?.Status != DataStatus.OK ||
+                                 originalContent?.Metadata?.Status != DataStatus.OK ||
                                  !data.Equals(originalContent);
 
             data.Metadata ??= new DataMetadata();
@@ -401,13 +400,22 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             }
         });
 
-    // Cleans up data for writing.
-    // It will convert to the target object to write as the links don't need to be updated anyway.
-    // It will also remove the parts that only make sense for the links.
-    void CleanupForWriting(TDataModel data) {
-        data.Id = data.RealId;
-        if (data.Metadata?.Linking != null) {
-            data.Metadata.Linking.Target = null;
+    // Serializes data as the target object on disk without mutating the caller's link view.
+    static string ToTargetDiskJson(TDataModel data) {
+        var originalId = data.Id;
+        var originalTarget = data.Metadata?.Linking?.Target;
+        try {
+            data.Id = data.RealId;
+            if (data.Metadata?.Linking != null) {
+                data.Metadata.Linking.Target = null;
+            }
+
+            return data.ToDiskJson();
+        } finally {
+            data.Id = originalId;
+            if (data.Metadata?.Linking != null) {
+                data.Metadata.Linking.Target = originalTarget;
+            }
         }
     }
 
@@ -547,7 +555,10 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                     $"Data ID {data.Id} does not match requested ID {id}.");
             }
 
-            ReadAndFillExternalProperties(data);
+            if (data.Metadata?.Linking?.Target == null) {
+                ReadAndFillExternalProperties(data);
+            }
+
             return data;
         } catch (JsonReaderException ex) {
             Logger.Error(ex, $"Failed to read {ModelId}/{id}");
@@ -589,15 +600,14 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             originalVirtualLinks ??
             data.Metadata?.Linking?.VirtualLinks ?? new SortedSet<string>(),
             checkAllVirtualLinks);
-        CleanupForWriting(data);
         WriteExternalProperties(data);
-        Write(data);
+        WriteRaw($"{ToTargetDiskJson(data)}\n", data.RealId);
     }
 
     void WriteExternalProperties(TDataModel data) {
         foreach (var (property, suffix) in TDataModel.ExternalProperties) {
             if (property.GetValue(data) is string content) {
-                WriteRaw(content, data.Id, suffix);
+                WriteRaw(content, data.RealId, suffix);
             }
         }
     }

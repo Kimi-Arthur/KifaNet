@@ -532,6 +532,32 @@ public class BasicTests : IDisposable {
         }
     }
 
+    [Fact]
+    public void ExternalPropertyWithLinkGetAndListTest() {
+        const string id = nameof(ExternalPropertyWithLinkGetAndListTest);
+        const string linkId = $"{id}_link";
+
+        client.Set(new TestDataModel {
+            Id = id,
+            Data = "main data",
+            ExternalData = "external text content"
+        });
+        client.Link(id, linkId);
+
+        File.Exists($"{folder}/tests/{id}.txt").Should().BeTrue();
+        File.Exists($"{folder}/tests/{linkId}.txt").Should().BeFalse();
+
+        var linked = client.Get(linkId);
+        linked.Should().NotBeNull();
+        linked!.Id.Should().Be(linkId);
+        linked.Data.Should().Be("main data");
+        linked.ExternalData.Should().Be("external text content");
+
+        var list = client.List();
+        list[id].ExternalData.Should().Be("external text content");
+        list[linkId].ExternalData.Should().Be("external text content");
+    }
+
     public void Dispose() {
         if (Directory.Exists(folder)) {
             Directory.Delete(folder, true);
