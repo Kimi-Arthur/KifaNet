@@ -8,6 +8,9 @@ using WTelegram;
 namespace Kifa.Tools.DataUtil.Commands;
 
 public partial class AddCommand {
+    public const string TelegramAccountSpecHelp =
+        "telegram/accounts: <id>:<count> | <id>:<phone>:<api_id>:<api_hash>:<count>";
+
     // Example command: datax add -t telegram/accounts Kimily:1
     void CreateTelegramAccount(IEnumerable<string> specs) {
         foreach (var accountSpec in specs) {

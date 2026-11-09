@@ -18,6 +18,9 @@ public partial class AddCommand {
     public static TimeSpan YouTubePageLoadWait { get; set; } = TimeSpan.FromSeconds(3);
     public static TimeSpan YouTubeInterval { get; set; } = TimeSpan.FromSeconds(3);
 
+    public const string YouTubeAccountSpecHelp =
+        "youtube/accounts: <id>[:<count>] | <id>:<user>:<pass>:<count> | <id>[:<count>]:<cookies.txt>";
+
     // Example command: datax add -t youtube/accounts Kimily
     // Example command: datax add -t youtube/accounts Kimily:2
     // Example command: datax add -t youtube/accounts Kimily:user@gmail.com:password:1

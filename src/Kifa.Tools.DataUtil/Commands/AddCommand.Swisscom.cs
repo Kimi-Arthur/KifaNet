@@ -9,6 +9,8 @@ using Kifa.Service;
 namespace Kifa.Tools.DataUtil.Commands;
 
 public partial class AddCommand {
+    public const string SwisscomSpecHelp = "accounts/swisscom: <prefix> (e.g. p060)";
+
     public static Func<KifaActionResult, bool?> ActionValidator
         => result => result.IsAcceptable ? true : result.IsRetryable ? null : false;
 

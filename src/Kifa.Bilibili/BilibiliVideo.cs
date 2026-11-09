@@ -672,6 +672,12 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
                         $"{response.Message} ({response.Code})");
                 }
 
+                // -101: 账号未登录 (Account not logged in).
+                // Reference: https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/docs/misc/errcode.md
+                if (response.Code == BilibiliAccount.NotLoggedInCode) {
+                    HttpClients.RefreshBilibiliCookies();
+                }
+
                 throw new Exception($"bilibili API error: {response.Message} ({response.Code}).");
             }
 
@@ -680,6 +686,7 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
             var maxAcceptable = data.AcceptQuality.First(q => q <= maxQuality);
             if (receivedQuality != maxAcceptable) {
                 quality = maxAcceptable;
+                HttpClients.RefreshBilibiliCookies();
                 throw new Exception(
                     $"Quality mismatch: received quality {receivedQuality}, best acceptable quality {quality}.");
             }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using CommandLine;
+using Kifa.Bilibili;
 using Kifa.Cloud.MegaNz;
 using Kifa.Cloud.Swisscom;
 using Kifa.Cloud.Telegram;
@@ -13,14 +14,18 @@ namespace Kifa.Tools.DataUtil.Commands;
 public partial class AddCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    [Option('t', "type", HelpText = "Type of data. Allowed values: accounts/swisscom")]
+    [Option('t', "type",
+        HelpText =
+            "Type of data. Allowed values: accounts/swisscom, telegram/accounts, accounts/meganz, youtube/accounts, bilibili/accounts")]
     public string Type { get; set; }
 
     [Option('p', "threads", Default = 8,
         HelpText = "Number of parallel threads to use when creating accounts.")]
     public int ParallelThreads { get; set; }
 
-    [Value(0, Required = true, HelpText = "Spec for creating items.")]
+    [Value(0, Required = true,
+        HelpText =
+            $"Spec for creating items:\n  {SwisscomSpecHelp}\n  {TelegramAccountSpecHelp}\n  {AddMegaNzAccountSubCommand.SpecHelp}\n  {YouTubeAccountSpecHelp}\n  {BilibiliAccountSpecHelp}")]
     public IEnumerable<string> Specs { get; set; }
 
     public override int Execute(KifaTask? task = null) {
@@ -41,6 +46,11 @@ public partial class AddCommand : KifaCommand {
 
         if (Type == YouTubeAccount.ModelId) {
             CreateYouTubeAccounts(Specs);
+            return 0;
+        }
+
+        if (Type == BilibiliAccount.ModelId) {
+            CreateBilibiliAccounts(Specs);
             return 0;
         }
 

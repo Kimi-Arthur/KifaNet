@@ -10,6 +10,8 @@ namespace Kifa.Tools.DataUtil.Commands;
 public class AddMegaNzAccountSubCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
+    public const string SpecHelp = "accounts/meganz: <prefix> (e.g. p060)";
+
     // Example command: datax add -t swisscom/accounts p060
     public static void CreateMegaNzAccounts(IEnumerable<string> specs) {
         foreach (var account in specs.SelectMany(ExpandAccounts)) {

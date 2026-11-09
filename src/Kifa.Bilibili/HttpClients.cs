@@ -1,83 +1,125 @@
 using System;
 using System.Net;
 using System.Net.Http;
-using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
+using Kifa.Service;
+using NLog;
 
 namespace Kifa.Bilibili;
 
 public class HttpClients {
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     public static string? CnProxy { get; set; }
     public static string? HkProxy { get; set; }
 
-    public static string BilibiliCookies { get; set; }
+    public static string? BilibiliCookies { get; set; }
 
-    static readonly Regex BiliJctPattern = new(@"bili_jct=([^;]*);");
+    public static TimeSpan CookieSyncInterval { get; set; } = TimeSpan.FromMinutes(1);
 
-    public static string BilibiliCsrfToken => BiliJctPattern.Match(BilibiliCookies).Groups[1].Value;
+    static readonly Lock CookieLock = new();
+    static DateTimeOffset lastCookieSync = Date.Zero;
+    static string? activeCookies;
+
+    public static string? GetActiveBilibiliCookies() {
+        EnsureBilibiliCookies();
+        return activeCookies ?? BilibiliCookies;
+    }
+
+    public static void EnsureBilibiliCookies() {
+        lock (CookieLock) {
+            var now = DateTimeOffset.UtcNow;
+            if (activeCookies != null && now - lastCookieSync < CookieSyncInterval) {
+                return;
+            }
+
+            lastCookieSync = now;
+            try {
+                var account = BilibiliAccount.Client.Get(BilibiliAccount.AccountId);
+                if (account?.Cookies != null) {
+                    activeCookies = account.Cookies;
+                    return;
+                }
+            } catch (Exception ex) {
+                Logger.Debug(ex,
+                    $"Failed to fetch BilibiliAccount '{BilibiliAccount.AccountId}', using fallback cookies.");
+            }
+
+            activeCookies ??= BilibiliCookies;
+        }
+    }
+
+    public static void RefreshBilibiliCookies() {
+        lock (CookieLock) {
+            lastCookieSync = DateTimeOffset.UtcNow;
+            try {
+                var account = BilibiliAccount.Client.Get(BilibiliAccount.AccountId,
+                    new KifaDataOptions {
+                        Refresh = true
+                    });
+                if (account?.Cookies != null) {
+                    activeCookies = account.Cookies;
+                }
+            } catch (Exception ex) {
+                Logger.Warn(ex,
+                    $"Failed to refresh BilibiliAccount '{BilibiliAccount.AccountId}'.");
+            }
+        }
+    }
+
+    public static string BilibiliCsrfToken
+        => BilibiliAccount.GetCookieValue(GetActiveBilibiliCookies(), "bili_jct") ?? "";
 
     public static string BiliplusCookies { get; set; }
 
-    static HttpClient? bilibiliCnClient;
+    public static HttpClient BilibiliCnClient => field ??= CreateBilibiliClient(CnProxy);
 
-    public static HttpClient BilibiliCnClient {
-        get {
-            if (bilibiliCnClient == null) {
-                bilibiliCnClient = new HttpClient(new HttpClientHandler {
-                    Proxy = new WebProxy(CnProxy)
-                });
-                bilibiliCnClient.Timeout = TimeSpan.FromMinutes(10);
-                if (!string.IsNullOrEmpty(BilibiliCookies)) {
-                    bilibiliCnClient.DefaultRequestHeaders.Add("cookie", BilibiliCookies);
-                }
-                bilibiliCnClient.DefaultRequestHeaders.Referrer =
-                    new Uri("https://m.bilibili.com/");
-                bilibiliCnClient.DefaultRequestHeaders.UserAgent.ParseAdd(
-                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36");
-            }
+    public static HttpClient BilibiliHkClient => field ??= CreateBilibiliClient(HkProxy);
 
-            return bilibiliCnClient;
+    public static HttpClient BilibiliDirectClient => field ??= CreateBilibiliClient();
+
+    static HttpClient CreateBilibiliClient(string? proxy = null) {
+        var handler = new HttpClientHandler {
+            UseCookies = false,
+            AutomaticDecompression = DecompressionMethods.All
+        };
+        if (proxy != null) {
+            handler.Proxy = new WebProxy(proxy);
         }
+
+        var client = new HttpClient(new BilibiliCookieHandler(handler)) {
+            Timeout = TimeSpan.FromMinutes(10)
+        };
+        client.DefaultRequestHeaders.Referrer = new Uri("https://m.bilibili.com/");
+        client.DefaultRequestHeaders.UserAgent.ParseAdd(
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36");
+        return client;
     }
 
-    static HttpClient? bilibiliHkClient;
-
-    public static HttpClient BilibiliHkClient {
-        get {
-            if (bilibiliHkClient == null) {
-                bilibiliHkClient = new HttpClient(new HttpClientHandler {
-                    Proxy = new WebProxy(HkProxy)
-                });
-                bilibiliHkClient.Timeout = TimeSpan.FromMinutes(10);
-                if (!string.IsNullOrEmpty(BilibiliCookies)) {
-                    bilibiliHkClient.DefaultRequestHeaders.Add("cookie", BilibiliCookies);
-                }
-                bilibiliHkClient.DefaultRequestHeaders.Referrer =
-                    new Uri("https://m.bilibili.com/");
-                bilibiliHkClient.DefaultRequestHeaders.UserAgent.ParseAdd(
-                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36");
-            }
-
-            return bilibiliHkClient;
+    class BilibiliCookieHandler : DelegatingHandler {
+        public BilibiliCookieHandler(HttpMessageHandler innerHandler) : base(innerHandler) {
         }
-    }
 
-    static HttpClient? bilibiliDirectClient;
+        protected override HttpResponseMessage Send(HttpRequestMessage request,
+            CancellationToken cancellationToken) {
+            AttachCookies(request);
+            return base.Send(request, cancellationToken);
+        }
 
-    public static HttpClient BilibiliDirectClient {
-        get {
-            if (bilibiliDirectClient == null) {
-                bilibiliDirectClient = new HttpClient();
-                bilibiliDirectClient.Timeout = TimeSpan.FromMinutes(10);
-                if (!string.IsNullOrEmpty(BilibiliCookies)) {
-                    bilibiliDirectClient.DefaultRequestHeaders.Add("cookie", BilibiliCookies);
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+            CancellationToken cancellationToken) {
+            AttachCookies(request);
+            return base.SendAsync(request, cancellationToken);
+        }
+
+        static void AttachCookies(HttpRequestMessage request) {
+            if (!request.Headers.Contains("cookie")) {
+                var cookies = GetActiveBilibiliCookies();
+                if (cookies != null) {
+                    request.Headers.Add("cookie", cookies);
                 }
-                bilibiliDirectClient.DefaultRequestHeaders.Referrer =
-                    new Uri("https://m.bilibili.com/");
-                bilibiliDirectClient.DefaultRequestHeaders.UserAgent.ParseAdd(
-                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36");
             }
-
-            return bilibiliDirectClient;
         }
     }
 

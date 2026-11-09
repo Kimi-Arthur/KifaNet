@@ -14,6 +14,10 @@ namespace Kifa.Tools.BiliUtil.Commands;
 public abstract class DownloadCommand : BiliCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
+    [Option('a', "account",
+        HelpText = "Account to use for Bilibili session. Defaults to 'default'.")]
+    public string? Account { get; set; }
+
     [Option('p', "prefix",
         HelpText =
             "Prefix of file name. Possible values: date, number (only suggested for archives)")]
@@ -53,6 +57,10 @@ public abstract class DownloadCommand : BiliCommand {
     protected KifaActionResult Download(BilibiliVideo video, int pid, string? alternativeFolder = null,
         string? extraFolder = null, BilibiliUploader? uploader = null,
         bool includeUploaderInFileTitle = false) {
+        if (Account != null) {
+            BilibiliAccount.AccountId = Account;
+        }
+
         LastItemAlreadyExists = false;
         string? extension;
         int quality;

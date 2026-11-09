@@ -58,6 +58,7 @@ public interface DataChef {
         { BilibiliManga.ModelId, new Lazy<DataChef>(() => new DataChef<BilibiliManga>()) },
         { BilibiliArchive.ModelId, new Lazy<DataChef>(() => new DataChef<BilibiliArchive>()) },
         { BilibiliBangumi.ModelId, new Lazy<DataChef>(() => new DataChef<BilibiliBangumi>()) },
+        { BilibiliAccount.ModelId, new Lazy<DataChef>(() => new DataChef<BilibiliAccount>()) },
         { YouTubeAccount.ModelId, new Lazy<DataChef>(() => new DataChef<YouTubeAccount>()) },
         { YouTubeSession.ModelId, new Lazy<DataChef>(() => new DataChef<YouTubeSession>()) },
         { YouTubeUploader.ModelId, new Lazy<DataChef>(() => new DataChef<YouTubeUploader>()) }, {
