@@ -115,7 +115,7 @@ public class BaiduCloudStorageClient : StorageClient, CanCreateStorageClient {
                                 "Internal failure downloading {0} bytes from {1}: only got {2} ({3} consecutive empty reads)",
                                 chunkSize, offset + chunkOffset, readCount, consecutiveEmptyReads);
                         } else {
-                            Logger.Debug(
+                            Logger.Trace(
                                 "Partial download of {0} bytes from {1}: got {2}, continuing...",
                                 chunkSize, offset + chunkOffset, readCount);
                         }
@@ -130,7 +130,7 @@ public class BaiduCloudStorageClient : StorageClient, CanCreateStorageClient {
                             chunkSize - readCount, offset + chunkOffset + readCount,
                             consecutiveEmptyReads);
                     } else {
-                        Logger.Debug(ex,
+                        Logger.Trace(ex,
                             "Transient failure downloading {0} bytes from {1} (attempt {2}), retrying...",
                             chunkSize - readCount, offset + chunkOffset + readCount,
                             consecutiveEmptyReads);
@@ -183,7 +183,7 @@ public class BaiduCloudStorageClient : StorageClient, CanCreateStorageClient {
                         cts.CancelAfter(ChunkTimeout);
                     }
                 } catch (Exception ex) when (totalRead > 0) {
-                    Logger.Debug(ex,
+                    Logger.Trace(ex,
                         $"Stream ended early after reading {totalRead}/{count} bytes from {offset}.");
                     return totalRead;
                 }
