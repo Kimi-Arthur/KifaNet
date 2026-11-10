@@ -187,11 +187,14 @@ public class RetrieveCommandTests : IDisposable {
             Client = fakeRemote
         };
 
-        var cmd = new RetrieveCommand();
+        var cmd = new RetrieveCommand {
+            AutoConfirmDefault = true
+        };
         var result = cmd.RetrieveFile(remoteFile);
 
         Assert.Equal(KifaActionStatus.Warning, result.Status);
         Assert.Contains("differs from quick info MD5", result.Message);
+        Assert.Contains("Actual MD5 is not found in system.", result.Message);
         var expectedLocalPath = $"{tempDir}/dev1/folder/wrong_md5.txt";
         Assert.True(File.Exists(expectedLocalPath));
         Assert.Equal("Hello World!", File.ReadAllText(expectedLocalPath));
@@ -203,6 +206,47 @@ public class RetrieveCommandTests : IDisposable {
         Assert.NotNull(
             info.Locations.GetValueOrDefault("local:retrieve_test_dev1/folder/wrong_md5.txt"));
         Assert.NotNull(info.Locations.GetValueOrDefault("baidu:test_acc/folder/wrong_md5.txt"));
+    }
+
+    [Fact]
+    public void
+        Retrieve_UnregisteredRemoteFile_WithIncorrectServerMd5_DeclinedThenRetried_RePromptsInsteadOfBlindlyAcceptingLocalMirror() {
+        KifaFile.DefaultMirrorHost = "local:retrieve_test_dev1";
+        var fakeRemote = new FakeRemoteStorageClient("baidu", "test_acc");
+        fakeRemote.AddFile("/folder/wrong_md5_decline.txt", "Hello World!",
+            md5: "00000000000000000000000000000000");
+
+        var remoteFile1 = new KifaFile("baidu:test_acc/folder/wrong_md5_decline.txt") {
+            Client = fakeRemote
+        };
+
+        var prompts1 = new List<(string prompt, bool suggested)>();
+        var result1 = remoteFile1.Retrieve(confirmPrompt: (prompt, suggested) => {
+            prompts1.Add((prompt, suggested));
+            return false;
+        });
+
+        Assert.Single(prompts1);
+        Assert.Equal(KifaActionStatus.Error, result1.Status);
+        Assert.Contains("differs from quick info MD5", result1.Message);
+        Assert.Null(FileInformation.Client.Get("/folder/wrong_md5_decline.txt"));
+
+        // Local mirror file now exists on disk. A subsequent Retrieve on a fresh KifaFile
+        // must still compare against Baidu's quick info MD5 and prompt, rather than blindly accepting the local mirror.
+        var remoteFile2 = new KifaFile("baidu:test_acc/folder/wrong_md5_decline.txt") {
+            Client = fakeRemote
+        };
+
+        var prompts2 = new List<(string prompt, bool suggested)>();
+        var result2 = remoteFile2.Retrieve(confirmPrompt: (prompt, suggested) => {
+            prompts2.Add((prompt, suggested));
+            return false;
+        });
+
+        Assert.Single(prompts2);
+        Assert.Equal(KifaActionStatus.Error, result2.Status);
+        Assert.Contains("differs from quick info MD5", result2.Message);
+        Assert.Null(FileInformation.Client.Get("/folder/wrong_md5_decline.txt"));
     }
 
     [Fact]

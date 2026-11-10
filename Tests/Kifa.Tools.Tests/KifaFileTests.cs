@@ -912,10 +912,68 @@ public class KifaFileTests : IDisposable {
 
         Assert.Equal(KifaActionStatus.Warning, result.Status);
         Assert.Contains("differs from quick info MD5", result.Message);
+        Assert.Contains("Actual MD5 is not found in system.", result.Message);
         Assert.True(file.Registered);
         Assert.Equal("ED076287532E86365E841E92BFC50D8C", file.FileInfo?.Md5);
         Assert.Equal("7F83B1657FF1FC53B92DC18148A1D65DFC2D4B1FA3D677284ADDD200126D9069",
             file.FileInfo?.Sha256);
+    }
+
+    [Fact]
+    public void Add_WithQuickInfoMd5_MismatchedActualMd5_ConfirmedWithExistingInSystem_LinksAndRegisters() {
+        var filePath = $"{tempDir}/quick_md5_mismatch_existing.txt";
+        File.WriteAllText(filePath, "Hello World!");
+
+        fakeClient.Set(new FileInformation {
+            Id = "/existing_actual_match.txt",
+            Size = 12,
+            Md5 = "ED076287532E86365E841E92BFC50D8C",
+            Sha256 = "7F83B1657FF1FC53B92DC18148A1D65DFC2D4B1FA3D677284ADDD200126D9069"
+        });
+
+        var file = new KifaFile(filePath, fileInfo: new FileInformation {
+            Size = 12,
+            Md5 = "00000000000000000000000000000000"
+        });
+
+        var prompts = new List<(string prompt, bool suggested)>();
+        var result = file.Add(confirmPrompt: (prompt, suggested) => {
+            prompts.Add((prompt, suggested));
+            return true;
+        });
+
+        Assert.Single(prompts);
+        Assert.True(prompts[0].suggested);
+        Assert.Contains(
+            "Actual MD5 is found in system as /$/md5/ED/07/ED076287532E86365E841E92BFC50D8C (/existing_actual_match.txt).",
+            prompts[0].prompt);
+        Assert.Equal(KifaActionStatus.Warning, result.Status);
+        Assert.True(file.Registered);
+        Assert.Equal("ED076287532E86365E841E92BFC50D8C", file.FileInfo?.Md5);
+    }
+
+    [Fact]
+    public void Add_WithQuickInfoMd5_MismatchedActualMd5_Declined_ThrowsFileCorruptedException() {
+        var filePath = $"{tempDir}/quick_md5_mismatch_declined.txt";
+        File.WriteAllText(filePath, "Hello World!");
+
+        var file = new KifaFile(filePath, fileInfo: new FileInformation {
+            Size = 12,
+            Md5 = "00000000000000000000000000000000"
+        });
+
+        var prompts = new List<(string prompt, bool suggested)>();
+        var ex = Assert.Throws<FileCorruptedException>(() => file.Add(
+            confirmPrompt: (prompt, suggested) => {
+                prompts.Add((prompt, suggested));
+                return false;
+            }));
+
+        Assert.Single(prompts);
+        Assert.True(prompts[0].suggested);
+        Assert.Contains("Actual MD5 is not found in system.", prompts[0].prompt);
+        Assert.Contains("differs from quick info MD5", ex.Message);
+        Assert.False(file.Registered);
     }
 
     class FakeFileInformationServiceClient : BaseKifaServiceClient<FileInformation>,

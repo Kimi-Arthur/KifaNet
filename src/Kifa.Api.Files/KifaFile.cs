@@ -752,6 +752,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
                 RegisterFileIdInfo();
                 return LocalMirrorFile.GetFile(info: FileInfo);
             }
+        } else {
+            PopulateQuickInfo();
         }
 
         var localFile = LocalMirrorFile;
@@ -806,7 +808,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
                     };
                 }
             } else {
-                addResult = localFile.Add();
+                addResult = localFile.Add(confirmPrompt: confirmPrompt);
                 Register(true);
             }
 
@@ -859,12 +861,12 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         }
     }
 
-    KifaActionResult? MirrorFileToLocal() {
+    KifaActionResult? MirrorFileToLocal(Func<string, bool, bool>? confirmPrompt = null) {
         if (!LocalMirrorFile.Registered || !LocalMirrorFile.Exists()) {
             Logger.Debug($"Mirror {this} to {LocalMirrorFile}...");
             using var stream = OpenRead();
             LocalMirrorFile.Write(stream);
-            return LocalMirrorFile.Add();
+            return LocalMirrorFile.Add(confirmPrompt: confirmPrompt);
         }
 
         return null;
@@ -926,6 +928,11 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         var file = this;
         Logger.Debug($"Checking file {file}...");
 
+        if ((FileInfo == null || FileInfo.Sha256 == null) &&
+            (shouldCheckKnown != false || FileInfo?.Sha256 == null)) {
+            PopulateQuickInfo();
+        }
+
         var existingInfo = FileInfo ?? new FileInformation {
             Id = Id
         };
@@ -935,7 +942,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         KifaActionResult? mirrorResult = null;
         if (UseCache) {
             try {
-                mirrorResult = LocalMirrorFile.Add();
+                mirrorResult = LocalMirrorFile.Add(confirmPrompt: confirmPrompt);
                 file = LocalMirrorFile;
                 Logger.Debug($"Local file {file} is found. Use local file instead of {this}.");
             } catch (FileNotFoundException ex) {
@@ -985,7 +992,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         }
 
         if (UseCache) {
-            mirrorResult = MirrorFileToLocal() ?? mirrorResult;
+            mirrorResult = MirrorFileToLocal(confirmPrompt) ?? mirrorResult;
             file = LocalMirrorFile;
             Logger.Debug($"Since file is mirrored to {file}, use that instead now.");
         }
@@ -1001,9 +1008,25 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         var compareResultWithOld =
             info.CompareProperties(existingInfo, FileProperties.AllVerifiable);
         if (existingInfo.Sha256 == null && compareResultWithOld.HasFlag(FileProperties.Md5)) {
-            warningMessage =
-                $"New result MD5 ({info.Md5}) differs from quick info MD5 ({existingInfo.Md5}) for {file}.";
-            Logger.Warn(warningMessage);
+            var actualMd5Info = FileInfoClient.GetByMd5(info.Md5) ??
+                                FileInfoClient.GetBySha256(info.Sha256);
+            var systemMatchText = actualMd5Info != null
+                ? $"Actual MD5 is found in system as {(actualMd5Info.RealId != null && actualMd5Info.RealId != actualMd5Info.Id ? $"{actualMd5Info.Id} ({actualMd5Info.RealId})" : actualMd5Info.Id)}"
+                : "Actual MD5 is not found in system";
+
+            var mismatchMessage =
+                $"New result MD5 ({info.Md5}) differs from quick info MD5 ({existingInfo.Md5}) for {file}. {systemMatchText}.";
+            Logger.Warn(mismatchMessage);
+
+            if (confirmPrompt != null &&
+                !confirmPrompt.Invoke($"{mismatchMessage} Continue registering with actual MD5?",
+                    true)) {
+                Logger.Debug(
+                    $"User declined registering {file} after quick info MD5 mismatch ({existingInfo.Md5} vs {info.Md5}).");
+                throw new FileCorruptedException(mismatchMessage);
+            }
+
+            warningMessage = mismatchMessage;
             existingInfo.Md5 = info.Md5;
             compareResultWithOld &= ~FileProperties.Md5;
         }
@@ -1102,13 +1125,13 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         return true;
     }
 
-    bool CheckedByQuickInfo(Func<string, bool, bool>? confirmPrompt = null) {
+    FileInformation? PopulateQuickInfo() {
         if (FileFormat is not RawFileFormat) {
-            return false;
+            return null;
         }
 
         if (FileInfo?.Sha256 != null) {
-            return false;
+            return FileInfo;
         }
 
         var quickInfo = FileInfo?.Size != null &&
@@ -1125,7 +1148,19 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             }
         }
 
-        quickInfo ??= FileInfo;
+        return quickInfo ?? FileInfo;
+    }
+
+    bool CheckedByQuickInfo(Func<string, bool, bool>? confirmPrompt = null) {
+        if (FileFormat is not RawFileFormat) {
+            return false;
+        }
+
+        if (FileInfo?.Sha256 != null) {
+            return false;
+        }
+
+        var quickInfo = PopulateQuickInfo();
         if (quickInfo?.Md5 == null || quickInfo.Size == null) {
             return false;
         }

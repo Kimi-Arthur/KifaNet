@@ -193,11 +193,55 @@ public class UploadCommandTests : IDisposable {
         var checkItem = Assert.Single(batchResult.Results, r => r.Item == "check");
         Assert.Equal(KifaActionStatus.Warning, checkItem.Result.Status);
         Assert.Contains("differs from quick info MD5", checkItem.Result.Message);
+        Assert.Contains("Actual MD5 is not found in system.", checkItem.Result.Message);
 
         var info = FileInformation.Client.Get("/folder/wrong_md5_upload.txt").Checked();
         Assert.Equal("ED076287532E86365E841E92BFC50D8C", info.Md5);
         Assert.Equal("7F83B1657FF1FC53B92DC18148A1D65DFC2D4B1FA3D677284ADDD200126D9069",
             info.Sha256);
+    }
+
+    [Fact]
+    public void
+        Upload_SourceWithIncorrectQuickInfoMd5_DeclinedThenRetried_RePromptsInsteadOfBlindlyAcceptingLocalMirror() {
+        KifaFile.DefaultMirrorHost = "local:upload_test_temp";
+        var fakeRemote = new FakeRemoteStorageClient("baidu", "test_acc");
+        fakeRemote.AddFile("/folder/wrong_md5_upload_decline.txt", "Hello World!",
+            md5: "00000000000000000000000000000000");
+
+        var remoteFile1 = new KifaFile("baidu:test_acc/folder/wrong_md5_upload_decline.txt") {
+            Client = fakeRemote
+        };
+
+        var prompts1 = new List<(string prompt, bool suggested)>();
+        var result1 = remoteFile1.Upload(targets: [], useCache: true,
+            confirmPrompt: (prompt, suggested) => {
+                prompts1.Add((prompt, suggested));
+                return false;
+            });
+
+        Assert.Single(prompts1);
+        Assert.Equal(KifaActionStatus.Error, result1.Status);
+        Assert.Contains("differs from quick info MD5", result1.Message);
+        Assert.Null(FileInformation.Client.Get("/folder/wrong_md5_upload_decline.txt"));
+
+        // Local mirror file now exists in upload_test_temp. Retrying Upload on a fresh KifaFile
+        // must still fetch quick info MD5 from Baidu and prompt instead of blindly taking the local mirror.
+        var remoteFile2 = new KifaFile("baidu:test_acc/folder/wrong_md5_upload_decline.txt") {
+            Client = fakeRemote
+        };
+
+        var prompts2 = new List<(string prompt, bool suggested)>();
+        var result2 = remoteFile2.Upload(targets: [], useCache: true,
+            confirmPrompt: (prompt, suggested) => {
+                prompts2.Add((prompt, suggested));
+                return false;
+            });
+
+        Assert.Single(prompts2);
+        Assert.Equal(KifaActionStatus.Error, result2.Status);
+        Assert.Contains("differs from quick info MD5", result2.Message);
+        Assert.Null(FileInformation.Client.Get("/folder/wrong_md5_upload_decline.txt"));
     }
 
     class FakeRemoteStorageClient : StorageClient {
