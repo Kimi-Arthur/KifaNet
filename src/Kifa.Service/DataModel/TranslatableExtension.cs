@@ -78,9 +78,20 @@ public static class TranslatableExtension {
             return;
         }
 
-        // If elements are primitives (e.g. List<string>), replace the array contents.
+        // If elements are primitives (e.g. List<string>), merge non-null elements by index.
         if (overlayArray.FirstOrDefault(item => item.Type != JTokenType.Null) is not JObject) {
-            targetArray.ReplaceAll(overlayArray.Select(item => item.DeepClone()));
+            for (var i = 0; i < overlayArray.Count; i++) {
+                if (overlayArray[i].Type == JTokenType.Null) {
+                    continue;
+                }
+
+                if (i < targetArray.Count) {
+                    targetArray[i] = overlayArray[i].DeepClone();
+                } else {
+                    targetArray.Add(overlayArray[i].DeepClone());
+                }
+            }
+
             return;
         }
 
