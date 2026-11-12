@@ -273,8 +273,18 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             try {
                 data.Fill(deep: deep);
             } catch (DataIsLinkedException ex) {
-                Delete(data.Id);
-                Link(ex.TargetId, data.Id);
+                if (originalContent != null) {
+                    Logger.Error(
+                        $"Cannot link {ModelId}/{data.Id} to {ex.TargetId} as {data.Id} ({originalContent.RealId}) already exists.");
+                    data = originalContent;
+                    return false;
+                }
+
+                Get(ex.TargetId, options);
+                if (Link(ex.TargetId, data.Id).Status != KifaActionStatus.OK) {
+                    data = originalContent;
+                    return false;
+                }
 
                 data = Retrieve(data.Id);
 

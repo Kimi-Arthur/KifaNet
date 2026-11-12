@@ -13,11 +13,27 @@ namespace Kifa.Web.Api.Tests;
 public class TestDataModelWithVirtualLinks : DataModel, WithModelId<TestDataModelWithVirtualLinks> {
     public static string ModelId => "link_tests";
 
+    public static Dictionary<string, string> Redirects { get; } = new();
+    public static Dictionary<string, string> FillableData { get; } = new();
+
     public string? Data { get; set; }
 
     public Dictionary<string, string>? ExtraDict { get; set; }
 
     public string? OtherProp { get; set; }
+
+    public override void Fill(bool deep = false) {
+        if (RealId != null && Redirects.TryGetValue(RealId, out var targetId)) {
+            throw new DataIsLinkedException(targetId);
+        }
+
+        if (RealId != null && FillableData.TryGetValue(RealId, out var val)) {
+            Data = val;
+            return;
+        }
+
+        throw new NoNeedToFillException();
+    }
 
     public override SortedSet<string> GetVirtualItems()
         => Data == null
@@ -447,6 +463,41 @@ public class LinkTests : IDisposable {
         var act = () => client.Get(rogueLinkId);
         act.Should().Throw<DataCorruptedException>()
             .WithMessage($"*Target {id} does not contain link {rogueLinkId}*");
+    }
+
+    [Fact]
+    public void DataIsLinkedExceptionAutoFetchesTargetAndRejectsExistingInstanceTest() {
+        TestDataModelWithVirtualLinks.Redirects.Clear();
+        TestDataModelWithVirtualLinks.FillableData.Clear();
+        try {
+            TestDataModelWithVirtualLinks.Redirects["alias_id"] = "canonical_id";
+            TestDataModelWithVirtualLinks.FillableData["canonical_id"] = "filled:canonical_id";
+
+            var linked = client.Get("alias_id");
+            linked.Should().NotBeNull();
+            linked!.Id.Should().Be("alias_id");
+            linked.RealId.Should().Be("canonical_id");
+            linked.Data.Should().Be("filled:canonical_id");
+            linked.Metadata!.Linking!.Links.Should().Contain("alias_id");
+
+            // Existing standalone instance must not be overwritten if it later throws DataIsLinkedException
+            client.Set(new TestDataModelWithVirtualLinks {
+                Id = "existing_id",
+                Data = "original_data"
+            });
+            TestDataModelWithVirtualLinks.Redirects["existing_id"] = "canonical_id";
+
+            var refreshed = client.Get("existing_id", new KifaDataOptions {
+                Refresh = true
+            });
+            refreshed.Should().NotBeNull();
+            refreshed!.Id.Should().Be("existing_id");
+            refreshed.RealId.Should().Be("existing_id");
+            refreshed.Data.Should().Be("original_data");
+        } finally {
+            TestDataModelWithVirtualLinks.Redirects.Clear();
+            TestDataModelWithVirtualLinks.FillableData.Clear();
+        }
     }
 
     public void Dispose() {

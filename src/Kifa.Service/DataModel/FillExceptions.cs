@@ -20,9 +20,10 @@ public class NoNeedToFillException : DataFillException {
 
 // Thrown when the target data is linked/aliased to another ID.
 public class DataIsLinkedException : DataFillException {
-    public string TargetId {
-        get => Late.Get(field);
-        set => Late.Set(ref field, value);
+    public string TargetId { get; }
+
+    public DataIsLinkedException(string targetId) : base($"Data is linked to {targetId}.") {
+        TargetId = targetId;
     }
 }
 
