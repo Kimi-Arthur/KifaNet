@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Kifa.Service;
 using Kifa.Web.Api.Controllers;
 using Kifa.Web.Api.Extensions;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
@@ -30,7 +31,7 @@ public class KifaDataControllerFeatureProvider : IApplicationFeatureProvider<Con
 
         foreach (var controller in implemented) {
             Logger.Debug($"Processing {controller.FullName}");
-            controller.GetGenericArguments()[0].GetProperty("Client").SetValue(null,
+            SetModelClient(controller.GetGenericArguments()[0],
                 Activator.CreateInstance(controller.GetGenericArguments()[1]));
         }
 
@@ -42,12 +43,17 @@ public class KifaDataControllerFeatureProvider : IApplicationFeatureProvider<Con
         foreach (var candidate in candidates.Where(t => t.CustomAttributes.All(a
                      => a.AttributeType != typeof(SkipControllerAttribute)))) {
             Logger.Debug($"Adding client and controller for {candidate}...");
+            var clientType = typeof(KifaServiceJsonClient<>).MakeGenericType(candidate);
             feature.Controllers.Add(typeof(KifaDataController<,>).MakeGenericType(candidate,
-                typeof(KifaServiceJsonClient<>).MakeGenericType(candidate)).GetTypeInfo());
-            candidate.GetProperty("Client").SetValue(null,
-                Activator.CreateInstance(
-                    typeof(KifaServiceJsonClient<>).MakeGenericType(candidate)));
+                clientType).GetTypeInfo());
+            SetModelClient(candidate, Activator.CreateInstance(clientType));
         }
+    }
+
+    static void SetModelClient(Type modelType, object? client) {
+        modelType.GetProperty("Client")?.SetValue(null, client);
+        typeof(WithModelId<>).MakeGenericType(modelType).GetProperty("Client")
+            ?.SetValue(null, client);
     }
 
     static IEnumerable<Type> GetAllDataModels() {
