@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Kifa.Bilibili.BilibiliApi;
@@ -19,6 +20,7 @@ public class BilibiliArchive : DataModel, WithModelId<BilibiliArchive> {
 
     public List<string> Videos { get; set; } = new();
 
+    public override TimeSpan? RefreshInterval => RefreshIntervals.Short;
 
     public override void Fill(bool deep = false) {
         var ids = Id.Split("/");

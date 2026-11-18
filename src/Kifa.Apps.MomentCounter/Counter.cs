@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Kifa.Service;
 
@@ -8,6 +9,8 @@ public class Counter : DataModel, WithModelId<Counter> {
 
     public static KifaServiceClient<Counter> Client { get; set; } =
         new KifaServiceRestClient<Counter>();
+
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
 
     public string? Title { get; set; }
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Xunit;
 
@@ -41,11 +42,15 @@ public class LinkTests {
 class DataA : DataModel, WithModelId<DataA> {
     public static string ModelId => "as";
 
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
+
     public string? MyValue { get; set; }
 }
 
 class DataB : DataModel, WithModelId<DataB> {
     public static string ModelId => "bs";
+
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
 
     public List<Link<DataA>>? AList { get; set; }
     public Dictionary<string, Link<DataA>> ADict { get; set; }

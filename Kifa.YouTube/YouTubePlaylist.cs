@@ -16,6 +16,8 @@ public class YouTubePlaylist : DataModel, WithModelId<YouTubePlaylist> {
     public List<string> Videos { get; set; } = [];
     public List<string> RemovedVideos { get; set; } = [];
 
+    public override TimeSpan? RefreshInterval => RefreshIntervals.Short;
+
     public override void Fill(bool deep = false) {
         var playlistUrl = Id.StartsWith("http", StringComparison.OrdinalIgnoreCase)
             ? Id

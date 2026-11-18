@@ -30,7 +30,6 @@ public class SkyLiveProgram : DataModel, WithModelId<SkyLiveProgram> {
 
     #endregion
 
-
     public static string SkyChCookies { get; set; }
 
     public string? Title { get; set; }
@@ -63,12 +62,10 @@ public class SkyLiveProgram : DataModel, WithModelId<SkyLiveProgram> {
 
     static DateTime lastFilled = DateTime.MinValue;
 
+    public override TimeSpan? RefreshInterval => RefreshIntervals.Infinity;
+
     // Should not be called frequently.
     public override void Fill(bool deep = false) {
-        if (Title != null) {
-            return;
-        }
-
         WaitCooldown();
 
         var pageUrl = $"https://sport.sky.ch/en/SkyChannelAjax/DetailEpg?id={Id}";

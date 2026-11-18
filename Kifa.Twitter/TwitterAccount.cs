@@ -7,6 +7,8 @@ namespace Kifa.Twitter;
 public class TwitterAccount : OAuthAccount, WithModelId<TwitterAccount> {
     public static string ModelId => "twitter/accounts";
 
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
+
     const string DefaultScope = "tweet.read%20offline.access";
 
     // See https://docs.x.com/resources/fundamentals/authentication/oauth-2-0/user-access-token#working-with-confidential-clients

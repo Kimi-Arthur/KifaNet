@@ -11,7 +11,7 @@ public class YouTubeUploaderVideos : DataModel, WithModelId<YouTubeUploaderVideo
     public static KifaServiceClient<YouTubeUploaderVideos> Client { get; set; } =
         new KifaServiceRestClient<YouTubeUploaderVideos>();
 
-    public override TimeSpan? RefreshInterval => TimeSpan.FromDays(1);
+    public override TimeSpan? RefreshInterval => RefreshIntervals.Day;
 
     public List<string> Videos { get; set; } = [];
     public List<string> Shorts { get; set; } = [];

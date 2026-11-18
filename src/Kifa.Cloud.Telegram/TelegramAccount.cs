@@ -12,6 +12,8 @@ namespace Kifa.Cloud.Telegram;
 public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
     public static string ModelId => "telegram/accounts";
 
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
+
     #region Clients
 
     public static ServiceClient Client { get; set; } = new RestServiceClient();
@@ -164,10 +166,10 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
         return await client.LoginUserIfNeeded(reloginOnFailedResume: false);
     }
 
-    static readonly TimeSpan RefreshInterval = TimeSpan.FromDays(1);
+    static readonly TimeSpan SessionRefreshInterval = TimeSpan.FromDays(1);
 
     public void RefreshIfNeeded(TelegramSession session) {
-        if (DateTimeOffset.UtcNow < session.Refreshed + RefreshInterval) {
+        if (DateTimeOffset.UtcNow < session.Refreshed + SessionRefreshInterval) {
             return;
         }
 

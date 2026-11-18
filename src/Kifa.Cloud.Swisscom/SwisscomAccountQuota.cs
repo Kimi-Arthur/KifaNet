@@ -59,6 +59,7 @@ public class SwisscomAccountQuota : DataModel, WithModelId<SwisscomAccountQuota>
 
     readonly HttpClient httpClient = new();
 
+    public override TimeSpan? RefreshInterval => RefreshIntervals.Zero;
 
     public override void Fill(bool deep = false) {
         var account = SwisscomAccount.Client.Get(Id);

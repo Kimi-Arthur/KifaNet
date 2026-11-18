@@ -10,6 +10,8 @@ namespace Kifa.Web.Api.Apps;
 public class AppData : DataModel, WithModelId<AppData> {
     public static string ModelId => "apps";
 
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
+
     public DateTimeOffset LastUpdate { get; set; }
     public Dictionary<string, object> Data { get; set; } = new();
 }

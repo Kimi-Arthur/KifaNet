@@ -12,6 +12,8 @@ namespace Kifa.Web.Api.Tests;
 public class TestDataModel : DataModel, WithModelId<TestDataModel> {
     public static string ModelId => "tests";
 
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
+
     public string? Data { get; set; }
 
     public List<string>? ListData { get; set; }

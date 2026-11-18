@@ -15,6 +15,8 @@ public class GuitarChord : DataModel, WithModelId<GuitarChord> {
     public static GuitarChordServiceClient Client { get; set; } =
         new GuitarChordRestServiceClient();
 
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
+
     // Name of the chord. Can be like, `C`, `Cmaj7`, `Em` etc.
     public string Name { get; set; }
 
@@ -88,7 +90,6 @@ public class GuitarChord : DataModel, WithModelId<GuitarChord> {
             },
             Text = $"{minFret}"
         };
-
 
     static SvgElement GetTopBar()
         => new SvgUse {

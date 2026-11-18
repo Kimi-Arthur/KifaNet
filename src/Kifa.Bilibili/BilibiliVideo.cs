@@ -102,8 +102,7 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
         }
     }
 
-
-    public override TimeSpan? RefreshInterval => TimeSpan.FromDays(365);
+    public override TimeSpan? RefreshInterval => RefreshIntervals.Year;
 
     public override DataVersion? ForceRefreshBefore => new(2026, 10, 29);
 

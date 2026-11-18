@@ -111,14 +111,16 @@ public class DataVersion : JsonSerializable, IComparable<DataVersion>, IComparab
     public static bool operator !=(DataVersion? left, DataVersion? right) => !(left == right);
 
     public static DataVersion operator +(DataVersion version, TimeSpan timeSpan)
-        => new(version.Value + timeSpan);
+        => timeSpan >= DateTimeOffset.MaxValue - version.Value
+            ? new(DateTimeOffset.MaxValue)
+            : new(version.Value + timeSpan);
 
     public static DataVersion? operator +(DataVersion? version, TimeSpan? timeSpan) {
         if (version == null || timeSpan == null) {
             return null;
         }
 
-        return new DataVersion(version.Value + timeSpan.Value);
+        return version + timeSpan.Value;
     }
 
     public int CompareTo(DataVersion? other) => Value.CompareTo(other?.Value ?? DateTimeOffset.MinValue);

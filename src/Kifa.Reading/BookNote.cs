@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Kifa.Service;
 
@@ -5,6 +6,8 @@ namespace Kifa.Reading;
 
 public class BookNote : DataModel, WithModelId<BookNote> {
     public static string ModelId => "reading/notes";
+
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
 
     public string? Text { get; set; }
 

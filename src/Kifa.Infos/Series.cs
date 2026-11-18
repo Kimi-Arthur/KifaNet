@@ -11,6 +11,8 @@ namespace Kifa.Infos;
 public class Series : DataModel, WithModelId<Series>, Formattable, WithFormatInfo, ItemProvider {
     public static string ModelId => "series";
 
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
+
     #region Clients
 
     public static ServiceClient Client { get; set; } = new RestServiceClient();

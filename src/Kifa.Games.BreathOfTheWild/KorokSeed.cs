@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Kifa.Service;
 
@@ -8,6 +9,8 @@ public class KorokSeed : DataModel, WithModelId<KorokSeed> {
 
     public static KifaServiceClient<KorokSeed> Client { get; set; } =
         new KifaServiceRestClient<KorokSeed>();
+
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
 
     public string Page { get; set; }
     public List<Location> Locations { get; set; }

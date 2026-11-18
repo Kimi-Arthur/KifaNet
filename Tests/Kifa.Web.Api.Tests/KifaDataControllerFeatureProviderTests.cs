@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using FluentAssertions;
@@ -17,11 +18,15 @@ public class KifaDataControllerFeatureProviderTests {
         public static KifaServiceClient<StandardModel> Client { get; set; } =
             new KifaServiceRestClient<StandardModel>();
 
+        public override TimeSpan? RefreshInterval => RefreshIntervals.None;
+
         public string? Value { get; set; }
     }
 
     public class ModelWithoutClientProperty : DataModel, WithModelId<ModelWithoutClientProperty> {
         public static string ModelId => "tests/without_client";
+
+        public override TimeSpan? RefreshInterval => RefreshIntervals.None;
 
         public string? Value { get; set; }
     }
@@ -30,6 +35,8 @@ public class KifaDataControllerFeatureProviderTests {
         public static string ModelId => "tests/custom_client";
 
         public static ServiceClient Client { get; set; } = new RestServiceClient();
+
+        public override TimeSpan? RefreshInterval => RefreshIntervals.None;
 
         public string? Value { get; set; }
 

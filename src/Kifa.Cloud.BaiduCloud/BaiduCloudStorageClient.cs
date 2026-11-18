@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Kifa.Cloud.BaiduCloud.Rpcs;
 using Kifa.IO;
+using Kifa.Service;
 using NLog;
 
 namespace Kifa.Cloud.BaiduCloud;
@@ -37,14 +38,11 @@ public class BaiduCloudStorageClient : StorageClient, CanCreateStorageClient {
 
     readonly ConcurrentDictionary<string, (Uri Uri, DateTime ExpiresAt)> downloadUris = new();
 
-    public string AccountId { get; set; }
+    public required Link<BaiduAccount> AccountId { get; set; }
 
-    public BaiduAccount Account {
-        get => field ??= BaiduAccount.Client.Get(AccountId).Checked();
-        private set => field = value;
-    }
+    public BaiduAccount Account => AccountId.Refresh().Checked();
 
-    BaiduAccount RefreshAccount() => Account = BaiduAccount.Client.Get(AccountId).Checked();
+    BaiduAccount RefreshAccount() => AccountId.Refresh(force: true).Checked();
 
     public override string Type => "baidu";
 

@@ -6,6 +6,8 @@ namespace MyNamespace;
 class TestModel : DataModel, WithModelId<TestModel> {
     public static string ModelId => "tests";
 
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
+
     public string? Value { get; set; }
 }
 

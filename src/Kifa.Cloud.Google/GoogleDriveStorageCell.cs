@@ -1,3 +1,4 @@
+using System;
 using Kifa.Service;
 
 namespace Kifa.Cloud.Google;
@@ -7,6 +8,8 @@ public class GoogleDriveStorageCell : DataModel, WithModelId<GoogleDriveStorageC
 
     public static KifaServiceClient<GoogleDriveStorageCell> Client { get; set; } =
         new KifaServiceRestClient<GoogleDriveStorageCell>();
+
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
 
     public required Link<GoogleAccount> Account { get; set; }
     public required string RootId { get; set; }

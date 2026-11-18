@@ -7,6 +7,8 @@ namespace Kifa.Apps.MomentCounter;
 public class User : DataModel, WithModelId<User> {
     public static string ModelId => "moment_counter/users";
 
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
+
     #region Clients
 
     public static ServiceClient Client { get; set; } = new RestServiceClient();
@@ -35,7 +37,6 @@ public class User : DataModel, WithModelId<User> {
     }
 
     #endregion
-
 
     public string Name { get; set; }
 

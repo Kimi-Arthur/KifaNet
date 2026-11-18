@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -49,6 +50,8 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
     public string? PatternId { get; set; }
     public int? SeasonIdWidth { get; set; }
     public int? EpisodeIdWidth { get; set; }
+
+    public override TimeSpan? RefreshInterval => RefreshIntervals.Short;
 
     public override void Fill(bool deep = false) {
         var oldEpisodeCount = Seasons?.Select(s => s.Episodes?.Count ?? 0).Sum() ??
@@ -102,7 +105,6 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
             }
         }
     }
-
 
     public string? Format(Season season, Episode episode, string? version = null)
         => Format(season, new List<Episode> {

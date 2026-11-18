@@ -71,10 +71,14 @@ public abstract class DataModel : IEquatable<DataModel> {
 
     public bool ShouldSerializeMetadata() => Metadata?.ShouldSerialize() == true;
 
-
+    // Controls upstream filling and periodic re-filling:
+    // - RefreshIntervals.None (null): model is not fillable (never runs Fill).
+    // - RefreshIntervals.Infinity (TimeSpan.MaxValue): fill once on initial creation, then never auto-refresh unless Refresh=true or ForceRefreshBefore.
+    // - RefreshIntervals.Zero (TimeSpan.Zero): always attempt to refresh on every Get.
+    // - > TimeSpan.Zero: refresh once (LastRefreshed ?? Version) + RefreshInterval <= UtcNow.
     [JsonIgnore]
     [YamlIgnore]
-    public virtual TimeSpan? RefreshInterval => null;
+    public abstract TimeSpan? RefreshInterval { get; }
 
     // Forces items with a Version earlier than this timestamp to be re-filled.
     // NOTE: This timestamp should be set at deployment/release time rather than during development
@@ -84,7 +88,7 @@ public abstract class DataModel : IEquatable<DataModel> {
     public virtual DataVersion? ForceRefreshBefore => null;
 
     public virtual DataVersion? GetNextRefresh() =>
-        Metadata?.Version != null && RefreshInterval != null
+        Metadata?.Version != null && RefreshInterval != null && RefreshInterval != RefreshIntervals.Infinity
             ? (Metadata.LastRefreshed ?? Metadata.Version) + RefreshInterval
             : null;
 

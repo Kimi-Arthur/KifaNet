@@ -30,8 +30,7 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
     public static KifaServiceClient<YouTubeVideo> Client { get; set; } =
         new KifaServiceRestClient<YouTubeVideo>();
 
-
-    public override TimeSpan? RefreshInterval => TimeSpan.FromDays(365);
+    public override TimeSpan? RefreshInterval => RefreshIntervals.Year;
 
     public static string YoutubeDownloaderPath {
         get => Late.Get(field);
@@ -797,7 +796,6 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         Codec = NormalizeCodec(archiveFileContent.Vcodec);
         Thumbnail = NormalizeThumbnailUrl(archiveFileContent.Thumbnail);
     }
-
 
     bool FillWithWayback() {
         var watchUrl = $"https://www.youtube.com/watch?v={Id}";

@@ -11,6 +11,8 @@ public partial class MegaNzAccount : DataModel, WithModelId<MegaNzAccount> {
     public static KifaServiceClient<MegaNzAccount> Client { get; set; } =
         new KifaServiceRestClient<MegaNzAccount>();
 
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
+
     public string Username { get; set; }
 
     public string Password { get; set; }

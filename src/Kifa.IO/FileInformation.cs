@@ -19,6 +19,8 @@ public class FileInformation : DataModel, WithModelId<FileInformation> {
 
     public static string ModelId => "files";
 
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
+
     const int SliceLength = 256 << 10;
 
     public const int BlockSize = 32 << 20;
@@ -398,7 +400,6 @@ public class FileInformationRestServiceClient : KifaServiceRestClient<FileInform
             ["folder"] = folder,
             ["targets"] = targets
         }).Checked();
-
 
     public List<string> ListFolder(string folder, bool recursive = false)
         => Call<List<string>>("list_folder", new Dictionary<string, object> {

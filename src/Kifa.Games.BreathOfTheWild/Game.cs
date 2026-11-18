@@ -9,6 +9,8 @@ public class Game : DataModel, WithModelId<Game> {
 
     public static KifaServiceClient<Game> Client { get; set; } = new KifaServiceRestClient<Game>();
 
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
+
     public string Name { get; set; }
     public string Notes { get; set; }
     public GameMode Mode { get; set; }

@@ -11,6 +11,8 @@ public class FileIdInfo : DataModel, WithModelId<FileIdInfo> {
     public static KifaServiceClient<FileIdInfo> Client { get; set; } =
         new KifaServiceRestClient<FileIdInfo>();
 
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
+
     // Query is only needed from inode to SHA256.
 
     // id = local/kch/238353647342895845

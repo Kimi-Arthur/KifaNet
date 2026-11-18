@@ -1,3 +1,4 @@
+using System;
 using Kifa.Service;
 
 namespace Kifa.Media;
@@ -7,6 +8,8 @@ public class DeviceTag : DataModel, WithModelId<DeviceTag> {
 
     public static KifaServiceClient<DeviceTag> Client { get; set; } =
         new KifaServiceRestClient<DeviceTag>();
+
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
 
     public required string Tag { get; set; }
     public string? Manufacturer { get; set; }

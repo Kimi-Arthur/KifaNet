@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
@@ -5,6 +6,8 @@ namespace Kifa.Service.Tests;
 
 class FakeDataModel : DataModel, WithModelId<FakeDataModel> {
     public static string ModelId => "api_test";
+
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
 
     public static Language? DefaultLanguage => Language.English;
 

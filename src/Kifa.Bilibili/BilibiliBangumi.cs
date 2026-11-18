@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Kifa.Bilibili.BilibiliApi;
@@ -20,6 +21,7 @@ public class BilibiliBangumi : DataModel, WithModelId<BilibiliBangumi> {
     public List<string> Aids { get; set; }
     public List<string> ExtraAids { get; set; } = new();
 
+    public override TimeSpan? RefreshInterval => RefreshIntervals.Short;
 
     public override void Fill(bool deep = false) {
         var mediaData = HttpClients.GetBilibiliClient().Call(new MediaRpc(Id))?.Result;

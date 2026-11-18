@@ -28,7 +28,7 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
     });
 
     // Always a fresh account. The server will determine whether refresh is needed.
-    public GoogleAccount Account => Cell.Data.Checked().Account.Data.Checked();
+    public GoogleAccount Account => Cell.Data.Checked().Account.Refresh().Checked();
 
     public required Link<GoogleDriveStorageCell> Cell { get; set; }
 

@@ -19,7 +19,7 @@ public class SwisscomStorageClient : StorageClient, CanCreateStorageClient {
 
     public static APIList APIList { get; set; }
 
-    public SwisscomAccount? Account => SwisscomAccount.Client.Get(AccountId);
+    public SwisscomAccount? Account => AccountId.Refresh();
 
     public override string Type => "swiss";
 
@@ -29,7 +29,7 @@ public class SwisscomStorageClient : StorageClient, CanCreateStorageClient {
         Timeout = TimeSpan.FromMinutes(30)
     };
 
-    public required string AccountId { get; set; }
+    public required Link<SwisscomAccount> AccountId { get; set; }
 
     public static StorageClient Create(string spec) {
         if (spec.Contains('+')) {

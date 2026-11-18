@@ -12,6 +12,8 @@ public class TranslatableTestModel : DataModel, WithModelId<TranslatableTestMode
 
     public static Language? DefaultLanguage => Language.English;
 
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
+
     public string? Meaning { get; set; }
 
     public string? GrammarNote { get; set; }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Kifa.Service;
 using Newtonsoft.Json;
@@ -10,6 +11,8 @@ public class KifaTask : DataModel, WithModelId<KifaTask> {
 
     public static KifaServiceClient<KifaTask> Client { get; set; } =
         new KifaServiceRestClient<KifaTask>();
+
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
 
     public string? Name { get; set; }
 

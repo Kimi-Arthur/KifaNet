@@ -1,3 +1,4 @@
+using System;
 using Kifa.Service;
 
 namespace Kifa.YouTube;
@@ -7,6 +8,8 @@ public class YouTubeSession : DataModel, WithModelId<YouTubeSession> {
 
     public static KifaServiceClient<YouTubeSession> Client { get; set; } =
         new KifaServiceRestClient<YouTubeSession>();
+
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
 
     [ExternalProperty("cookies.txt")]
     public string? Cookies { get; set; }

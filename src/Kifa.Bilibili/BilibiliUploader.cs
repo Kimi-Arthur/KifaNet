@@ -14,7 +14,7 @@ public class BilibiliUploader : DataModel, WithModelId<BilibiliUploader> {
     public static KifaServiceClient<BilibiliUploader> Client { get; set; } =
         new KifaServiceRestClient<BilibiliUploader>();
 
-    public override TimeSpan? RefreshInterval => TimeSpan.FromDays(30);
+    public override TimeSpan? RefreshInterval => RefreshIntervals.Month;
 
     public string? Name { get; set; }
 

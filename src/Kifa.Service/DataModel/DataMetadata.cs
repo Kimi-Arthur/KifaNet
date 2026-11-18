@@ -68,6 +68,10 @@ public static class DataFreshnessExtensions {
     }
 
     public static bool NeedRefresh(this DataModel data) {
+        if (data.RefreshInterval == RefreshIntervals.None) {
+            return false;
+        }
+
         if (data.Metadata?.Version == null) {
             return true;
         }
@@ -77,10 +81,10 @@ public static class DataFreshnessExtensions {
             return true;
         }
 
-        if (data.RefreshInterval != null) {
-            return (lastChecked + data.RefreshInterval)?.Value < DateTimeOffset.UtcNow;
+        if (data.RefreshInterval == RefreshIntervals.Infinity) {
+            return false;
         }
 
-        return true;
+        return (lastChecked + data.RefreshInterval)?.Value <= DateTimeOffset.UtcNow;
     }
 }

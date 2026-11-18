@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using FluentAssertions;
 using Xunit;
@@ -188,6 +189,7 @@ public class DataModelEqualityTests {
     }
 
     class OtherDataModel : DataModel {
+        public override TimeSpan? RefreshInterval => RefreshIntervals.None;
     }
 
     [Fact]

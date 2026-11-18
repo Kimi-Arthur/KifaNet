@@ -1,3 +1,4 @@
+using System;
 using System.Text.RegularExpressions;
 using Kifa.Service;
 
@@ -8,6 +9,8 @@ public class SoccerShow : DataModel, WithModelId<SoccerShow> {
 
     public static KifaServiceClient<SoccerShow> Client { get; set; } =
         new KifaServiceRestClient<SoccerShow>();
+
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
 
     public Program Program { get; set; }
     public Competition Competition { get; set; }

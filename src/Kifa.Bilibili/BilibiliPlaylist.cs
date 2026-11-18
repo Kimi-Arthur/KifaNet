@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Kifa.Bilibili.BilibiliApi;
@@ -16,6 +17,7 @@ public class BilibiliPlaylist : DataModel, WithModelId<BilibiliPlaylist> {
 
     public List<string> Videos { get; set; }
 
+    public override TimeSpan? RefreshInterval => RefreshIntervals.Short;
 
     public override void Fill(bool deep = false) {
         var response = HttpClients.GetBilibiliClient().Call(new PlaylistRpc(Id));

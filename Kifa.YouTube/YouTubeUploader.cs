@@ -44,7 +44,7 @@ public class YouTubeUploader : DataModel, WithModelId<YouTubeUploader> {
         return null;
     }
 
-    public override TimeSpan? RefreshInterval => TimeSpan.FromDays(30);
+    public override TimeSpan? RefreshInterval => RefreshIntervals.Month;
 
     public string? Name { get; set; }
     public HashSet<string> NameAliases { get; set; } = [];

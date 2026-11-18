@@ -35,7 +35,7 @@ public class BilibiliManga : DataModel, WithModelId<BilibiliManga> {
 
     static readonly HttpClient NoAuthClient = new();
 
-    public override TimeSpan? RefreshInterval => TimeSpan.FromDays(7);
+    public override TimeSpan? RefreshInterval => RefreshIntervals.Week;
 
     public override void Fill(bool deep = false) {
         var data = NoAuthClient.Call(new MangaRpc(Id[2..]))!.Data;

@@ -14,6 +14,8 @@ public class TelegramStorageCell : DataModel, WithModelId<TelegramStorageCell> {
     public static KifaServiceClient<TelegramStorageCell> Client { get; set; } =
         new KifaServiceRestClient<TelegramStorageCell>();
 
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
+
     public Link<TelegramAccount> Account {
         get => Late.Get(field);
         set => Late.Set(ref field, value);

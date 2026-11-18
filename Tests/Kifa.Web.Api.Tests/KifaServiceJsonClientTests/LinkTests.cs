@@ -22,6 +22,8 @@ public class TestDataModelWithVirtualLinks : DataModel, WithModelId<TestDataMode
 
     public string? OtherProp { get; set; }
 
+    public override TimeSpan? RefreshInterval => RefreshIntervals.Infinity;
+
     public override void Fill(bool deep = false) {
         if (RealId != null && Redirects.TryGetValue(RealId, out var targetId)) {
             throw new DataIsLinkedException(targetId);

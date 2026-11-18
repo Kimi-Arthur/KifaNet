@@ -11,14 +11,20 @@ public class Link<TDataModel> : JsonSerializable, IEquatable<Link<TDataModel>>
     TDataModel? data;
 
     public TDataModel? Data {
-        get {
-            if (data == null || data.NeedRefresh()) {
-                data = TDataModel.Client.Get(Id);
-            }
-
-            return data;
-        }
+        get => data ??= TDataModel.Client.Get(Id);
         set => data = value;
+    }
+
+    public TDataModel? Refresh(bool force = false) {
+        if (force || data == null || data.NeedRefresh()) {
+            data = TDataModel.Client.Get(Id, force
+                ? new() {
+                    Refresh = true
+                }
+                : null);
+        }
+
+        return data;
     }
 
     [return: NotNullIfNotNull(nameof(id))]

@@ -14,7 +14,7 @@ public class TestFillDataModel : DataModel, WithModelId<TestFillDataModel> {
     public static KifaServiceClient<TestFillDataModel> Client { get; set; } =
         new KifaServiceRestClient<TestFillDataModel>();
 
-    public static TimeSpan? GlobalRefreshInterval { get; set; }
+    public static TimeSpan? GlobalRefreshInterval { get; set; } = RefreshIntervals.Week;
     public static DataVersion? GlobalForceRefreshBefore { get; set; }
     public static bool GlobalShouldFailFill { get; set; }
     public static bool GlobalShouldThrowFailedToFill { get; set; }
@@ -59,6 +59,8 @@ public class NonUpstreamDataModel : DataModel, WithModelId<NonUpstreamDataModel>
 
     public static KifaServiceClient<NonUpstreamDataModel> Client { get; set; } =
         new KifaServiceRestClient<NonUpstreamDataModel>();
+
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
 
     public string? Content { get; set; }
 }
@@ -357,9 +359,69 @@ public class VersioningAndFreshnessTests : IDisposable {
     }
 
     [Fact]
-    public void ModelWithoutRefreshIntervalAlwaysRefreshesByDefault() {
-        var id = nameof(ModelWithoutRefreshIntervalAlwaysRefreshesByDefault);
-        TestFillDataModel.GlobalRefreshInterval = null;
+    public void ModelWithNoneRefreshIntervalNeverFills() {
+        var id = nameof(ModelWithNoneRefreshIntervalNeverFills);
+        TestFillDataModel.GlobalRefreshInterval = RefreshIntervals.None;
+        TestFillDataModel.GlobalFillCount = 0;
+        var model = new TestFillDataModel {
+            Id = id,
+            RemoteSourceContent = "v1"
+        };
+
+        client.Set(model);
+
+        var firstGet = client.Get(id);
+        firstGet.Should().NotBeNull();
+        firstGet!.Content.Should().BeNull();
+        firstGet.NeedRefresh().Should().BeFalse();
+        firstGet.GetNextRefresh().Should().BeNull();
+        TestFillDataModel.GlobalFillCount.Should().Be(0);
+
+        var forcedGet = client.Get(id, new() {
+            Refresh = true
+        });
+        forcedGet!.Content.Should().BeNull();
+        TestFillDataModel.GlobalFillCount.Should().Be(0);
+    }
+
+    [Fact]
+    public void ModelWithInfinityRefreshIntervalFillsOnceAndDoesNotAutoRefresh() {
+        var id = nameof(ModelWithInfinityRefreshIntervalFillsOnceAndDoesNotAutoRefresh);
+        TestFillDataModel.GlobalRefreshInterval = RefreshIntervals.Infinity;
+        var model = new TestFillDataModel {
+            Id = id,
+            RemoteSourceContent = "v1"
+        };
+
+        client.Set(model);
+
+        // Initial Get() runs Fill() once because Metadata.Version is initially null.
+        var firstGet = client.Get(id);
+        firstGet.Should().NotBeNull();
+        firstGet!.Content.Should().Be("v1");
+        firstGet.NeedRefresh().Should().BeFalse();
+        firstGet.GetNextRefresh().Should().BeNull();
+
+        // Simulate remote source updating content
+        firstGet.RemoteSourceContent = "v2";
+        client.Update(firstGet);
+
+        // Next Get() without refresh: true does NOT auto-refresh because RefreshInterval is Infinity (MaxValue)
+        var secondGet = client.Get(id);
+        secondGet.Should().NotBeNull();
+        secondGet!.Content.Should().Be("v1");
+
+        // Explicit Refresh = true still refreshes
+        var forcedGet = client.Get(id, new() {
+            Refresh = true
+        });
+        forcedGet!.Content.Should().Be("v2");
+    }
+
+    [Fact]
+    public void ModelWithZeroRefreshIntervalAlwaysRefreshes() {
+        var id = nameof(ModelWithZeroRefreshIntervalAlwaysRefreshes);
+        TestFillDataModel.GlobalRefreshInterval = RefreshIntervals.Zero;
         var model = new TestFillDataModel {
             Id = id,
             RemoteSourceContent = "v1"
@@ -375,10 +437,54 @@ public class VersioningAndFreshnessTests : IDisposable {
         firstGet.RemoteSourceContent = "v2";
         client.Update(firstGet);
 
-        // Next Get() without refresh: true should automatically refresh
+        // Next Get() without refresh: true automatically refreshes because RefreshInterval is TimeSpan.Zero
         var secondGet = client.Get(id);
         secondGet.Should().NotBeNull();
         secondGet!.Content.Should().Be("v2");
+    }
+
+    [Fact]
+    public void LinkDataSticksToFirstRetrievalWhileLinkRefreshChecksNeedRefresh() {
+        var id = nameof(LinkDataSticksToFirstRetrievalWhileLinkRefreshChecksNeedRefresh);
+        TestFillDataModel.GlobalRefreshInterval = TimeSpan.Zero;
+        client.Set(new TestFillDataModel {
+            Id = id,
+            RemoteSourceContent = "v1"
+        });
+
+        Link<TestFillDataModel> link = id;
+        link.Data!.Content.Should().Be("v1");
+
+        // Update underlying item so server would return "v2" on next Get
+        var updated = client.Get(id)!;
+        updated.RemoteSourceContent = "v2";
+        client.Update(updated);
+
+        // link.Data sticks to the first retrieval ("v1") even though NeedRefresh() is true
+        link.Data.Content.Should().Be("v1");
+
+        // link.Refresh() checks NeedRefresh() and re-fetches ("v2")
+        link.Refresh()!.Content.Should().Be("v2");
+        link.Data.Content.Should().Be("v2");
+
+        // With Infinity interval, NeedRefresh() is false so Refresh() keeps "v2",
+        // while Refresh(force: true) forces a server refresh ("v3").
+        TestFillDataModel.GlobalRefreshInterval = RefreshIntervals.Infinity;
+        var updatedAgain = client.Get(id)!;
+        updatedAgain.RemoteSourceContent = "v3";
+        client.Update(updatedAgain);
+
+        link.Refresh()!.Content.Should().Be("v2");
+        link.Refresh(force: true)!.Content.Should().Be("v3");
+        link.Data.Content.Should().Be("v3");
+
+        // RefreshInterval property on DataModel is never serialized into JSON or YAML,
+        // and non-fillable models always return NeedRefresh() == false.
+        link.Data.ToJson().Should().NotContain("refresh_interval");
+        link.Data.ToDiskJson().Should().NotContain("refresh_interval");
+        new YamlDotNet.Serialization.SerializerBuilder().Build().Serialize(link.Data)
+            .Should().NotContain("RefreshInterval");
+        new NonUpstreamDataModel { Id = "n1" }.NeedRefresh().Should().BeFalse();
     }
 
     [Fact]
@@ -754,7 +860,7 @@ public class VersioningAndFreshnessTests : IDisposable {
     }
 
     public void Dispose() {
-        TestFillDataModel.GlobalRefreshInterval = null;
+        TestFillDataModel.GlobalRefreshInterval = RefreshIntervals.Week;
         TestFillDataModel.GlobalForceRefreshBefore = null;
         TestFillDataModel.GlobalShouldFailFill = false;
         TestFillDataModel.GlobalShouldThrowFailedToFill = false;

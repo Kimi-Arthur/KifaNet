@@ -20,6 +20,8 @@ public class YouTubeAccount : DataModel, WithModelId<YouTubeAccount> {
 
     public static string ModelId => "youtube/accounts";
 
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
+
     #region Clients
 
     public static ServiceClient Client { get; set; } = new RestServiceClient();

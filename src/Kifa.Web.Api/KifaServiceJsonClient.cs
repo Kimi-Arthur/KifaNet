@@ -258,10 +258,16 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     // true -> rewrite needed.
     bool Fill([NotNullWhen(true)] ref TDataModel? data, string? id = null,
         KifaDataOptions? options = null) {
-        var originalContent = data?.Clone();
-        data ??= new TDataModel {
+        var candidate = data ?? new TDataModel {
             Id = id
         };
+
+        if (candidate.RefreshInterval == RefreshIntervals.None) {
+            return false;
+        }
+
+        var originalContent = data?.Clone();
+        data = candidate;
 
         var refresh = options?.Refresh == true;
         var deep = options?.Deep == true;

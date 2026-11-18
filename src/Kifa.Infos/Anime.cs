@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -131,6 +132,8 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo,
 
     string GetBaseFolder(string? version = null)
         => $"/Anime/{Title} ({AirDate.Checked().Year}){string.FormatOrEmpty($" [{version}]")}";
+
+    public override TimeSpan? RefreshInterval => RefreshIntervals.Short;
 
     public override void Fill(bool deep = false) {
         if (TmdbId == null) {

@@ -11,6 +11,8 @@ public class KifaRun : DataModel, WithModelId<KifaRun> {
     public static KifaServiceClient<KifaRun> Client { get; set; } =
         new KifaServiceRestClient<KifaRun>();
 
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
+
     // Command
     public string? Tool { get; set; }
     public string? Version { get; set; }

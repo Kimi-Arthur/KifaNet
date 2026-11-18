@@ -10,6 +10,8 @@ public class Event : DataModel, WithModelId<Event> {
     public static KifaServiceClient<Event> Client { get; set; } =
         new KifaServiceRestClient<Event>();
 
+    public override TimeSpan? RefreshInterval => RefreshIntervals.None;
+
     public DateTime DateTime { get; set; }
 
     // Should match Counter's units.

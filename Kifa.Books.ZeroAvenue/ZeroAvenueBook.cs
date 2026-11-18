@@ -48,6 +48,8 @@ public class ZeroAvenueBook : DataModel, WithModelId<ZeroAvenueBook> {
         }
     }
 
+    public override TimeSpan? RefreshInterval => RefreshIntervals.Infinity;
+
     public override void Fill(bool deep = false) {
         var content = HttpClient.SendWithRetry(Url).GetString();
         var doc = new HtmlDocument();

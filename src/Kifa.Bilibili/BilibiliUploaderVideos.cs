@@ -16,7 +16,7 @@ public class BilibiliUploaderVideos : DataModel, WithModelId<BilibiliUploaderVid
     public static KifaServiceClient<BilibiliUploaderVideos> Client { get; set; } =
         new KifaServiceRestClient<BilibiliUploaderVideos>();
 
-    public override TimeSpan? RefreshInterval => TimeSpan.FromDays(1);
+    public override TimeSpan? RefreshInterval => RefreshIntervals.Day;
 
     public List<string> Aids { get; set; } = [];
     public List<string> RemovedAids { get; set; } = [];
