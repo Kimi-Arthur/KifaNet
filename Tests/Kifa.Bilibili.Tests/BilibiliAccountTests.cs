@@ -157,6 +157,13 @@ public class BilibiliAccountTests {
             var uri = req.RequestUri.Checked().ToString();
             requests.Add($"{req.Method} {uri}");
 
+            if (uri.Contains("/x/passport-login/web/cookie/info")) {
+                return new HttpResponseMessage(HttpStatusCode.OK) {
+                    Content = new StringContent(
+                        """{"code":0,"message":"OK","ttl":1,"data":{"refresh":false,"timestamp":1794093019812}}""")
+                };
+            }
+
             if (uri.Contains("/GenWebTicket")) {
                 return new HttpResponseMessage(HttpStatusCode.OK) {
                     Content = new StringContent(
@@ -182,7 +189,7 @@ public class BilibiliAccountTests {
             account.RefreshToken.Should().BeNull();
             BilibiliAccount.GetCookieValue(account.Cookies, "bili_ticket").Should()
                 .Be("fresh_ticket_jwt");
-            requests.Should().HaveCount(1);
+            requests.Should().HaveCount(2);
         } finally {
             BilibiliAccount.AuthClient = oldAuthClient;
         }

@@ -60,14 +60,19 @@ public class BilibiliAccount : DataModel, WithModelId<BilibiliAccount> {
             throw new FailedToFillException("Cookies are not configured for BilibiliAccount.");
         }
 
-        if (IsValidRefreshToken(RefreshToken)) {
-            var csrf = GetCookieValue(Cookies, "bili_jct");
-            var cookieInfo = AuthClient.Call(new CookieInfoRpc(csrf, Cookies));
-            if (cookieInfo is { Code: NotLoggedInCode }) {
-                throw new FailedToFillException(
-                    $"Bilibili session is no longer logged in: {cookieInfo.Message} ({cookieInfo.Code}).");
-            }
+        if (!IsValidRefreshToken(RefreshToken) && RefreshToken != null) {
+            Logger.Warn("Clearing invalid RefreshToken on BilibiliAccount.");
+            RefreshToken = null;
+        }
 
+        var csrf = GetCookieValue(Cookies, "bili_jct");
+        var cookieInfo = AuthClient.Call(new CookieInfoRpc(csrf, Cookies));
+        if (cookieInfo is { Code: NotLoggedInCode }) {
+            throw new FailedToFillException(
+                $"Bilibili session is no longer logged in: {cookieInfo.Message} ({cookieInfo.Code}).");
+        }
+
+        if (RefreshToken != null) {
             var needSessDataRefresh = deep || ShouldRefreshSessData(Cookies);
             if (needSessDataRefresh && csrf != null) {
                 try {
@@ -104,9 +109,6 @@ public class BilibiliAccount : DataModel, WithModelId<BilibiliAccount> {
                         "Failed to rotate SESSDATA, continuing with still-valid existing SESSDATA.");
                 }
             }
-        } else if (RefreshToken != null) {
-            Logger.Warn("Clearing invalid RefreshToken on BilibiliAccount.");
-            RefreshToken = null;
         }
 
         var currentCsrf = GetCookieValue(Cookies, "bili_jct");
