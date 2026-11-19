@@ -11,6 +11,10 @@ using Xunit;
 
 namespace Kifa.Web.Api.Tests;
 
+[CollectionDefinition(nameof(KifaDataControllerFeatureProviderTests), DisableParallelization = true)]
+public class KifaDataControllerFeatureProviderCollection;
+
+[Collection(nameof(KifaDataControllerFeatureProviderTests))]
 public class KifaDataControllerFeatureProviderTests {
     public class StandardModel : DataModel, WithModelId<StandardModel> {
         public static string ModelId => "tests/standard";

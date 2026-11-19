@@ -1,21 +1,25 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json;
 using Xunit;
 
 namespace Kifa.Tests;
 
-class MyJson : JsonSerializable {
+class MyJson : JsonSerializable<MyJson> {
     public required string Code { get; set; }
     public required string Code2 { get; set; }
 
     public string ToJson() => Code;
 
-    public static implicit operator MyJson(string id)
-        => new() {
-            Code = id,
-            Code2 = id[..2]
-        };
+    [return: NotNullIfNotNull(nameof(id))]
+    public static implicit operator MyJson?(string? id)
+        => id == null
+            ? null
+            : new() {
+                Code = id,
+                Code2 = id[..2]
+            };
 }
 
 public class JsonSerializationTests {

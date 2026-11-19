@@ -7,7 +7,8 @@ namespace Kifa;
 
 public static class KifaJsonSerializerSettings {
     static JsonSerializerSettings GetSettings(bool indented = false, bool merge = false,
-        bool camelCase = false, bool ignoreMetadata = false, bool ignoreExternalProperties = false)
+        bool camelCase = false, bool ignoreMetadata = false, bool ignoreExternalProperties = false,
+        bool ignoreExpandedLinks = false)
         => new() {
             EqualityComparer = ReferenceEqualityComparer.Instance,
             DateFormatString = "yyyy-MM-dd HH:mm:ss.ffffff",
@@ -20,7 +21,7 @@ public static class KifaJsonSerializerSettings {
             },
             Converters = new List<JsonConverter> {
                 new StringEnumConverter(new SnakeCaseNamingStrategy()),
-                new GenericJsonConverter(),
+                new GenericJsonConverter(ignoreExpandedLinks: ignoreExpandedLinks),
                 new DateTimeOffsetConverter()
             },
             MissingMemberHandling = MissingMemberHandling.Ignore,
@@ -40,8 +41,11 @@ public static class KifaJsonSerializerSettings {
 
     public static readonly JsonSerializerSettings Merge = GetSettings(merge: true);
 
-    public static readonly JsonSerializerSettings DataContent = GetSettings(ignoreMetadata: true);
+    // Content comparisons and on-disk .json files must always serialize Link<T> as canonical ID strings
+    // even if Expand() was called on the in-memory instance.
+    public static readonly JsonSerializerSettings DataContent =
+        GetSettings(ignoreMetadata: true, ignoreExpandedLinks: true);
 
     public static readonly JsonSerializerSettings Disk =
-        GetSettings(indented: true, ignoreExternalProperties: true);
+        GetSettings(indented: true, ignoreExternalProperties: true, ignoreExpandedLinks: true);
 }

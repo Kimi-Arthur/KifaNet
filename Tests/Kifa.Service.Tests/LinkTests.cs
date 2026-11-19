@@ -5,7 +5,10 @@ using Xunit;
 namespace Kifa.Service.Tests;
 
 public class LinkTests {
-    string serialized =
+    string serializedExpanded =
+        "{\"id\":\"id\",\"a_list\":[{\"id\":\"10\",\"my_value\":\"b\"},\"12\"],\"a_dict\":{\"very\":\"good\"},\"a_item\":\"15\"}";
+
+    string serializedIdsOnly =
         "{\"id\":\"id\",\"a_list\":[\"10\",\"12\"],\"a_dict\":{\"very\":\"good\"},\"a_item\":\"15\"}";
 
     DataB data = new DataB {
@@ -25,17 +28,47 @@ public class LinkTests {
 
     [Fact]
     public void LinkSerializationTest() {
-        Assert.Equal(serialized, data.ToJson());
+        // Without Expand(), ToJson() serializes only IDs even when Data is populated in memory.
+        Assert.Equal(serializedIdsOnly, data.ToJson());
+
+        data.AList![0].Expand();
+        Assert.Equal(serializedExpanded, data.ToJson());
+        Assert.Equal(serializedIdsOnly, data.ToDataJson());
     }
 
     [Fact]
     public void LinkDeserializationTest() {
-        Assert.Equal(data, serialized.FromJson<DataB>());
+        var fromExpanded = serializedExpanded.FromJson<DataB>();
+        Assert.Equal(data, fromExpanded);
+        Assert.Equal("b", fromExpanded!.AList![0].Data?.MyValue);
+
+        var fromIdsOnly = serializedIdsOnly.FromJson<DataB>();
+        Assert.Equal(data, fromIdsOnly);
     }
 
     [Fact]
     public void LinkCloneTest() {
-        Assert.Equal(data, data.Clone());
+        data.AList![0].Expand();
+        var cloned = data.Clone();
+        Assert.Equal(data, cloned);
+        Assert.Equal("b", cloned.AList![0].Data?.MyValue);
+    }
+
+    [Fact]
+    public void LinkSharedReferenceSerializationTest() {
+        var sharedA = new DataA {
+            Id = "shared",
+            MyValue = "val"
+        };
+        var dag = new DataB {
+            Id = "dag",
+            AList = [sharedA, sharedA]
+        };
+        dag.AList[0].Expand();
+        dag.AList[1].Expand();
+        Assert.Equal(
+            "{\"id\":\"dag\",\"a_list\":[{\"id\":\"shared\",\"my_value\":\"val\"},{\"id\":\"shared\",\"my_value\":\"val\"}]}",
+            dag.ToJson());
     }
 }
 
@@ -55,4 +88,5 @@ class DataB : DataModel, WithModelId<DataB> {
     public List<Link<DataA>>? AList { get; set; }
     public Dictionary<string, Link<DataA>> ADict { get; set; }
     public Link<DataA>? AItem { get; set; }
+    public Link<DataB>? BItem { get; set; }
 }

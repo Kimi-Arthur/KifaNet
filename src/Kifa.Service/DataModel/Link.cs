@@ -1,14 +1,18 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Newtonsoft.Json;
 
 namespace Kifa.Service;
 
-// Unlimited linking not supported now.
-public class Link<TDataModel> : JsonSerializable, IEquatable<Link<TDataModel>>
+public class Link<TDataModel> : JsonSerializable<Link<TDataModel>>, IEquatable<Link<TDataModel>>
     where TDataModel : DataModel, WithModelId<TDataModel> {
     public required string Id { get; init; }
 
     TDataModel? data;
+
+    // Kept separate from `data != null` so reading/setting Data in C# caches the target
+    // without causing it to serialize as an expanded object unless Expand() was explicitly called.
+    bool shouldExpand;
 
     public TDataModel? Data {
         get => data ??= TDataModel.Client.Get(Id);
@@ -27,6 +31,11 @@ public class Link<TDataModel> : JsonSerializable, IEquatable<Link<TDataModel>>
         return data;
     }
 
+    public TDataModel? Expand() {
+        shouldExpand = true;
+        return Data;
+    }
+
     [return: NotNullIfNotNull(nameof(id))]
     public static implicit operator Link<TDataModel>?(string? id)
         => id == null
@@ -35,17 +44,32 @@ public class Link<TDataModel> : JsonSerializable, IEquatable<Link<TDataModel>>
                 Id = id
             };
 
-    public static implicit operator Link<TDataModel>(TDataModel data)
-        => new() {
-            Id = data.Id,
-            Data = data
-        };
+    [return: NotNullIfNotNull(nameof(data))]
+    public static implicit operator Link<TDataModel>?(TDataModel? data)
+        => data == null
+            ? null
+            : new Link<TDataModel> {
+                Id = data.Id.Checked(),
+                Data = data
+            };
 
-    public static implicit operator string(Link<TDataModel> link) => link.Id;
+    [return: NotNullIfNotNull(nameof(link))]
+    public static implicit operator string?(Link<TDataModel>? link) => link?.Id;
 
-    public static implicit operator TDataModel?(Link<TDataModel> link) => link.Data;
+    public static implicit operator TDataModel?(Link<TDataModel>? link) => link?.Data;
 
     public string ToJson() => Id;
+
+    // Falls back to Id when Data is null (e.g. target not found or upstream temporarily unreachable)
+    // so the known ID is preserved without failing the parent request or emitting null in collections.
+    public object ToExpandedJson() => shouldExpand ? (object?) Data ?? Id : Id;
+
+    public static Link<TDataModel>? ReadJson(JsonReader reader, JsonSerializer serializer)
+        => reader.TokenType switch {
+            JsonToken.Null => null,
+            JsonToken.StartObject => serializer.Deserialize<TDataModel>(reader),
+            _ => reader.Value?.ToString()
+        };
 
     public bool Equals(Link<TDataModel>? other) {
         if (ReferenceEquals(null, other)) {

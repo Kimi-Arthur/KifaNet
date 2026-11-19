@@ -1,14 +1,17 @@
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using Kifa.Service;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using NLog;
 
 namespace Kifa.Web.Api;
@@ -183,8 +186,9 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     }
 
     public override TDataModel? Get(string id, KifaDataOptions? options = null) {
-        using (AcquireLock(id)) {
-            try {
+        try {
+            TDataModel? data;
+            using (AcquireLock(id)) {
                 if (id.TryParseTranslationId(out var baseId, out var language)) {
                     if (!IsValidTranslationLanguage(language)) {
                         Logger.Warn(
@@ -220,7 +224,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                     }
                 }
 
-                var data = Retrieve(id);
+                data = Retrieve(id);
 
                 if (Fill(ref data, id, options)) {
                     WriteTarget(data);
@@ -243,11 +247,15 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 }
 
                 ReadAndFillTranslation(ref data, options?.Translated);
-                return FormatData(data, options);
-            } catch (Exception ex) when (ex is not DataCorruptedException) {
-                Logger.Error(ex, $"Failed to get {id}.");
-                return null;
             }
+
+            // Run outside AcquireLock(id): all disk I/O for `id` is complete, and LinkedFields expansion
+            // fetches other items — holding lock(id) while locking linked targets risks AB-BA deadlocks
+            // across concurrent requests (e.g. A -> B vs B -> A) and blocks other callers on `id`.
+            return FormatData(data, options);
+        } catch (Exception ex) when (ex is not DataCorruptedException) {
+            Logger.Error(ex, $"Failed to get {id}.");
+            return null;
         }
     }
 
@@ -935,6 +943,114 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             data = newValue;
         }
 
+        if (options.LinkedFields.Count > 0) {
+            List<object> rootItems = [data];
+            foreach (var linkedField in options.LinkedFields) {
+                var segments = linkedField.Split('.', StringSplitOptions.RemoveEmptyEntries);
+                if (segments.Length > 0) {
+                    PopulateLinkedField(typeof(TDataModel), rootItems, segments, 0);
+                }
+            }
+        }
+
         return data;
+    }
+
+    static readonly SnakeCaseNamingStrategy SnakeCase = new();
+
+    static void PopulateLinkedField(Type type, List<object> items, string[] segments, int index) {
+        if (items.Count == 0) {
+            return;
+        }
+
+        // Case 1: Dictionary — unwrap all non-null dictionary values and continue at the same segment index.
+        if (GetGenericInterfaceArgument(type, typeof(IDictionary<,>), 1) is { } dictValueType) {
+            var nextItems = new List<object>();
+            foreach (IDictionary dict in items) {
+                foreach (var value in dict.Values) {
+                    if (value != null) {
+                        nextItems.Add(value);
+                    }
+                }
+            }
+
+            PopulateLinkedField(dictValueType, nextItems, segments, index);
+            return;
+        }
+
+        // Case 2: Collection/List — flatten all non-null elements and continue at the same segment index.
+        if (type != typeof(string) &&
+            GetGenericInterfaceArgument(type, typeof(IEnumerable<>), 0) is { } elementType) {
+            var nextItems = new List<object>();
+            foreach (IEnumerable enumerable in items) {
+                foreach (var item in enumerable) {
+                    if (item != null) {
+                        nextItems.Add(item);
+                    }
+                }
+            }
+
+            PopulateLinkedField(elementType, nextItems, segments, index);
+            return;
+        }
+
+        // Case 3: Link<TDataModel> — expand each link (loading its target DataModel) and, if more path
+        // segments remain, continue traversing into the loaded target objects at the current segment index.
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Link<>)) {
+            var expandMethod = type.GetMethod("Expand").Checked();
+            var targetType = type.GetGenericArguments()[0];
+            var loadedTargets = new List<object>(items.Count);
+            foreach (var link in items) {
+                if (expandMethod.Invoke(link, null) is { } loaded) {
+                    loadedTargets.Add(loaded);
+                }
+            }
+
+            if (index < segments.Length && loadedTargets.Count > 0) {
+                PopulateLinkedField(targetType, loadedTargets, segments, index);
+            }
+
+            return;
+        }
+
+        if (index >= segments.Length) {
+            return;
+        }
+
+        // Case 4: Regular object — resolve the property matching segments[index] (by PascalCase or snake_case),
+        // collect its values across all current items, and advance to index + 1.
+        var segment = segments[index];
+        var prop = type
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .FirstOrDefault(p =>
+                p.Name.Equals(segment, StringComparison.OrdinalIgnoreCase) ||
+                SnakeCase.GetPropertyName(p.Name, false)
+                    .Equals(segment, StringComparison.OrdinalIgnoreCase));
+        if (prop == null) {
+            return;
+        }
+
+        var propValues = new List<object>(items.Count);
+        foreach (var item in items) {
+            var val = prop.GetValue(item);
+            if (val != null) {
+                propValues.Add(val);
+            }
+        }
+
+        PopulateLinkedField(prop.PropertyType, propValues, segments, index + 1);
+    }
+
+    static Type? GetGenericInterfaceArgument(Type type, Type genericInterfaceDefinition,
+        int argIndex) {
+        if (type.IsInterface && type.IsGenericType &&
+            type.GetGenericTypeDefinition() == genericInterfaceDefinition) {
+            return type.GetGenericArguments()[argIndex];
+        }
+
+        return type.GetInterfaces()
+            .FirstOrDefault(i =>
+                i.IsGenericType && i.GetGenericTypeDefinition() == genericInterfaceDefinition)
+            ?.GetGenericArguments()[argIndex];
     }
 }

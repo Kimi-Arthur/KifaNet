@@ -1,17 +1,21 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json;
 using Xunit;
 
 namespace Kifa.Tests;
 
-public class JsonType : JsonSerializable {
+public class JsonType : JsonSerializable<JsonType> {
     public required string Value { get; set; }
 
-    public static implicit operator JsonType(string value)
-        => new() {
-            Value = value
-        };
+    [return: NotNullIfNotNull(nameof(value))]
+    public static implicit operator JsonType?(string? value)
+        => value == null
+            ? null
+            : new() {
+                Value = value
+            };
 
     public string ToJson() => Value;
 }

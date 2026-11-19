@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Kifa.Service;
 
 namespace Kifa.Web.Api;
@@ -12,7 +13,8 @@ public class FixOptions {
 
 public partial class KifaServiceJsonClient<TDataModel> {
     public KifaActionResult FixVirtualLinks(FixOptions? options) {
-        var properties = typeof(TDataModel).GetProperties();
+        var properties =
+            typeof(TDataModel).GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
         options ??= new FixOptions();
         var overallResult = new KifaBatchActionResult();

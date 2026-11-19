@@ -13,6 +13,9 @@ namespace Kifa.Web.Api.Tests;
 public class TestDataModelWithVirtualLinks : DataModel, WithModelId<TestDataModelWithVirtualLinks> {
     public static string ModelId => "link_tests";
 
+    public static KifaServiceClient<TestDataModelWithVirtualLinks> Client { get; set; } =
+        new KifaServiceRestClient<TestDataModelWithVirtualLinks>();
+
     public static Dictionary<string, string> Redirects { get; } = new();
     public static Dictionary<string, string> FillableData { get; } = new();
 
@@ -21,6 +24,14 @@ public class TestDataModelWithVirtualLinks : DataModel, WithModelId<TestDataMode
     public Dictionary<string, string>? ExtraDict { get; set; }
 
     public string? OtherProp { get; set; }
+
+    public List<Link<TestDataModelWithVirtualLinks>>? Peers { get; set; }
+
+    public List<TestSubContainer>? SubItems { get; set; }
+
+    public class TestSubContainer {
+        public Link<TestDataModelWithVirtualLinks>? Peer { get; set; }
+    }
 
     public override TimeSpan? RefreshInterval => RefreshIntervals.Infinity;
 
@@ -50,9 +61,11 @@ public class LinkTests : IDisposable {
     readonly KifaServiceJsonClient<TestDataModelWithVirtualLinks> client = new();
 
     public LinkTests() {
-        folder = $"{Path.GetTempPath()}/{nameof(LinkTest)}_{DateTime.UtcNow:yyyyMMddHHmmss}";
+        folder =
+            $"{Path.GetTempPath()}/{nameof(LinkTest)}_{DateTime.UtcNow:yyyyMMddHHmmssfff}_{Guid.NewGuid():N}";
 
         client.DataFolder = folder;
+        TestDataModelWithVirtualLinks.Client = client;
     }
 
     [Fact]
@@ -500,6 +513,74 @@ public class LinkTests : IDisposable {
             TestDataModelWithVirtualLinks.Redirects.Clear();
             TestDataModelWithVirtualLinks.FillableData.Clear();
         }
+    }
+
+    [Fact]
+    public void CyclicLinkedFieldsTest() {
+        client.Set(new TestDataModelWithVirtualLinks {
+            Id = "movie1",
+            Data = "Movie 1",
+            Peers = ["actor1"]
+        });
+        client.Set(new TestDataModelWithVirtualLinks {
+            Id = "actor1",
+            Data = "Actor 1",
+            Peers = ["movie1"]
+        });
+
+        // 0 hops: Peers serialized as string IDs
+        var zeroHops = client.Get("movie1")!;
+        zeroHops.ToJson().Should().Contain("\"peers\":[\"actor1\"]");
+
+        // 1 hop ("Peers"): movie1 -> actor1 expanded, actor1.Peers remains string ID "movie1"
+        var oneHop = client.Get("movie1", new KifaDataOptions {
+            LinkedFields = ["Peers"]
+        })!;
+        oneHop.ToJson().Should().Contain("\"id\":\"actor1\"").And.Contain("\"peers\":[\"movie1\"]");
+
+        // 2 hops ("Peers.Peers"): movie1 -> actor1 expanded -> movie1 expanded, inner movie1.Peers remains string ID "actor1"
+        var twoHops = client.Get("movie1", new KifaDataOptions {
+            LinkedFields = ["Peers.Peers"]
+        })!;
+        var json = twoHops.ToJson();
+        json.Should().Contain("\"id\":\"actor1\"");
+        json.Should().Contain("\"peers\":[\"actor1\"]");
+
+        // Multi-dot path through embedded sub-object list ("sub_items.peer.peers")
+        client.Set(new TestDataModelWithVirtualLinks {
+            Id = "container1",
+            SubItems = [
+                new TestDataModelWithVirtualLinks.TestSubContainer {
+                    Peer = "movie1"
+                }
+            ]
+        });
+        var nestedResult = client.Get("container1", new KifaDataOptions {
+            LinkedFields = ["sub_items.peer.peers"]
+        })!;
+        var nestedJson = nestedResult.ToJson();
+        nestedJson.Should().Contain("\"id\":\"movie1\"");
+        nestedJson.Should().Contain("\"id\":\"actor1\"");
+        nestedJson.Should().Contain("\"peers\":[\"movie1\"]");
+
+        // Mixed resolved + missing linked targets serialize as [{ ... }, "nonexistent_actor"]
+        // and deserialize cleanly on the client as a dual-typed Link<T> list.
+        client.Set(new TestDataModelWithVirtualLinks {
+            Id = "mixed_movie",
+            Peers = ["actor1", "nonexistent_actor"]
+        });
+        var mixedJson = client.Get("mixed_movie", new KifaDataOptions {
+            LinkedFields = ["Peers"]
+        })!.ToJson();
+        mixedJson.Should().Contain("\"id\":\"actor1\"")
+            .And.Contain(",\"nonexistent_actor\"]");
+
+        var deserializedMixed = mixedJson.FromJson<TestDataModelWithVirtualLinks>()!;
+        deserializedMixed.Peers.Should().HaveCount(2);
+        deserializedMixed.Peers![0].Id.Should().Be("actor1");
+        deserializedMixed.Peers[0].Data!.Data.Should().Be("Actor 1");
+        deserializedMixed.Peers[1].Id.Should().Be("nonexistent_actor");
+        deserializedMixed.Peers[1].Data.Should().BeNull();
     }
 
     public void Dispose() {

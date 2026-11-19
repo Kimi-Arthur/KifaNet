@@ -1,11 +1,12 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using YamlDotNet.Serialization;
 
 namespace Kifa.IO;
 
-public class FileLocation : JsonSerializable {
+public class FileLocation : JsonSerializable<FileLocation> {
     public string ServerType {
         get => Late.Get(field);
         set => Late.Set(ref field, value);
@@ -53,7 +54,8 @@ public class FileLocation : JsonSerializable {
         Path = match.Groups[3].Value;
     }
 
-    public static implicit operator FileLocation(string id) => new(id);
+    [return: NotNullIfNotNull(nameof(id))]
+    public static implicit operator FileLocation?(string? id) => id == null ? null : new(id);
 
     public override string ToString() => ToJson();
 

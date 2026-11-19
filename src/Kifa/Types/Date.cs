@@ -1,9 +1,10 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace Kifa;
 
-public class Date : JsonSerializable, IComparable<Date>, IEquatable<Date> {
+public class Date : JsonSerializable<Date>, IComparable<Date>, IEquatable<Date> {
     DateTime DateTime { get; set; }
 
     public int Year => DateTime.Year;
@@ -22,10 +23,10 @@ public class Date : JsonSerializable, IComparable<Date>, IEquatable<Date> {
             DateTime = ParseDateTime(data, format)
         };
 
-
     public string ToJson() => DateTime.ToString("yyyy-MM-dd");
 
-    public static implicit operator Date(string data) => Parse(data);
+    [return: NotNullIfNotNull(nameof(data))]
+    public static implicit operator Date?(string? data) => data == null ? null : Parse(data);
 
     public static implicit operator Date(DateTime dataTime)
         => new() {

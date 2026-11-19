@@ -4,8 +4,8 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Kifa;
 
-public partial class Language : JsonSerializable, IComparable<Language>, IEquatable<Language>,
-    IParsable<Language> {
+public partial class Language : JsonSerializable<Language>, IComparable<Language>,
+    IEquatable<Language>, IParsable<Language> {
     public required string Name { get; init; }
     public required string NativeName { get; init; }
     public required string Code { get; init; }
@@ -14,7 +14,9 @@ public partial class Language : JsonSerializable, IComparable<Language>, IEquata
 
     public string ToJson() => Code;
 
-    public static implicit operator Language(string id) => All.GetValueOrDefault(id, Unknown);
+    [return: NotNullIfNotNull(nameof(id))]
+    public static implicit operator Language?(string? id)
+        => id == null ? null : All.GetValueOrDefault(id, Unknown);
 
     public static Language Parse(string s, IFormatProvider? provider = null) => s;
 

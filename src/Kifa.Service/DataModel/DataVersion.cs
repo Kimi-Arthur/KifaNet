@@ -3,8 +3,8 @@ using System.Globalization;
 
 namespace Kifa.Service;
 
-public class DataVersion : JsonSerializable, IComparable<DataVersion>, IComparable<DateTimeOffset>,
-    IEquatable<DataVersion>, IEquatable<DateTimeOffset> {
+public class DataVersion : JsonSerializable<DataVersion>, IComparable<DataVersion>,
+    IComparable<DateTimeOffset>, IEquatable<DataVersion>, IEquatable<DateTimeOffset> {
     public DateTimeOffset Value { get; set; }
 
     public DataVersion() {
