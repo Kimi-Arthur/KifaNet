@@ -22,7 +22,7 @@ public class BilibiliArchive : DataModel, WithModelId<BilibiliArchive> {
 
     public override TimeSpan? RefreshInterval => RefreshIntervals.Short;
 
-    public override void Fill(bool deep = false) {
+    public override void Fill(bool full = false) {
         var ids = Id.Split("/");
         AuthorId = ids[0];
         SeasonId = ids[1];

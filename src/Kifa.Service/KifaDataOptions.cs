@@ -7,7 +7,7 @@ public class KifaDataOptions {
     public bool Refresh { get; set; }
 
     // Traversal strategy: full exhaustive fetch ignoring early-exit stops.
-    public bool Deep { get; set; }
+    public bool Full { get; set; }
 
     // Disk formatting: rewrite JSON layout on disk.
     public bool Rewrite { get; set; }
@@ -24,7 +24,7 @@ public class KifaDataOptions {
 
     public KifaDataOptions Clone() => new() {
         Refresh = Refresh,
-        Deep = Deep,
+        Full = Full,
         Rewrite = Rewrite,
         Fields = [..Fields],
         LinkedFields = [..LinkedFields],
@@ -36,8 +36,8 @@ public class KifaDataOptions {
             yield return ("refresh", "true");
         }
 
-        if (Deep) {
-            yield return ("deep", "true");
+        if (Full) {
+            yield return ("full", "true");
         }
 
         if (Rewrite) {

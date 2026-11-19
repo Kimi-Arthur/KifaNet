@@ -38,7 +38,7 @@ public class BilibiliMangaEpisode : DataModel, WithModelId<BilibiliMangaEpisode>
 
     public override TimeSpan? RefreshInterval => RefreshIntervals.Year;
 
-    public override void Fill(bool deep = false) {
+    public override void Fill(bool full = false) {
         Pages = HttpClients.BiliplusHttpClient
             .Call(new BiliplusMangaEpisodeRpc(MangaId[2..], EpisodeId)).Select((p, index)
                 => new BilibiliMangaPage {

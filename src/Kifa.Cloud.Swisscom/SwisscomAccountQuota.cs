@@ -61,7 +61,7 @@ public class SwisscomAccountQuota : DataModel, WithModelId<SwisscomAccountQuota>
 
     public override TimeSpan? RefreshInterval => RefreshIntervals.Zero;
 
-    public override void Fill(bool deep = false) {
+    public override void Fill(bool full = false) {
         var account = SwisscomAccount.Client.Get(Id);
         if (account == null) {
             throw new DataNotFoundException($"Account {Id} is missing.");

@@ -19,7 +19,7 @@ public class TestFillDataModel : DataModel, WithModelId<TestFillDataModel> {
     public static bool GlobalShouldFailFill { get; set; }
     public static bool GlobalShouldThrowFailedToFill { get; set; }
     public static int GlobalFillCount { get; set; }
-    public static bool? LastFillWasDeep { get; set; }
+    public static bool? LastFillWasFull { get; set; }
     public static Dictionary<string, string> UpstreamLinks { get; } = new();
 
     public string? Content { get; set; }
@@ -32,8 +32,8 @@ public class TestFillDataModel : DataModel, WithModelId<TestFillDataModel> {
 
     public override DataVersion? ForceRefreshBefore => GlobalForceRefreshBefore;
 
-    public override void Fill(bool deep = false) {
-        LastFillWasDeep = deep;
+    public override void Fill(bool full = false) {
+        LastFillWasFull = full;
         GlobalFillCount++;
         if (GlobalShouldThrowFailedToFill || ShouldThrowFailedToFill) {
             throw new FailedToFillException($"Simulated process failure for {Id}.");
@@ -785,8 +785,8 @@ public class VersioningAndFreshnessTests : IDisposable {
     }
 
     [Fact]
-    public void NaturalRefreshCallsFillWithDeepFalse() {
-        var id = nameof(NaturalRefreshCallsFillWithDeepFalse);
+    public void NaturalRefreshCallsFillWithFullFalse() {
+        var id = nameof(NaturalRefreshCallsFillWithFullFalse);
         var model = new TestFillDataModel {
             Id = id,
             RemoteSourceContent = "v1"
@@ -796,7 +796,7 @@ public class VersioningAndFreshnessTests : IDisposable {
         // Initial fill
         var data = client.Get(id);
         data!.Content.Should().Be("v1");
-        TestFillDataModel.LastFillWasDeep.Should().BeFalse();
+        TestFillDataModel.LastFillWasFull.Should().BeFalse();
 
         // Expire refresh interval
         TestFillDataModel.GlobalRefreshInterval = TimeSpan.Zero;
@@ -806,12 +806,12 @@ public class VersioningAndFreshnessTests : IDisposable {
         // Natural refresh triggered by NeedRefresh()
         var refreshed = client.Get(id);
         refreshed!.Content.Should().Be("v2");
-        TestFillDataModel.LastFillWasDeep.Should().BeFalse();
+        TestFillDataModel.LastFillWasFull.Should().BeFalse();
     }
 
     [Fact]
-    public void ForcedRefreshCallsFillWithDeepFalse() {
-        var id = nameof(ForcedRefreshCallsFillWithDeepFalse);
+    public void ForcedRefreshCallsFillWithFullFalse() {
+        var id = nameof(ForcedRefreshCallsFillWithFullFalse);
         var model = new TestFillDataModel {
             Id = id,
             RemoteSourceContent = "v1"
@@ -831,12 +831,12 @@ public class VersioningAndFreshnessTests : IDisposable {
             Refresh = true
         });
         refreshed!.Content.Should().Be("v2");
-        TestFillDataModel.LastFillWasDeep.Should().BeFalse();
+        TestFillDataModel.LastFillWasFull.Should().BeFalse();
     }
 
     [Fact]
-    public void DeepRefreshCallsFillWithDeepTrue() {
-        var id = nameof(DeepRefreshCallsFillWithDeepTrue);
+    public void FullRefreshCallsFillWithFullTrue() {
+        var id = nameof(FullRefreshCallsFillWithFullTrue);
         var model = new TestFillDataModel {
             Id = id,
             RemoteSourceContent = "v1"
@@ -851,12 +851,12 @@ public class VersioningAndFreshnessTests : IDisposable {
         model.RemoteSourceContent = "v2";
         client.Set(model);
 
-        // Explicit deep: true
+        // Explicit full: true
         var refreshed = client.Get(id, new KifaDataOptions {
-            Deep = true
+            Full = true
         });
         refreshed!.Content.Should().Be("v2");
-        TestFillDataModel.LastFillWasDeep.Should().BeTrue();
+        TestFillDataModel.LastFillWasFull.Should().BeTrue();
     }
 
     public void Dispose() {
@@ -865,7 +865,7 @@ public class VersioningAndFreshnessTests : IDisposable {
         TestFillDataModel.GlobalShouldFailFill = false;
         TestFillDataModel.GlobalShouldThrowFailedToFill = false;
         TestFillDataModel.GlobalFillCount = 0;
-        TestFillDataModel.LastFillWasDeep = null;
+        TestFillDataModel.LastFillWasFull = null;
         TestFillDataModel.UpstreamLinks.Clear();
         if (Directory.Exists(folder)) {
             Directory.Delete(folder, true);

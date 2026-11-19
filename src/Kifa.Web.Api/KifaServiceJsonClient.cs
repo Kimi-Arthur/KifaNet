@@ -278,14 +278,14 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         data = candidate;
 
         var refresh = options?.Refresh == true;
-        var deep = options?.Deep == true;
+        var full = options?.Full == true;
 
-        if (refresh || deep || data.NeedRefresh()) {
+        if (refresh || full || data.NeedRefresh()) {
             var isNewItem = data.Metadata?.Version == null;
             var now = DateTimeOffset.UtcNow;
 
             try {
-                data.Fill(deep: deep);
+                data.Fill(full: full);
             } catch (DataIsLinkedException ex) {
                 if (originalContent != null) {
                     Logger.Error(

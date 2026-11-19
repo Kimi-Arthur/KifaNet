@@ -19,7 +19,7 @@ public class BilibiliPlaylist : DataModel, WithModelId<BilibiliPlaylist> {
 
     public override TimeSpan? RefreshInterval => RefreshIntervals.Short;
 
-    public override void Fill(bool deep = false) {
+    public override void Fill(bool full = false) {
         var response = HttpClients.GetBilibiliClient().Call(new PlaylistRpc(Id));
         if (response?.Code is -404 or 11010 or 53000) {
             throw new DataNotFoundException($"Failed to find playlist ({Id}): {response?.Message}.");

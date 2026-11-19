@@ -135,7 +135,7 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo,
 
     public override TimeSpan? RefreshInterval => RefreshIntervals.Short;
 
-    public override void Fill(bool deep = false) {
+    public override void Fill(bool full = false) {
         if (TmdbId == null) {
             throw new FailedToFillException($"Not enough info to fill Anime (TmdbId = {TmdbId})");
         }

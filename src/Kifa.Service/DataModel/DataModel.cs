@@ -112,7 +112,7 @@ public abstract class DataModel : IEquatable<DataModel> {
         return upstreamVersion > Metadata.Version;
     }
 
-    public virtual void Fill(bool deep = false) => throw new NoNeedToFillException();
+    public virtual void Fill(bool full = false) => throw new NoNeedToFillException();
 
     public virtual SortedSet<string> GetVirtualItems() => new();
     public bool IsVirtualItem() => Id.StartsWith(VirtualItemPrefix);

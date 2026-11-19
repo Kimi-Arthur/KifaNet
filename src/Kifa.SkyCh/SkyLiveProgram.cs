@@ -65,7 +65,7 @@ public class SkyLiveProgram : DataModel, WithModelId<SkyLiveProgram> {
     public override TimeSpan? RefreshInterval => RefreshIntervals.Infinity;
 
     // Should not be called frequently.
-    public override void Fill(bool deep = false) {
+    public override void Fill(bool full = false) {
         WaitCooldown();
 
         var pageUrl = $"https://sport.sky.ch/en/SkyChannelAjax/DetailEpg?id={Id}";

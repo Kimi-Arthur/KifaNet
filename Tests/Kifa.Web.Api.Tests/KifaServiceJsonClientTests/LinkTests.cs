@@ -35,7 +35,7 @@ public class TestDataModelWithVirtualLinks : DataModel, WithModelId<TestDataMode
 
     public override TimeSpan? RefreshInterval => RefreshIntervals.Infinity;
 
-    public override void Fill(bool deep = false) {
+    public override void Fill(bool full = false) {
         if (RealId != null && Redirects.TryGetValue(RealId, out var targetId)) {
             throw new DataIsLinkedException(targetId);
         }

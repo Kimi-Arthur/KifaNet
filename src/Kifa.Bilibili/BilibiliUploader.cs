@@ -26,7 +26,7 @@ public class BilibiliUploader : DataModel, WithModelId<BilibiliUploader> {
         => $"{Name.Checked().NormalizeFileName().Choppable()}.{Id}.bilibili".NormalizeFileName(
             reservedBytes: 0, maxByteCount: PathExtensions.MaxPathSegmentByteCount);
 
-    public override void Fill(bool deep = false) {
+    public override void Fill(bool full = false) {
         var info = HttpClients.GetBilibiliClient().Call(new UploaderInfoWebRpc(Id.Checked()));
         if (info == null) {
             throw new DataNotFoundException(
