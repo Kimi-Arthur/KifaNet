@@ -44,6 +44,8 @@ public partial class AddCommand {
             if (segments.Length == 2 && segments[1] != "qr") {
                 if (File.Exists(segments[1])) {
                     account.Cookies = File.ReadAllText(segments[1]).Trim();
+                } else if (!BilibiliAccount.IsValidRefreshToken(segments[1])) {
+                    account.Cookies = segments[1].Trim();
                 } else {
                     account.Cookies ??= HttpClients.BilibiliCookies;
                     account.RefreshToken = segments[1];

@@ -126,10 +126,11 @@ public class BilibiliAccountTests {
         var oldAuthClient = BilibiliAccount.AuthClient;
         try {
             BilibiliAccount.AuthClient = new HttpClient(handler);
+            var nearExpiry = DateTimeOffset.UtcNow.AddDays(10).ToUnixTimeSeconds();
             var account = new BilibiliAccount {
                 Id = "default",
                 Cookies =
-                    "DedeUserID=3888766; SESSDATA=old_sess%2C1798017359%2Cdef; bili_jct=old_jct_000; bili_ticket=old_ticket",
+                    $"DedeUserID=3888766; SESSDATA=old_sess%2C{nearExpiry}%2Cdef; bili_jct=old_jct_000; bili_ticket=old_ticket",
                 RefreshToken = "old_refresh_token_123"
             };
 
@@ -144,6 +145,44 @@ public class BilibiliAccountTests {
             BilibiliAccount.GetCookieValue(account.Cookies, "bili_ticket_expires").Should()
                 .Be("1794259200");
             requests.Should().HaveCount(5);
+        } finally {
+            BilibiliAccount.AuthClient = oldAuthClient;
+        }
+    }
+
+    [Fact]
+    public void FillClearsInvalidRefreshTokenAndStillRefreshesTicketTest() {
+        var requests = new List<string>();
+        var handler = new FakeHttpMessageHandler(req => {
+            var uri = req.RequestUri.Checked().ToString();
+            requests.Add($"{req.Method} {uri}");
+
+            if (uri.Contains("/GenWebTicket")) {
+                return new HttpResponseMessage(HttpStatusCode.OK) {
+                    Content = new StringContent(
+                        """{"code":0,"message":"OK","data":{"ticket":"fresh_ticket_jwt","created_at":1794000000,"ttl":259200}}""")
+                };
+            }
+
+            throw new InvalidOperationException($"Unexpected URI: {uri}");
+        });
+
+        var oldAuthClient = BilibiliAccount.AuthClient;
+        try {
+            BilibiliAccount.AuthClient = new HttpClient(handler);
+            var account = new BilibiliAccount {
+                Id = "default",
+                Cookies =
+                    "DedeUserID=3888766; SESSDATA=valid_sess%2C1809639557%2Cabc; bili_jct=csrf_000",
+                RefreshToken = "theme-tip-show=SHOWED; SESSDATA=accidentally_pasted_cookies"
+            };
+
+            account.Fill();
+
+            account.RefreshToken.Should().BeNull();
+            BilibiliAccount.GetCookieValue(account.Cookies, "bili_ticket").Should()
+                .Be("fresh_ticket_jwt");
+            requests.Should().HaveCount(1);
         } finally {
             BilibiliAccount.AuthClient = oldAuthClient;
         }

@@ -60,7 +60,7 @@ public class BilibiliAccount : DataModel, WithModelId<BilibiliAccount> {
             throw new FailedToFillException("Cookies are not configured for BilibiliAccount.");
         }
 
-        if (RefreshToken != null) {
+        if (IsValidRefreshToken(RefreshToken)) {
             var csrf = GetCookieValue(Cookies, "bili_jct");
             var cookieInfo = AuthClient.Call(new CookieInfoRpc(csrf, Cookies));
             if (cookieInfo is { Code: NotLoggedInCode }) {
@@ -68,37 +68,45 @@ public class BilibiliAccount : DataModel, WithModelId<BilibiliAccount> {
                     $"Bilibili session is no longer logged in: {cookieInfo.Message} ({cookieInfo.Code}).");
             }
 
-            var needSessDataRefresh = deep || cookieInfo?.Data?.Refresh == true ||
-                                      ShouldRefreshSessData(Cookies);
+            var needSessDataRefresh = deep || ShouldRefreshSessData(Cookies);
             if (needSessDataRefresh && csrf != null) {
-                var timestamp = cookieInfo?.Data?.Timestamp is > 0
-                    ? cookieInfo.Data.Timestamp
-                    : DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                var refreshCsrf = AuthClient.Call(new CorrespondRpc(timestamp, Cookies));
-                if (refreshCsrf == null) {
-                    throw new FailedToFillException(
-                        "Failed to obtain refresh_csrf from Bilibili correspond page.");
-                }
+                try {
+                    var timestamp = cookieInfo?.Data?.Timestamp is > 0
+                        ? cookieInfo.Data.Timestamp
+                        : DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    var refreshCsrf = AuthClient.Call(new CorrespondRpc(timestamp, Cookies));
+                    if (refreshCsrf == null) {
+                        throw new FailedToFillException(
+                            "Failed to obtain refresh_csrf from Bilibili correspond page.");
+                    }
 
-                var refreshResult = AuthClient.Call(
-                    new CookieRefreshRpc(csrf, refreshCsrf, RefreshToken, Cookies));
-                if (refreshResult is not { Code: 0, Data.RefreshToken: not null }) {
-                    throw new FailedToFillException(
-                        $"Failed to refresh Bilibili cookies: {refreshResult?.Message} ({refreshResult?.Code}).");
-                }
+                    var refreshResult = AuthClient.Call(
+                        new CookieRefreshRpc(csrf, refreshCsrf, RefreshToken.Checked(), Cookies));
+                    if (refreshResult is not { Code: 0, Data.RefreshToken: not null }) {
+                        throw new FailedToFillException(
+                            $"Failed to refresh Bilibili cookies: {refreshResult?.Message} ({refreshResult?.Code}).");
+                    }
 
-                var oldRefreshToken = RefreshToken;
-                Cookies = MergeSetCookies(Cookies, refreshResult.SetCookies);
-                RefreshToken = refreshResult.Data.RefreshToken;
+                    var oldRefreshToken = RefreshToken.Checked();
+                    Cookies = MergeSetCookies(Cookies, refreshResult.SetCookies);
+                    RefreshToken = refreshResult.Data.RefreshToken;
 
-                var newCsrf = GetCookieValue(Cookies, "bili_jct") ?? csrf;
-                var confirmResult = AuthClient.Call(
-                    new ConfirmRefreshRpc(newCsrf, oldRefreshToken, Cookies));
-                if (confirmResult is { Code: not 0 }) {
-                    Logger.Warn(
-                        $"Confirm refresh returned non-zero code {confirmResult.Code}: {confirmResult.Message}");
+                    var newCsrf = GetCookieValue(Cookies, "bili_jct") ?? csrf;
+                    var confirmResult = AuthClient.Call(
+                        new ConfirmRefreshRpc(newCsrf, oldRefreshToken, Cookies));
+                    if (confirmResult is { Code: not 0 }) {
+                        Logger.Warn(
+                            $"Confirm refresh returned non-zero code {confirmResult.Code}: {confirmResult.Message}");
+                    }
+                } catch (FailedToFillException ex) when (GetSessDataExpiry(Cookies) >
+                                                        DateTimeOffset.UtcNow) {
+                    Logger.Warn(ex,
+                        "Failed to rotate SESSDATA, continuing with still-valid existing SESSDATA.");
                 }
             }
+        } else if (RefreshToken != null) {
+            Logger.Warn("Clearing invalid RefreshToken on BilibiliAccount.");
+            RefreshToken = null;
         }
 
         var currentCsrf = GetCookieValue(Cookies, "bili_jct");
@@ -114,6 +122,9 @@ public class BilibiliAccount : DataModel, WithModelId<BilibiliAccount> {
                 $"Failed to refresh bili_ticket: {ticketResult?.Message} ({ticketResult?.Code})");
         }
     }
+
+    public static bool IsValidRefreshToken(string? refreshToken)
+        => refreshToken != null && !refreshToken.Contains(';') && !refreshToken.Contains('=');
 
     public static bool ShouldRefreshSessData(string? cookies) {
         var expiry = GetSessDataExpiry(cookies);
