@@ -583,6 +583,47 @@ public class LinkTests : IDisposable {
         deserializedMixed.Peers[1].Data.Should().BeNull();
     }
 
+    [Fact]
+    public void InvalidLinkedFieldsThrowsArgumentExceptionTest() {
+        client.Set(new TestDataModelWithVirtualLinks {
+            Id = "sparse_item",
+            Data = "plain"
+        });
+
+        // Valid Link<T> leaf path succeeds even when intermediate SubItems / Peers are null on this item.
+        var sparseResult = client.Get("sparse_item", new KifaDataOptions {
+            LinkedFields = ["sub_items.peer.peers"]
+        });
+        sparseResult.Should().NotBeNull();
+
+        // Non-Link subpart end node fails even when SubItems is null.
+        Action subpartEndNode = () => client.Get("sparse_item", new KifaDataOptions {
+            LinkedFields = ["sub_items"]
+        });
+        subpartEndNode.Should().Throw<ArgumentException>()
+            .WithMessage("*ends on non-Link type 'TestSubContainer'*");
+
+        // Scalar end node fails.
+        Action scalarEndNode = () => client.Get("sparse_item", new KifaDataOptions {
+            LinkedFields = ["data"]
+        });
+        scalarEndNode.Should().Throw<ArgumentException>()
+            .WithMessage("*ends on non-Link type 'String'*");
+
+        // Unknown property after a Link<T> fails even when Peers is null.
+        Action unknownProperty = () => client.Get("sparse_item", new KifaDataOptions {
+            LinkedFields = ["peers.nonexistent"]
+        });
+        unknownProperty.Should().Throw<ArgumentException>()
+            .WithMessage("*property 'nonexistent' was not found*");
+
+        // Empty linked field fails.
+        Action emptyField = () => client.Get("sparse_item", new KifaDataOptions {
+            LinkedFields = [""]
+        });
+        emptyField.Should().Throw<ArgumentException>();
+    }
+
     public void Dispose() {
         if (Directory.Exists(folder)) {
             Directory.Delete(folder, true);

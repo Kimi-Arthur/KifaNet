@@ -253,7 +253,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             // fetches other items — holding lock(id) while locking linked targets risks AB-BA deadlocks
             // across concurrent requests (e.g. A -> B vs B -> A) and blocks other callers on `id`.
             return FormatData(data, options);
-        } catch (Exception ex) when (ex is not DataCorruptedException) {
+        } catch (Exception ex) when (ex is not DataCorruptedException and not ArgumentException) {
             Logger.Error(ex, $"Failed to get {id}.");
             return null;
         }
@@ -947,9 +947,12 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             List<object> rootItems = [data];
             foreach (var linkedField in options.LinkedFields) {
                 var segments = linkedField.Split('.', StringSplitOptions.RemoveEmptyEntries);
-                if (segments.Length > 0) {
-                    PopulateLinkedField(typeof(TDataModel), rootItems, segments, 0);
+                if (segments.Length == 0) {
+                    throw new ArgumentException($"Invalid empty linked field '{linkedField}'.",
+                        nameof(options));
                 }
+
+                PopulateLinkedField(typeof(TDataModel), rootItems, linkedField, segments, 0);
             }
         }
 
@@ -958,11 +961,8 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
 
     static readonly SnakeCaseNamingStrategy SnakeCase = new();
 
-    static void PopulateLinkedField(Type type, List<object> items, string[] segments, int index) {
-        if (items.Count == 0) {
-            return;
-        }
-
+    static void PopulateLinkedField(Type type, List<object> items, string linkedField,
+        string[] segments, int index) {
         // Case 1: Dictionary — unwrap all non-null dictionary values and continue at the same segment index.
         if (GetGenericInterfaceArgument(type, typeof(IDictionary<,>), 1) is { } dictValueType) {
             var nextItems = new List<object>();
@@ -974,7 +974,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 }
             }
 
-            PopulateLinkedField(dictValueType, nextItems, segments, index);
+            PopulateLinkedField(dictValueType, nextItems, linkedField, segments, index);
             return;
         }
 
@@ -990,31 +990,34 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 }
             }
 
-            PopulateLinkedField(elementType, nextItems, segments, index);
+            PopulateLinkedField(elementType, nextItems, linkedField, segments, index);
             return;
         }
 
         // Case 3: Link<TDataModel> — expand each link (loading its target DataModel) and, if more path
-        // segments remain, continue traversing into the loaded target objects at the current segment index.
+        // segments remain, continue traversing/validating into targetType at the current segment index.
         if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Link<>)) {
-            var expandMethod = type.GetMethod("Expand").Checked();
             var targetType = type.GetGenericArguments()[0];
             var loadedTargets = new List<object>(items.Count);
-            foreach (var link in items) {
-                if (expandMethod.Invoke(link, null) is { } loaded) {
-                    loadedTargets.Add(loaded);
+            if (items.Count > 0) {
+                var expandMethod = type.GetMethod("Expand").Checked();
+                foreach (var link in items) {
+                    if (expandMethod.Invoke(link, null) is { } loaded) {
+                        loadedTargets.Add(loaded);
+                    }
                 }
             }
 
-            if (index < segments.Length && loadedTargets.Count > 0) {
-                PopulateLinkedField(targetType, loadedTargets, segments, index);
+            if (index < segments.Length) {
+                PopulateLinkedField(targetType, loadedTargets, linkedField, segments, index);
             }
 
             return;
         }
 
         if (index >= segments.Length) {
-            return;
+            throw new ArgumentException(
+                $"Linked field '{linkedField}' ends on non-Link type '{type.Name}'; end node must be a Link<T>.");
         }
 
         // Case 4: Regular object — resolve the property matching segments[index] (by PascalCase or snake_case),
@@ -1027,7 +1030,8 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 SnakeCase.GetPropertyName(p.Name, false)
                     .Equals(segment, StringComparison.OrdinalIgnoreCase));
         if (prop == null) {
-            return;
+            throw new ArgumentException(
+                $"Invalid linked field '{linkedField}': property '{segment}' was not found on type '{type.Name}'.");
         }
 
         var propValues = new List<object>(items.Count);
@@ -1038,7 +1042,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             }
         }
 
-        PopulateLinkedField(prop.PropertyType, propValues, segments, index + 1);
+        PopulateLinkedField(prop.PropertyType, propValues, linkedField, segments, index + 1);
     }
 
     static Type? GetGenericInterfaceArgument(Type type, Type genericInterfaceDefinition,
