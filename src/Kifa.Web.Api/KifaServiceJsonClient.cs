@@ -264,8 +264,9 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
 
     // false -> no write needed.
     // true -> rewrite needed.
+    // `forceFill` runs Fill() even if the item is still fresh, e.g. when an update changed its content.
     bool Fill([NotNullWhen(true)] ref TDataModel? data, string? id = null,
-        KifaDataOptions? options = null) {
+        KifaDataOptions? options = null, bool forceFill = false) {
         var candidate = data ?? new TDataModel {
             Id = id
         };
@@ -280,7 +281,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         var refresh = options?.Refresh == true;
         var full = options?.Full == true;
 
-        if (refresh || full || data.NeedRefresh()) {
+        if (refresh || full || forceFill || data.NeedRefresh()) {
             var isNewItem = data.Metadata?.Version == null;
             var now = DateTimeOffset.UtcNow;
 
@@ -524,8 +525,28 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                         data.Metadata = originalMetadata;
                     }
                 } else {
-                    data = original.Merge(data);
-                    Fill(ref data);
+                    var merged = original.Merge(data);
+                    var contentChanged = !merged.Equals(original);
+                    data = merged;
+
+                    var wasDue = data.NeedRefresh();
+
+                    // Changed inputs may affect other fields, so Fill() even if still fresh.
+                    Fill(ref data, forceFill: contentChanged);
+
+                    // Unchanged content that was not due for Fill() was just confirmed current by the
+                    // caller, so only LastRefreshed moves (Version tracks content and stays).
+                    if (!contentChanged && !wasDue &&
+                        data.RefreshInterval != RefreshIntervals.None &&
+                        data.Metadata?.Version != null) {
+                        data.Metadata.LastRefreshed = DateTimeOffset.UtcNow;
+                    }
+
+                    // Version tracks the final content (after Fill) compared to what was stored.
+                    if (contentChanged && !data.Equals(original)) {
+                        data.Metadata ??= new DataMetadata();
+                        data.Metadata.Version = DateTimeOffset.UtcNow;
+                    }
                 }
 
                 WriteTarget(data);

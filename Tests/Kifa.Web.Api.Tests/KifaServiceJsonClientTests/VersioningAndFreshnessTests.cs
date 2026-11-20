@@ -147,7 +147,7 @@ public class VersioningAndFreshnessTests : IDisposable {
         // Update remote source content in disk model simulation
         var diskModel = client.Get(id);
         diskModel!.RemoteSourceContent = "new changed content";
-        client.Update(diskModel);
+        StageOnDisk(diskModel);
 
         var secondGet = client.Get(id, new() {
             Refresh = true
@@ -214,7 +214,7 @@ public class VersioningAndFreshnessTests : IDisposable {
 
         // Simulate code logic change producing new content
         firstGet.RemoteSourceContent = "improved parsed content";
-        client.Update(firstGet);
+        StageOnDisk(firstGet);
 
         var futureForceRefresh = (DataVersion) DateTimeOffset.UtcNow;
         TestFillDataModel.GlobalForceRefreshBefore = futureForceRefresh;
@@ -404,7 +404,7 @@ public class VersioningAndFreshnessTests : IDisposable {
 
         // Simulate remote source updating content
         firstGet.RemoteSourceContent = "v2";
-        client.Update(firstGet);
+        StageOnDisk(firstGet);
 
         // Next Get() without refresh: true does NOT auto-refresh because RefreshInterval is Infinity (MaxValue)
         var secondGet = client.Get(id);
@@ -673,7 +673,7 @@ public class VersioningAndFreshnessTests : IDisposable {
 
         // Simulate remote resource becoming unavailable (e.g. video deleted/removed)
         firstGet.ShouldFailFill = true;
-        client.Update(firstGet);
+        StageOnDisk(firstGet);
 
         // Trigger refresh
         var secondGet = client.Get(id, new() {
@@ -858,6 +858,105 @@ public class VersioningAndFreshnessTests : IDisposable {
         refreshed!.Content.Should().Be("v2");
         TestFillDataModel.LastFillWasFull.Should().BeTrue();
     }
+
+    [Fact]
+    public void UpdateWithChangedContentFillsFreshItemAndBumpsVersion() {
+        const string id = nameof(UpdateWithChangedContentFillsFreshItemAndBumpsVersion);
+        client.Set(new TestFillDataModel {
+            Id = id,
+            RemoteSourceContent = "a"
+        });
+        var initial = client.Get(id)!;
+        initial.Content.Should().Be("a");
+        TestFillDataModel.GlobalFillCount = 0;
+
+        Thread.Sleep(50);
+        client.Update(new TestFillDataModel {
+            Id = id,
+            RemoteSourceContent = "b"
+        });
+
+        TestFillDataModel.GlobalFillCount.Should().Be(1);
+        var updated = client.Get(id)!;
+        updated.Content.Should().Be("b");
+        updated.Metadata!.Version!.Value.Should().BeAfter(initial.Metadata!.Version!.Value);
+        updated.Metadata.LastRefreshed.Should().Be(updated.Metadata.Version);
+    }
+
+    [Fact]
+    public void UpdateWithoutContentChangeDoesNotFillOrBumpVersion() {
+        const string id = nameof(UpdateWithoutContentChangeDoesNotFillOrBumpVersion);
+        client.Set(new TestFillDataModel {
+            Id = id,
+            RemoteSourceContent = "a"
+        });
+        var initial = client.Get(id)!;
+        TestFillDataModel.GlobalFillCount = 0;
+
+        Thread.Sleep(50);
+        client.Update(new TestFillDataModel {
+            Id = id,
+            RemoteSourceContent = "a"
+        });
+
+        TestFillDataModel.GlobalFillCount.Should().Be(0);
+        var after = client.Get(id)!;
+        after.Metadata!.Version.Should().Be(initial.Metadata!.Version);
+
+        // The unchanged update confirmed the content, so only LastRefreshed advances.
+        after.Metadata.LastRefreshed!.Value.Should().BeAfter(initial.Metadata.LastRefreshed!.Value);
+    }
+
+    [Fact]
+    public void UpdateWithoutContentChangeStillFillsWhenDue() {
+        const string id = nameof(UpdateWithoutContentChangeStillFillsWhenDue);
+        client.Set(new TestFillDataModel {
+            Id = id,
+            RemoteSourceContent = "a"
+        });
+        var initial = client.Get(id)!;
+        TestFillDataModel.GlobalFillCount = 0;
+
+        // Simulate a code change that requires re-filling everything.
+        Thread.Sleep(50);
+        TestFillDataModel.GlobalForceRefreshBefore = (DataVersion) DateTimeOffset.UtcNow;
+
+        client.Update(new TestFillDataModel {
+            Id = id,
+            RemoteSourceContent = "a"
+        });
+
+        TestFillDataModel.GlobalFillCount.Should().Be(1);
+        var after = client.Get(id)!;
+        after.Metadata!.Version.Should().Be(initial.Metadata!.Version);
+        after.NeedRefresh().Should().BeFalse();
+    }
+
+    [Fact]
+    public void UpdateWhenUpstreamIsGoneMarksRemovedInMetadataAndKeepsPatchedData() {
+        const string id = nameof(UpdateWhenUpstreamIsGoneMarksRemovedInMetadataAndKeepsPatchedData);
+        client.Set(new TestFillDataModel {
+            Id = id,
+            RemoteSourceContent = "a"
+        });
+
+        // Patch changes content, so Fill() runs and finds the upstream item gone.
+        client.Update(new TestFillDataModel {
+            Id = id,
+            RemoteSourceContent = "b",
+            ShouldFailFill = true
+        }).Status.Should().Be(KifaActionStatus.OK);
+
+        var data = client.Get(id)!;
+        data.Metadata!.Status.Should().Be(DataStatus.Removed);
+        data.Content.Should().Be("a");
+        data.RemoteSourceContent.Should().Be("b");
+        client.Get(id, new KifaDataOptions { Fields = ["Id"] }).Should().NotBeNull();
+    }
+
+    // Simulates the remote source changing without going through Update(), which would Fill().
+    void StageOnDisk(TestFillDataModel model)
+        => File.WriteAllText($"{folder}/test_fills/{model.Id}.json", $"{model.ToDiskJson()}\n");
 
     public void Dispose() {
         TestFillDataModel.GlobalRefreshInterval = RefreshIntervals.Week;
