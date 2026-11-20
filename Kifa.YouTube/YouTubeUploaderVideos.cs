@@ -17,13 +17,13 @@ public class YouTubeUploaderVideos : DataModel, WithModelId<YouTubeUploaderVideo
     public List<string> Shorts { get; set; } = [];
     public List<string> Streams { get; set; } = [];
 
-    public override void Fill(bool full = false) {
+    public override void Fill(FillContext context) {
         var uploader = YouTubeUploader.Resolve(Id.Checked());
         var baseUrl = YouTubeUploader.GetFetchUrl(uploader?.Id ?? Id.Checked()).TrimEnd('/');
 
-        Videos = FetchSection($"{baseUrl}/videos", Videos, full);
-        Shorts = FetchSection($"{baseUrl}/shorts", Shorts, full);
-        Streams = FetchSection($"{baseUrl}/streams", Streams, full);
+        Videos = FetchSection($"{baseUrl}/videos", Videos, context.Full);
+        Shorts = FetchSection($"{baseUrl}/shorts", Shorts, context.Full);
+        Streams = FetchSection($"{baseUrl}/streams", Streams, context.Full);
     }
 
     const int BatchSize = 50;

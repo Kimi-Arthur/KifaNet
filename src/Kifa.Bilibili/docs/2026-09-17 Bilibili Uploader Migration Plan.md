@@ -16,7 +16,7 @@ The objective is to decouple the uploader profile from the video feed by introdu
   * `Id` (string, mid)
   * `Name` (string)
 * **RefreshInterval:** 30 days (`TimeSpan.FromDays(30)`)
-* **`Fill(bool deep = false)`:**
+* **`Fill(FillContext context)`:**
   * Calls `UploaderInfoWebRpc(Id)` to refresh uploader profile and name.
 
 ### `BilibiliUploaderVideos` (`bilibili/uploader_videos`)
@@ -25,7 +25,7 @@ The objective is to decouple the uploader profile from the video feed by introdu
   * `Aids` (`List<string>`)
   * `RemovedAids` (`List<string>`)
 * **RefreshInterval:** 1 day (`TimeSpan.FromDays(1)`)
-* **`Fill(bool deep = false)`:**
+* **`Fill(FillContext context)`:**
   * Fetches the video feed incrementally.
   * Calculates set differences to populate and track `RemovedAids`.
 

@@ -53,7 +53,7 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
 
     public override TimeSpan? RefreshInterval => RefreshIntervals.Short;
 
-    public override void Fill(bool full = false) {
+    public override void Fill(FillContext context) {
         var oldEpisodeCount = Seasons?.Select(s => s.Episodes?.Count ?? 0).Sum() ??
                               0 + Specials?.Count ?? 0;
 

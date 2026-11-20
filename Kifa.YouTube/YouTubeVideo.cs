@@ -629,7 +629,7 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         return null;
     }
 
-    public override void Fill(bool full = false) {
+    public override void Fill(FillContext context) {
         if (ExistsOnYouTube()) {
             try {
                 FillWithYoutubeDl();

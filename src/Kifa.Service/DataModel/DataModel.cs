@@ -112,7 +112,10 @@ public abstract class DataModel : IEquatable<DataModel> {
         return upstreamVersion > Metadata.Version;
     }
 
-    public virtual void Fill(bool full = false) => throw new NoNeedToFillException();
+    // Fills the model from upstream. Models use whatever the context offers and ignore the rest.
+    public virtual void Fill(FillContext context) => throw new NoNeedToFillException();
+
+    public void Fill() => Fill(new FillContext());
 
     public virtual SortedSet<string> GetVirtualItems() => new();
     public bool IsVirtualItem() => Id.StartsWith(VirtualItemPrefix);

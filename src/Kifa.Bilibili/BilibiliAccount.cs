@@ -54,7 +54,7 @@ public class BilibiliAccount : DataModel, WithModelId<BilibiliAccount> {
     // Cookie & ticket rotation references:
     // - Cookie refresh flow: https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/docs/login/cookie_refresh.md
     // - Web ticket (bili_ticket): https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/docs/misc/sign/bili_ticket.md
-    public override void Fill(bool full = false) {
+    public override void Fill(FillContext context) {
         Cookies ??= HttpClients.BilibiliCookies;
         if (Cookies == null) {
             throw new FailedToFillException("Cookies are not configured for BilibiliAccount.");
@@ -73,7 +73,7 @@ public class BilibiliAccount : DataModel, WithModelId<BilibiliAccount> {
         }
 
         if (RefreshToken != null) {
-            var needSessDataRefresh = full || ShouldRefreshSessData(Cookies);
+            var needSessDataRefresh = context.Full || ShouldRefreshSessData(Cookies);
             if (needSessDataRefresh && csrf != null) {
                 try {
                     var timestamp = cookieInfo?.Data?.Timestamp is > 0

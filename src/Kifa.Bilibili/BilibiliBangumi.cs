@@ -23,7 +23,7 @@ public class BilibiliBangumi : DataModel, WithModelId<BilibiliBangumi> {
 
     public override TimeSpan? RefreshInterval => RefreshIntervals.Short;
 
-    public override void Fill(bool full = false) {
+    public override void Fill(FillContext context) {
         var mediaData = HttpClients.GetBilibiliClient().Call(new MediaRpc(Id))?.Result;
         SeasonId = $"ss{mediaData.Media.SeasonId}";
         Title = mediaData.Media.Title.Trim();

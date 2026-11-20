@@ -20,6 +20,7 @@ public class TestFillDataModel : DataModel, WithModelId<TestFillDataModel> {
     public static bool GlobalShouldThrowFailedToFill { get; set; }
     public static int GlobalFillCount { get; set; }
     public static bool? LastFillWasFull { get; set; }
+    public static int GlobalRemoteFetchCount { get; set; }
     public static Dictionary<string, string> UpstreamLinks { get; } = new();
 
     public string? Content { get; set; }
@@ -32,9 +33,17 @@ public class TestFillDataModel : DataModel, WithModelId<TestFillDataModel> {
 
     public override DataVersion? ForceRefreshBefore => GlobalForceRefreshBefore;
 
-    public override void Fill(bool full = false) {
-        LastFillWasFull = full;
+    public override void Fill(FillContext context) {
+        if (context.Input is { } pushed) {
+            GlobalFillCount++;
+            RemoteSourceContent = pushed;
+            Content = pushed;
+            return;
+        }
+
+        LastFillWasFull = context.Full;
         GlobalFillCount++;
+        GlobalRemoteFetchCount++;
         if (GlobalShouldThrowFailedToFill || ShouldThrowFailedToFill) {
             throw new FailedToFillException($"Simulated process failure for {Id}.");
         }
@@ -52,6 +61,19 @@ public class TestFillDataModel : DataModel, WithModelId<TestFillDataModel> {
             }
         }
     }
+}
+
+public class NoInputDataModel : DataModel, WithModelId<NoInputDataModel> {
+    public static string ModelId => "no_input_items";
+
+    public static KifaServiceClient<NoInputDataModel> Client { get; set; } =
+        new KifaServiceRestClient<NoInputDataModel>();
+
+    public override TimeSpan? RefreshInterval => RefreshIntervals.Week;
+
+    public string? Content { get; set; }
+
+    public override void Fill(FillContext context) => Content = "filled";
 }
 
 public class NonUpstreamDataModel : DataModel, WithModelId<NonUpstreamDataModel> {
@@ -954,6 +976,72 @@ public class VersioningAndFreshnessTests : IDisposable {
         client.Get(id, new KifaDataOptions { Fields = ["Id"] }).Should().NotBeNull();
     }
 
+    [Fact]
+    public void FillInputOnDueItemSkipsRemoteFetchAndKeepsVersionWhenUnchanged() {
+        const string id = nameof(FillInputOnDueItemSkipsRemoteFetchAndKeepsVersionWhenUnchanged);
+        client.Set(new TestFillDataModel {
+            Id = id,
+            RemoteSourceContent = "a"
+        });
+        var initial = client.Get(id)!;
+
+        // Make the item due, so a normal Get would fetch from the remote source.
+        Thread.Sleep(50);
+        TestFillDataModel.GlobalForceRefreshBefore = (DataVersion) DateTimeOffset.UtcNow;
+        TestFillDataModel.GlobalRemoteFetchCount = 0;
+
+        var updated = client.Get(id, new KifaDataOptions {
+            FillInput = "a"
+        })!;
+
+        TestFillDataModel.GlobalRemoteFetchCount.Should().Be(0);
+        updated.Content.Should().Be("a");
+        updated.Metadata!.Version.Should().Be(initial.Metadata!.Version);
+        updated.Metadata.LastRefreshed!.Value.Should().BeAfter(initial.Metadata.LastRefreshed!.Value);
+    }
+
+    [Fact]
+    public void FillInputWithDifferentContentFillsFreshItemAndBumpsVersion() {
+        const string id = nameof(FillInputWithDifferentContentFillsFreshItemAndBumpsVersion);
+        client.Set(new TestFillDataModel {
+            Id = id,
+            RemoteSourceContent = "a"
+        });
+        var initial = client.Get(id)!;
+        TestFillDataModel.GlobalRemoteFetchCount = 0;
+
+        Thread.Sleep(50);
+        var updated = client.Get(id, new KifaDataOptions {
+            FillInput = "b"
+        })!;
+
+        TestFillDataModel.GlobalRemoteFetchCount.Should().Be(0);
+        updated.Content.Should().Be("b");
+        updated.Metadata!.Version!.Value.Should().BeAfter(initial.Metadata!.Version!.Value);
+        client.Get(id)!.Content.Should().Be("b");
+    }
+
+    [Fact]
+    public void FillInputIsIgnoredByFillableModelsThatDoNotUseItButRejectedByNonFillableOnes() {
+        var noInputClient = new KifaServiceJsonClient<NoInputDataModel> {
+            DataFolder = folder
+        };
+
+        var data = noInputClient.Get("x", new KifaDataOptions {
+            FillInput = "ignored"
+        });
+
+        data!.Content.Should().Be("filled");
+
+        var nonFillableClient = new KifaServiceJsonClient<NonUpstreamDataModel> {
+            DataFolder = folder
+        };
+        var nonFillable = () => nonFillableClient.Get("y", new KifaDataOptions {
+            FillInput = "ignored"
+        });
+        nonFillable.Should().Throw<ArgumentException>();
+    }
+
     // Simulates the remote source changing without going through Update(), which would Fill().
     void StageOnDisk(TestFillDataModel model)
         => File.WriteAllText($"{folder}/test_fills/{model.Id}.json", $"{model.ToDiskJson()}\n");
@@ -965,6 +1053,7 @@ public class VersioningAndFreshnessTests : IDisposable {
         TestFillDataModel.GlobalShouldThrowFailedToFill = false;
         TestFillDataModel.GlobalFillCount = 0;
         TestFillDataModel.LastFillWasFull = null;
+        TestFillDataModel.GlobalRemoteFetchCount = 0;
         TestFillDataModel.UpstreamLinks.Clear();
         if (Directory.Exists(folder)) {
             Directory.Delete(folder, true);

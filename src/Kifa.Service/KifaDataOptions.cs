@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Kifa.Service;
 
@@ -22,13 +23,19 @@ public class KifaDataOptions {
     // Target language for sidecar translation overlay (e.g., "zh").
     public Language? Translated { get; set; }
 
+    // Side-channel input for Fill(), such as raw source content the model would otherwise fetch.
+    // In-process only for now: it is never part of the URL, so remote callers get a normal Fill().
+    [JsonIgnore]
+    public string? FillInput { get; set; }
+
     public KifaDataOptions Clone() => new() {
         Refresh = Refresh,
         Full = Full,
         Rewrite = Rewrite,
         Fields = [..Fields],
         LinkedFields = [..LinkedFields],
-        Translated = Translated
+        Translated = Translated,
+        FillInput = FillInput
     };
 
     public IEnumerable<(string Key, object? Value)> GetUrlParameters() {

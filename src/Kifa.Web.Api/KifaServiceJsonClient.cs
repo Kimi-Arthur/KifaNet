@@ -271,7 +271,13 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             Id = id
         };
 
+        var input = options?.FillInput;
         if (candidate.RefreshInterval == RefreshIntervals.None) {
+            if (input != null) {
+                throw new ArgumentException(
+                    $"{ModelId} is not fillable, so it cannot take fill input.");
+            }
+
             return false;
         }
 
@@ -281,12 +287,17 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         var refresh = options?.Refresh == true;
         var full = options?.Full == true;
 
-        if (refresh || full || forceFill || data.NeedRefresh()) {
+        // Input always runs Fill(): the model decides what to do with it, and Version only moves
+        // if the resulting content differs from what is stored.
+        if (refresh || full || forceFill || input != null || data.NeedRefresh()) {
             var isNewItem = data.Metadata?.Version == null;
             var now = DateTimeOffset.UtcNow;
 
             try {
-                data.Fill(full: full);
+                data.Fill(new FillContext {
+                    Full = full,
+                    Input = input
+                });
             } catch (DataIsLinkedException ex) {
                 if (originalContent != null) {
                     Logger.Error(

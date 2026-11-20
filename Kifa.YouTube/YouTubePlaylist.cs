@@ -18,7 +18,7 @@ public class YouTubePlaylist : DataModel, WithModelId<YouTubePlaylist> {
 
     public override TimeSpan? RefreshInterval => RefreshIntervals.Short;
 
-    public override void Fill(bool full = false) {
+    public override void Fill(FillContext context) {
         var playlistUrl = Id.StartsWith("http", StringComparison.OrdinalIgnoreCase)
             ? Id
             : $"https://www.youtube.com/playlist?list={Id}";

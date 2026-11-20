@@ -79,7 +79,7 @@ public class YouTubeUploader : DataModel, WithModelId<YouTubeUploader> {
         return items;
     }
 
-    public override void Fill(bool full = false) {
+    public override void Fill(FillContext context) {
         var url = GetFetchUrl(Id.Checked());
 
         using var lease = YouTubeAccount.ObtainLease(YouTubeSessionType.Quick);

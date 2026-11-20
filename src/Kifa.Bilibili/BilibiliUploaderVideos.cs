@@ -21,7 +21,7 @@ public class BilibiliUploaderVideos : DataModel, WithModelId<BilibiliUploaderVid
     public List<string> Aids { get; set; } = [];
     public List<string> RemovedAids { get; set; } = [];
 
-    public override void Fill(bool full = false) {
+    public override void Fill(FillContext context) {
         if (Aids.Count == 0 && RemovedAids.Count == 0) {
             var legacy = BilibiliUploader.Client.Get(Id.Checked());
             if (legacy != null) {
@@ -30,7 +30,7 @@ public class BilibiliUploaderVideos : DataModel, WithModelId<BilibiliUploaderVid
             }
         }
 
-        if (full || Aids.Count == 0) {
+        if (context.Full || Aids.Count == 0) {
             var allVideos = GetAllVideos();
             var removed = RemovedAids.ToHashSet();
             removed.UnionWith(Aids);

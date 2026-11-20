@@ -2,6 +2,7 @@ using System;
 using FluentAssertions;
 using Kifa.Bilibili.BilibiliApi;
 using Kifa.Configs;
+using Kifa.Service;
 using Xunit;
 
 namespace Kifa.Bilibili.Tests;
@@ -148,7 +149,9 @@ public class BilibiliUploaderTests {
         var uploaderVideos = new BilibiliUploaderVideos {
             Id = "18427691"
         };
-        uploaderVideos.Fill(full: true);
+        uploaderVideos.Fill(new FillContext {
+            Full = true
+        });
         uploaderVideos.Aids[^1].Should().Be("av561513930");
         uploaderVideos.Aids.Should().HaveCount(104);
         uploaderVideos.RefreshInterval.Should().Be(TimeSpan.FromDays(1));

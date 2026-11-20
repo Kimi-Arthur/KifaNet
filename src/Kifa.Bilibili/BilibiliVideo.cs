@@ -106,7 +106,7 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
 
     public override DataVersion? ForceRefreshBefore => new(2026, 10, 29);
 
-    public override void Fill(bool full = false) {
+    public override void Fill(FillContext context) {
         try {
             FillWithBilibili();
             return;
