@@ -187,39 +187,44 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
 
     public override TDataModel? Get(string id, KifaDataOptions? options = null) {
         try {
-            TDataModel? data;
             if (id.TryParseTranslationId(out var baseId, out var language)) {
                 return GetTranslation(id, baseId, language, options);
             }
 
-            using (AcquireLock(id)) {
-                data = Retrieve(id);
-
-                if (Fill(ref data, id, options)) {
-                    WriteTarget(data);
-                } else if (options?.Rewrite == true) {
-                    if (data != null) {
-                        var rawData = ReadRaw(data.RealId);
-                        if (rawData != null) {
-                            var expectedRawData = $"{ToTargetDiskJson(data)}\n";
-                            if (rawData != expectedRawData) {
-                                Logger.Info(
-                                    $"Rewriting {ModelId}/{data.RealId} as its JSON layout on disk did not match the expected structure.");
-                                WriteTarget(data);
-                            }
-                        }
+            // If `id` is a link (real or virtual), release `lock(id)` before locking `targetId` so
+            // `Fill()` always runs with the canonical target ID and never reverses
+            // `WriteVirtualItems`'s `target -> virtualLink` lock order. Retry if the link changes
+            // concurrently while switching locks.
+            TDataModel? data;
+            while (true) {
+                string targetId;
+                using (AcquireLock(id)) {
+                    data = Retrieve(id);
+                    if (data?.Metadata?.Linking?.Target is { } linkedTargetId) {
+                        targetId = linkedTargetId;
+                    } else {
+                        data = FillTarget(data, id, options);
+                        break;
                     }
                 }
 
-                if (data == null || data.Metadata?.Status == DataStatus.NotFound) {
-                    return null;
+                using (AcquireLock(targetId)) {
+                    var target = Retrieve(targetId);
+                    if (HasLink(target, id)) {
+                        target = FillTarget(target, targetId, options);
+                        ApplyLinkView(target, id, targetId);
+                        data = target;
+                        break;
+                    }
                 }
-
-                ReadAndFillTranslation(ref data, options?.Translated);
             }
 
-            // Run outside AcquireLock(id): all disk I/O for `id` is complete, and LinkedFields expansion
-            // fetches other items — holding lock(id) while locking linked targets risks AB-BA deadlocks
+            if (data == null) {
+                return null;
+            }
+
+            // Run outside locks: all disk I/O for `id` is complete, and LinkedFields expansion
+            // fetches other items — holding a lock while locking linked targets risks AB-BA deadlocks
             // across concurrent requests (e.g. A -> B vs B -> A) and blocks other callers on `id`.
             return FormatData(data, options);
         } catch (Exception ex) when (ex is not DataCorruptedException and not ArgumentException) {
@@ -530,46 +535,108 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         }
 
         return KifaActionResult.FromAction(() => {
-            using (AcquireLock(data.Id)) {
-                Logger.Trace($"Update {ModelId}/{data.Id}");
-                Logger.Notice(() => data.ToString());
-                var original = Retrieve(data.Id);
+            // If `data.Id` is a link (real or virtual), release `lock(data.Id)` before locking
+            // `targetId` so `Fill()` runs with the canonical target ID and never reverses
+            // `WriteVirtualItems`'s `target -> virtualLink` lock order.
+            while (true) {
+                string targetId;
+                using (AcquireLock(data.Id)) {
+                    Logger.Trace($"Update {ModelId}/{data.Id}");
+                    Logger.Notice(() => data.ToString());
+                    var original = Retrieve(data.Id);
+                    if (original?.Metadata?.Linking?.Target is { } linkedTargetId) {
+                        targetId = linkedTargetId;
+                    } else if (original == null) {
+                        // If it's new data, we should try Fill it.
+                        var originalMetadata = data.Metadata?.Clone();
+                        data.ResetRefreshDate();
+                        if (!Fill(ref data)) {
+                            data.Metadata = originalMetadata;
+                        }
 
-                // If it's new data, we should try Fill it.
-                if (original == null) {
-                    var originalMetadata = data.Metadata?.Clone();
-                    data.ResetRefreshDate();
-                    if (!Fill(ref data)) {
-                        data.Metadata = originalMetadata;
-                    }
-                } else {
-                    var merged = original.Merge(data);
-                    var contentChanged = !merged.Equals(original);
-                    data = merged;
-
-                    var wasDue = data.NeedRefresh();
-
-                    // Changed inputs may affect other fields, so Fill() even if still fresh.
-                    Fill(ref data, forceFill: contentChanged);
-
-                    // Unchanged content that was not due for Fill() was just confirmed current by the
-                    // caller, so only LastRefreshed moves (Version tracks content and stays).
-                    if (!contentChanged && !wasDue &&
-                        data.RefreshInterval != RefreshIntervals.None &&
-                        data.Metadata?.Version != null) {
-                        data.Metadata.LastRefreshed = DateTimeOffset.UtcNow;
-                    }
-
-                    // Version tracks the final content (after Fill) compared to what was stored.
-                    if (contentChanged && !data.Equals(original)) {
-                        data.Metadata ??= new DataMetadata();
-                        data.Metadata.Version = DateTimeOffset.UtcNow;
+                        WriteTarget(data);
+                        return;
+                    } else {
+                        UpdateTarget(original, data);
+                        return;
                     }
                 }
 
-                WriteTarget(data);
+                using (AcquireLock(targetId)) {
+                    var targetOriginal = Retrieve(targetId);
+                    if (HasLink(targetOriginal, data.Id.Checked())) {
+                        var targetUpdate = data.Clone();
+                        targetUpdate.Id = targetId;
+                        UpdateTarget(targetOriginal.Checked(), targetUpdate);
+                        return;
+                    }
+                }
             }
         });
+    }
+
+    static bool HasLink(TDataModel? target, string linkId)
+        => target?.Metadata?.Linking?.Links?.Contains(linkId) == true ||
+           target?.Metadata?.Linking?.VirtualLinks?.Contains(linkId) == true;
+
+    void UpdateTarget(TDataModel original, TDataModel update) {
+        var merged = original.Merge(update);
+        var contentChanged = !merged.Equals(original);
+        var data = merged;
+
+        var wasDue = data.NeedRefresh();
+
+        // Changed inputs may affect other fields, so Fill() even if still fresh.
+        Fill(ref data, forceFill: contentChanged);
+
+        // Unchanged content that was not due for Fill() was just confirmed current by the
+        // caller, so only LastRefreshed moves (Version tracks content and stays).
+        if (!contentChanged && !wasDue &&
+            data.RefreshInterval != RefreshIntervals.None &&
+            data.Metadata?.Version != null) {
+            data.Metadata.LastRefreshed = DateTimeOffset.UtcNow;
+        }
+
+        // Version tracks the final content (after Fill) compared to what was stored.
+        if (contentChanged && !data.Equals(original)) {
+            data.Metadata ??= new DataMetadata();
+            data.Metadata.Version = DateTimeOffset.UtcNow;
+        }
+
+        WriteTarget(data);
+    }
+
+    TDataModel? FillTarget(TDataModel? data, string id, KifaDataOptions? options) {
+        if (Fill(ref data, id, options)) {
+            WriteTarget(data);
+        } else if (options?.Rewrite == true && data != null) {
+            var rawData = ReadRaw(data.RealId);
+            if (rawData != null) {
+                var expectedRawData = $"{ToTargetDiskJson(data)}\n";
+                if (rawData != expectedRawData) {
+                    Logger.Info(
+                        $"Rewriting {ModelId}/{data.RealId} as its JSON layout on disk did not match the expected structure.");
+                    WriteTarget(data);
+                }
+            }
+        }
+
+        if (data == null || data.Metadata?.Status == DataStatus.NotFound) {
+            return null;
+        }
+
+        return WithTranslation(data, options?.Translated);
+    }
+
+    static void ApplyLinkView(TDataModel? data, string aliasId, string targetId) {
+        if (data == null) {
+            return;
+        }
+
+        data.Metadata ??= new DataMetadata();
+        data.Metadata.Linking ??= new LinkingMetadata();
+        data.Metadata.Linking.Target = targetId;
+        data.Id = aliasId;
     }
 
     // Serializes data as the target object on disk without mutating the caller's link view.
@@ -773,8 +840,8 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             }
 
             if (data.Metadata?.Linking?.Target == null) {
-                ReadAndFillExternalProperties(data);
-                ReadAndFillTranslation(ref data, language);
+                LoadExternalProperties(data);
+                data = WithTranslation(data, language);
             }
 
             return data;
@@ -830,7 +897,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         }
     }
 
-    void ReadAndFillExternalProperties(TDataModel data) {
+    void LoadExternalProperties(TDataModel data) {
         foreach (var (property, suffix) in TDataModel.ExternalProperties) {
             var content = ReadRaw(data.Id, suffix);
             if (content != null) {
@@ -839,14 +906,16 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         }
     }
 
-    void ReadAndFillTranslation(ref TDataModel data, Language? language) {
+    TDataModel WithTranslation(TDataModel data, Language? language) {
         if (language != null && language != TDataModel.DefaultLanguage &&
             data.Metadata?.Translations?.Contains(language) == true && data.RealId != null) {
             var translation = ReadTranslation(data.RealId, language);
             if (translation != null) {
-                data = data.MergeTranslation(translation);
+                return data.MergeTranslation(translation);
             }
         }
+
+        return data;
     }
 
     string? ReadRaw(string id, string suffix = "json") {

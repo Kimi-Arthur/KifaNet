@@ -20,6 +20,7 @@ public class TestFillDataModel : DataModel, WithModelId<TestFillDataModel> {
     public static bool GlobalShouldThrowFailedToFill { get; set; }
     public static int GlobalFillCount { get; set; }
     public static bool? LastFillWasFull { get; set; }
+    public static string? LastFillId { get; set; }
     public static int GlobalRemoteFetchCount { get; set; }
     public static Dictionary<string, string> UpstreamLinks { get; } = new();
 
@@ -34,6 +35,7 @@ public class TestFillDataModel : DataModel, WithModelId<TestFillDataModel> {
     public override DataVersion? ForceRefreshBefore => GlobalForceRefreshBefore;
 
     public override void Fill(FillContext context) {
+        LastFillId = Id;
         if (context.Input is { } pushed) {
             GlobalFillCount++;
             RemoteSourceContent = pushed;
@@ -1042,6 +1044,40 @@ public class VersioningAndFreshnessTests : IDisposable {
         nonFillable.Should().Throw<ArgumentException>();
     }
 
+    [Fact]
+    public void GetRefreshAndUpdateViaLinkedAliasRunFillWithCanonicalTargetId() {
+        const string targetId = nameof(GetRefreshAndUpdateViaLinkedAliasRunFillWithCanonicalTargetId);
+        const string aliasId = $"{targetId}_alias";
+
+        client.Set(new TestFillDataModel {
+            Id = targetId,
+            RemoteSourceContent = "v1"
+        });
+        client.Link(targetId, aliasId).Status.Should().Be(KifaActionStatus.OK);
+
+        var viaAlias = client.Get(aliasId, new KifaDataOptions {
+            Refresh = true
+        })!;
+        TestFillDataModel.LastFillId.Should().Be(targetId);
+        viaAlias.Id.Should().Be(aliasId);
+        viaAlias.Metadata?.Linking?.Target.Should().Be(targetId);
+        viaAlias.Content.Should().Be("v1");
+
+        TestFillDataModel.LastFillId = null;
+        client.Update(new TestFillDataModel {
+            Id = aliasId,
+            RemoteSourceContent = "v2"
+        }).Status.Should().Be(KifaActionStatus.OK);
+        TestFillDataModel.LastFillId.Should().Be(targetId);
+
+        var updatedTarget = client.Get(targetId)!;
+        updatedTarget.Content.Should().Be("v2");
+        var updatedAlias = client.Get(aliasId)!;
+        updatedAlias.Id.Should().Be(aliasId);
+        updatedAlias.Metadata?.Linking?.Target.Should().Be(targetId);
+        updatedAlias.Content.Should().Be("v2");
+    }
+
     // Simulates the remote source changing without going through Update(), which would Fill().
     void StageOnDisk(TestFillDataModel model)
         => File.WriteAllText($"{folder}/test_fills/{model.Id}.json", $"{model.ToDiskJson()}\n");
@@ -1053,6 +1089,7 @@ public class VersioningAndFreshnessTests : IDisposable {
         TestFillDataModel.GlobalShouldThrowFailedToFill = false;
         TestFillDataModel.GlobalFillCount = 0;
         TestFillDataModel.LastFillWasFull = null;
+        TestFillDataModel.LastFillId = null;
         TestFillDataModel.GlobalRemoteFetchCount = 0;
         TestFillDataModel.UpstreamLinks.Clear();
         if (Directory.Exists(folder)) {
