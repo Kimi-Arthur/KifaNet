@@ -188,42 +188,11 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     public override TDataModel? Get(string id, KifaDataOptions? options = null) {
         try {
             TDataModel? data;
+            if (id.TryParseTranslationId(out var baseId, out var language)) {
+                return GetTranslation(id, baseId, language, options);
+            }
+
             using (AcquireLock(id)) {
-                if (id.TryParseTranslationId(out var baseId, out var language)) {
-                    if (!IsValidTranslationLanguage(language)) {
-                        Logger.Warn(
-                            $"Rejected Get for invalid translation language '{language.Code}' in {ModelId}/{id}.");
-                        return null;
-                    }
-
-                    var baseItem = Retrieve(baseId);
-                    if (baseItem == null || baseItem.Metadata?.Status == DataStatus.NotFound) {
-                        return null;
-                    }
-
-                    var targetId = baseItem.RealId!;
-                    using (AcquireLock(targetId)) {
-                        if (baseItem.Metadata?.Translations?.Contains(language) != true) {
-                            return null;
-                        }
-
-                        var translation = ReadTranslation(targetId, language);
-                        if (translation == null) {
-                            return null;
-                        }
-
-                        if (targetId != baseId) {
-                            translation.Metadata ??= new DataMetadata();
-                            translation.Metadata.Linking = new LinkingMetadata {
-                                Target = targetId.GetTranslationId(language)
-                            };
-                            translation.Id = baseId.GetTranslationId(language);
-                        }
-
-                        return FormatData(translation, options);
-                    }
-                }
-
                 data = Retrieve(id);
 
                 if (Fill(ref data, id, options)) {
@@ -256,6 +225,44 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         } catch (Exception ex) when (ex is not DataCorruptedException and not ArgumentException) {
             Logger.Error(ex, $"Failed to get {id}.");
             return null;
+        }
+    }
+
+    TDataModel? GetTranslation(string id, string baseId, Language language,
+        KifaDataOptions? options) {
+        if (!IsValidTranslationLanguage(language)) {
+            Logger.Warn(
+                $"Rejected Get for invalid translation language '{language.Code}' in {ModelId}/{id}.");
+            return null;
+        }
+
+        using (AcquireLock(baseId)) {
+            var baseItem = Retrieve(baseId);
+            if (baseItem == null || baseItem.Metadata?.Status == DataStatus.NotFound) {
+                return null;
+            }
+
+            var targetId = baseItem.RealId.Checked();
+            using (AcquireLock(targetId)) {
+                if (baseItem.Metadata?.Translations?.Contains(language) != true) {
+                    return null;
+                }
+
+                var translation = ReadTranslation(targetId, language);
+                if (translation == null) {
+                    return null;
+                }
+
+                if (targetId != baseId) {
+                    translation.Metadata ??= new DataMetadata();
+                    translation.Metadata.Linking = new LinkingMetadata {
+                        Target = targetId.GetTranslationId(language)
+                    };
+                    translation.Id = baseId.GetTranslationId(language);
+                }
+
+                return FormatData(translation, options);
+            }
         }
     }
 
