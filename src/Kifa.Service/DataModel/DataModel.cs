@@ -120,6 +120,22 @@ public abstract class DataModel : IEquatable<DataModel> {
     public virtual SortedSet<string> GetVirtualItems() => new();
     public bool IsVirtualItem() => Id.StartsWith(VirtualItemPrefix);
 
+    public void ClearFillErrors() {
+        if (Metadata?.FillErrors != null) {
+            Metadata.FillErrors = null;
+        }
+    }
+
+    public void AddFillError(string error) {
+        if (string.IsNullOrWhiteSpace(error)) {
+            return;
+        }
+
+        Metadata ??= new DataMetadata();
+        Metadata.FillErrors ??= [];
+        Metadata.FillErrors.Add(error);
+    }
+
     public SortedSet<string> GetAllLinks()
         => Metadata?.Linking?.Links == null ? [RealId] : [..Metadata.Linking.Links, RealId];
 

@@ -23,6 +23,8 @@ public class TestFillDataModel : DataModel, WithModelId<TestFillDataModel> {
     public static string? LastFillId { get; set; }
     public static int GlobalRemoteFetchCount { get; set; }
     public static Dictionary<string, string> UpstreamLinks { get; } = new();
+    public static List<string> FillErrorsToRecord { get; } = [];
+    public static bool GlobalShortCircuitFill { get; set; }
 
     public string? Content { get; set; }
     public string? RemoteSourceContent { get; set; }
@@ -54,7 +56,16 @@ public class TestFillDataModel : DataModel, WithModelId<TestFillDataModel> {
             throw new DataNotFoundException($"Simulated not found for {Id}.");
         }
 
+        if (GlobalShortCircuitFill) {
+            return;
+        }
+
         Content = RemoteSourceContent;
+
+        ClearFillErrors();
+        foreach (var error in FillErrorsToRecord) {
+            AddFillError(error);
+        }
 
         if (Id != null && UpstreamLinks.TryGetValue(Id, out var upstreamId)) {
             var upstream = Client.Get(upstreamId);
@@ -100,6 +111,8 @@ public class VersioningAndFreshnessTests : IDisposable {
         TestFillDataModel.GlobalRefreshInterval = TimeSpan.FromDays(7);
         TestFillDataModel.GlobalForceRefreshBefore = null;
         TestFillDataModel.UpstreamLinks.Clear();
+        TestFillDataModel.FillErrorsToRecord.Clear();
+        TestFillDataModel.GlobalShortCircuitFill = false;
     }
 
     [Fact]
@@ -1078,6 +1091,90 @@ public class VersioningAndFreshnessTests : IDisposable {
         updatedAlias.Content.Should().Be("v2");
     }
 
+    [Fact]
+    public void FillErrorsPreserveOrderAndDuplicatesPersistOnDiskAndClearOnCleanRefresh() {
+        const string id = nameof(FillErrorsPreserveOrderAndDuplicatesPersistOnDiskAndClearOnCleanRefresh);
+        TestFillDataModel.FillErrorsToRecord.AddRange([
+            "UnknownSection: Foo",
+            "DuplicateKey: Bar",
+            "UnknownSection: Foo"
+        ]);
+
+        client.Set(new TestFillDataModel {
+            Id = id,
+            RemoteSourceContent = "v1"
+        });
+
+        var first = client.Get(id)!;
+        first.Metadata!.FillErrors.Should().Equal([
+            "UnknownSection: Foo",
+            "DuplicateKey: Bar",
+            "UnknownSection: Foo"
+        ]);
+
+        var filePath = $"{folder}/test_fills/{id}.json";
+        var jsonWithErrors = File.ReadAllText(filePath);
+        jsonWithErrors.Should().Contain("\"fill_errors\":");
+        jsonWithErrors.Should().Contain("UnknownSection: Foo");
+
+        // A short-circuiting refresh (without re-parsing) preserves existing FillErrors.
+        TestFillDataModel.GlobalShortCircuitFill = true;
+        var shortCircuited = client.Get(id, new KifaDataOptions {
+            Refresh = true
+        })!;
+        shortCircuited.Metadata!.FillErrors.Should().Equal([
+            "UnknownSection: Foo",
+            "DuplicateKey: Bar",
+            "UnknownSection: Foo"
+        ]);
+        TestFillDataModel.GlobalShortCircuitFill = false;
+
+        // A failed refresh restores the original item and preserves existing FillErrors.
+        TestFillDataModel.GlobalShouldThrowFailedToFill = true;
+        var failed = client.Get(id, new KifaDataOptions {
+            Refresh = true
+        })!;
+        failed.Metadata!.FillErrors.Should().Equal([
+            "UnknownSection: Foo",
+            "DuplicateKey: Bar",
+            "UnknownSection: Foo"
+        ]);
+        TestFillDataModel.GlobalShouldThrowFailedToFill = false;
+
+        // Next clean refresh clears FillErrors and omits the field from disk JSON even when Version is unchanged.
+        var versionBeforeClean = first.Metadata.Version;
+        TestFillDataModel.FillErrorsToRecord.Clear();
+        var second = client.Get(id, new KifaDataOptions {
+            Refresh = true
+        })!;
+        second.Metadata!.FillErrors.Should().BeNullOrEmpty();
+        second.Metadata.Version.Should().Be(versionBeforeClean);
+
+        var jsonWithoutErrors = File.ReadAllText(filePath);
+        jsonWithoutErrors.Should().NotContain("\"fill_errors\"");
+    }
+
+    [Fact]
+    public void AddAndClearFillErrorsHandleWhitespaceAndSerialization() {
+        var model = new NonUpstreamDataModel {
+            Id = "err_helper_test"
+        };
+
+        model.AddFillError("");
+        model.AddFillError("   ");
+        model.Metadata.Should().BeNull();
+
+        model.AddFillError("UnknownKey: Foo");
+        model.Metadata.Should().NotBeNull();
+        model.Metadata!.ShouldSerialize().Should().BeTrue();
+        model.ToJson().Should().Contain("\"fill_errors\":[\"UnknownKey: Foo\"]");
+
+        model.ClearFillErrors();
+        model.Metadata.FillErrors.Should().BeNull();
+        model.Metadata.ShouldSerialize().Should().BeFalse();
+        model.ToJson().Should().NotContain("metadata");
+    }
+
     // Simulates the remote source changing without going through Update(), which would Fill().
     void StageOnDisk(TestFillDataModel model)
         => File.WriteAllText($"{folder}/test_fills/{model.Id}.json", $"{model.ToDiskJson()}\n");
@@ -1092,6 +1189,8 @@ public class VersioningAndFreshnessTests : IDisposable {
         TestFillDataModel.LastFillId = null;
         TestFillDataModel.GlobalRemoteFetchCount = 0;
         TestFillDataModel.UpstreamLinks.Clear();
+        TestFillDataModel.FillErrorsToRecord.Clear();
+        TestFillDataModel.GlobalShortCircuitFill = false;
         if (Directory.Exists(folder)) {
             Directory.Delete(folder, true);
         }

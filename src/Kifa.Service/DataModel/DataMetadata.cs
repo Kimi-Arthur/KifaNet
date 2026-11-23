@@ -35,10 +35,15 @@ public class DataMetadata {
     // Target language when this instance is a sidecar translation overlay or translated view.
     public Language? Translated { get; set; }
 
+    // Non-fatal parser/fill errors encountered during Fill, in encounter order (omitted when empty).
+    public List<string>? FillErrors { get; set; }
+
+    public bool ShouldSerializeFillErrors() => FillErrors != null && FillErrors.Count > 0;
+
     public bool ShouldSerialize()
         => ShouldSerializeLinking() || Status != DataStatus.OK || Version != null ||
            ShouldSerializeLastRefreshed() || Overrides.Count > 0 ||
-           ShouldSerializeTranslations() || Translated != null;
+           ShouldSerializeTranslations() || Translated != null || ShouldSerializeFillErrors();
 }
 
 public class LinkingMetadata {
