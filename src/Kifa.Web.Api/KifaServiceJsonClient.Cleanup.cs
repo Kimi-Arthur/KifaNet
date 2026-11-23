@@ -12,7 +12,7 @@ public class FixOptions {
 }
 
 public partial class KifaServiceJsonClient<TDataModel> {
-    public KifaActionResult FixVirtualLinks(FixOptions? options) {
+    public KifaActionResult FixLinks(FixOptions? options) {
         var properties =
             typeof(TDataModel).GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
@@ -29,11 +29,11 @@ public partial class KifaServiceJsonClient<TDataModel> {
 
             overallResult.Add(item.Id, KifaActionResult.FromAction(() => {
                 try {
-                    WriteTarget(item, checkAllVirtualLinks: true);
-                } catch (VirtualItemAlreadyLinkedException ex) {
+                    WriteTarget(item, checkAllLinks: true);
+                } catch (VirtualLinkAlreadyExistsException ex) {
                     Logger.Debug(ex,
                         $"Item {item.Id} ({item.RealId})'s virtual link is already linked.");
-                    var virtualLinks = item.GetVirtualItems();
+                    var virtualLinks = item.GetVirtualLinks();
                     var targetItem = virtualLinks.Select(v => Get(v))
                         .FirstOrDefault(v => v != null).Checked();
                     foreach (var virtualLink in virtualLinks) {
@@ -103,11 +103,11 @@ public partial class KifaServiceJsonClient<TDataModel> {
                             continue;
                         }
 
-                        throw new VirtualItemAlreadyLinkedException(
+                        throw new VirtualLinkAlreadyExistsException(
                             $"{item.RealId} and {targetItem.RealId} have conflicting values for {property.Name}: {newValue} vs {oldValue}");
                     }
 
-                    WriteTarget(targetItem, checkAllVirtualLinks: true);
+                    WriteTarget(targetItem, checkAllLinks: true);
 
                     Write(new TDataModel {
                         Id = item.Id,

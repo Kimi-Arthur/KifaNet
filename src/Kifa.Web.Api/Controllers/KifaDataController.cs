@@ -87,7 +87,7 @@ public class KifaDataController<TDataModel, TServiceClient> : ControllerBase
     [HttpGet("$fix")]
     [HttpPost("$fix")]
     public KifaApiActionResult Fix([FromBody] FixOptions? options)
-        => Client.FixVirtualLinks(options);
+        => Client.FixLinks(options);
 }
 
 public class KifaApiActionResult : IConvertToActionResult {

@@ -48,7 +48,7 @@ public class TestDataModelWithVirtualLinks : DataModel, WithModelId<TestDataMode
         throw new NoNeedToFillException();
     }
 
-    public override SortedSet<string> GetVirtualItems()
+    public override SortedSet<string> GetVirtualLinks()
         => Data == null
             ? new SortedSet<string>()
             : new SortedSet<string> {
@@ -137,6 +137,7 @@ public class LinkTests : IDisposable {
 
         var actionResult = client.Delete("/$/very good data");
         actionResult.Status.Should().Be(KifaActionStatus.BadRequest);
+        actionResult.Message.Should().Contain(id);
 
         var data = client.Get(id);
         data.Id.Should().NotBeNull();
@@ -305,8 +306,8 @@ public class LinkTests : IDisposable {
     }
 
     [Fact]
-    public void FixVirtualLinksTest() {
-        var id = nameof(FixVirtualLinksTest);
+    public void FixLinksTest() {
+        var id = nameof(FixLinksTest);
         var rawPath = $"{folder}/link_tests/{id}.json";
         Directory.CreateDirectory(Path.GetDirectoryName(rawPath)!);
         File.WriteAllText(rawPath, new TestDataModelWithVirtualLinks {
@@ -318,7 +319,7 @@ public class LinkTests : IDisposable {
         var rawInitial = client.Get(id);
         rawInitial.Metadata?.Linking?.VirtualLinks.Should().BeNull();
 
-        var result = client.FixVirtualLinks(new FixOptions());
+        var result = client.FixLinks(new FixOptions());
         result.Status.Should().Be(KifaActionStatus.OK);
 
         var virtualItem = client.Get("/$/raw data");
@@ -330,8 +331,8 @@ public class LinkTests : IDisposable {
     }
 
     [Fact]
-    public void FixVirtualLinksRecreatesMissingVirtualLinkTest() {
-        var id = nameof(FixVirtualLinksRecreatesMissingVirtualLinkTest);
+    public void FixLinksRecreatesMissingVirtualLinkTest() {
+        var id = nameof(FixLinksRecreatesMissingVirtualLinkTest);
         client.Set(new TestDataModelWithVirtualLinks {
             Id = id,
             Data = "raw data"
@@ -342,7 +343,7 @@ public class LinkTests : IDisposable {
         File.Delete(virtualPath);
         File.Exists(virtualPath).Should().BeFalse();
 
-        var result = client.FixVirtualLinks(new FixOptions());
+        var result = client.FixLinks(new FixOptions());
         result.Status.Should().Be(KifaActionStatus.OK);
 
         File.Exists(virtualPath).Should().BeTrue();
@@ -352,9 +353,9 @@ public class LinkTests : IDisposable {
     }
 
     [Fact]
-    public void FixVirtualLinksDetectsCollisionAndFailsOnConflictingPropertiesTest() {
-        var id1 = $"{nameof(FixVirtualLinksDetectsCollisionAndFailsOnConflictingPropertiesTest)}_1";
-        var id2 = $"{nameof(FixVirtualLinksDetectsCollisionAndFailsOnConflictingPropertiesTest)}_2";
+    public void FixLinksDetectsCollisionAndFailsOnConflictingPropertiesTest() {
+        var id1 = $"{nameof(FixLinksDetectsCollisionAndFailsOnConflictingPropertiesTest)}_1";
+        var id2 = $"{nameof(FixLinksDetectsCollisionAndFailsOnConflictingPropertiesTest)}_2";
 
         // Item 1 set first, creates virtual link
         client.Set(new TestDataModelWithVirtualLinks {
@@ -376,7 +377,7 @@ public class LinkTests : IDisposable {
             }
         }.ToJson());
 
-        var result = client.FixVirtualLinks(new FixOptions());
+        var result = client.FixLinks(new FixOptions());
         result.Status.Should().Be(KifaActionStatus.Error);
 
         var batchResult = result as KifaBatchActionResult;
@@ -389,9 +390,9 @@ public class LinkTests : IDisposable {
     }
 
     [Fact]
-    public void FixVirtualLinksMergesItemsSuccessfullyWhenFieldsToMergeMatchesTest() {
-        var id1 = $"{nameof(FixVirtualLinksMergesItemsSuccessfullyWhenFieldsToMergeMatchesTest)}_1";
-        var id2 = $"{nameof(FixVirtualLinksMergesItemsSuccessfullyWhenFieldsToMergeMatchesTest)}_2";
+    public void FixLinksMergesItemsSuccessfullyWhenFieldsToMergeMatchesTest() {
+        var id1 = $"{nameof(FixLinksMergesItemsSuccessfullyWhenFieldsToMergeMatchesTest)}_1";
+        var id2 = $"{nameof(FixLinksMergesItemsSuccessfullyWhenFieldsToMergeMatchesTest)}_2";
 
         client.Set(new TestDataModelWithVirtualLinks {
             Id = id1,
@@ -415,7 +416,7 @@ public class LinkTests : IDisposable {
             }
         }.ToJson());
 
-        var result = client.FixVirtualLinks(new FixOptions {
+        var result = client.FixLinks(new FixOptions {
             FieldsToMerge = ["ExtraDict"]
         });
         result.Status.Should().Be(KifaActionStatus.OK);
@@ -445,13 +446,13 @@ public class LinkTests : IDisposable {
             var res = client.Set(item);
             if (res.Status == KifaActionStatus.OK) {
                 Interlocked.Increment(ref successCount);
-            } else if (res.Message?.Contains(nameof(VirtualItemAlreadyLinkedException)) == true) {
+            } else if (res.Message?.Contains(nameof(VirtualLinkAlreadyExistsException)) == true) {
                 Interlocked.Increment(ref conflictCount);
             }
         });
 
         // Exactly 2 items (one for shared_virtual_item_0, one for shared_virtual_item_1) should succeed
-        // and 8 items should fail cleanly with VirtualItemAlreadyLinkedException due to locking.
+        // and 8 items should fail cleanly with VirtualLinkAlreadyExistsException due to locking.
         successCount.Should().Be(2);
         conflictCount.Should().Be(8);
     }

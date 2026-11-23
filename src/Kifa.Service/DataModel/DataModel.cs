@@ -117,7 +117,7 @@ public abstract class DataModel : IEquatable<DataModel> {
 
     public void Fill() => Fill(new FillContext());
 
-    public virtual SortedSet<string> GetVirtualItems() => new();
+    public virtual SortedSet<string> GetVirtualLinks() => new();
     public bool IsVirtualItem() => Id.StartsWith(VirtualItemPrefix);
 
     public void ClearFillErrors() {

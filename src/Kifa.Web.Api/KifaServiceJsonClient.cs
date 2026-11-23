@@ -193,7 +193,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
 
             // If `id` is a link (real or virtual), release `lock(id)` before locking `targetId` so
             // `Fill()` always runs with the canonical target ID and never reverses
-            // `WriteVirtualItems`'s `target -> virtualLink` lock order. Retry if the link changes
+            // `WriteVirtualLinks`'s `target -> virtualLink` lock order. Retry if the link changes
             // concurrently while switching locks.
             TDataModel? data;
             while (true) {
@@ -455,9 +455,9 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         });
     }
 
-    void WriteVirtualItems(TDataModel data, SortedSet<string> originalVirtualLinks,
+    void WriteVirtualLinks(TDataModel data, SortedSet<string> originalVirtualLinks,
         bool checkAllVirtualLinks = false) {
-        var virtualLinks = data.GetVirtualItems();
+        var virtualLinks = data.GetVirtualLinks();
         if (virtualLinks.Count == 0 && originalVirtualLinks.Count == 0) {
             return;
         }
@@ -475,7 +475,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 .Select(item => (Item: item, Target: Read(item)?.Metadata?.Linking?.Target))
                 .Where(item => item.Target != null && item.Target != data.RealId).ToList();
             if (alreadyLinkedItems.Count > 0) {
-                throw new VirtualItemAlreadyLinkedException(
+                throw new VirtualLinkAlreadyExistsException(
                     $"Some virtual links already exist, but not for {data.RealId}: {alreadyLinkedItems.Select(item => $"{item.Item} => {item.Target}").JoinBy(", ")}");
             }
 
@@ -537,7 +537,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         return KifaActionResult.FromAction(() => {
             // If `data.Id` is a link (real or virtual), release `lock(data.Id)` before locking
             // `targetId` so `Fill()` runs with the canonical target ID and never reverses
-            // `WriteVirtualItems`'s `target -> virtualLink` lock order.
+            // `WriteVirtualLinks`'s `target -> virtualLink` lock order.
             while (true) {
                 string targetId;
                 using (AcquireLock(data.Id)) {
@@ -616,7 +616,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 if (rawData != expectedRawData) {
                     Logger.Info(
                         $"Rewriting {ModelId}/{data.RealId} as its JSON layout on disk did not match the expected structure.");
-                    WriteTarget(data);
+                    WriteTarget(data, checkAllLinks: true);
                 }
             }
         }
@@ -703,7 +703,8 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             if (item.IsVirtualItem()) {
                 return LogAndReturn(new KifaActionResult {
                     Status = KifaActionStatus.BadRequest,
-                    Message = $"Cannot delete virtual item {ModelId}/{id}."
+                    Message =
+                        $"Cannot delete virtual link {ModelId}/{id}. Delete target {ModelId}/{item.RealId} instead."
                 });
             }
 
@@ -880,11 +881,11 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     }
 
     void WriteTarget(TDataModel data, SortedSet<string>? originalVirtualLinks = null,
-        bool checkAllVirtualLinks = false) {
-        WriteVirtualItems(data,
+        bool checkAllLinks = false) {
+        WriteVirtualLinks(data,
             originalVirtualLinks ??
             data.Metadata?.Linking?.VirtualLinks ?? new SortedSet<string>(),
-            checkAllVirtualLinks);
+            checkAllLinks);
         WriteExternalProperties(data);
         WriteRaw($"{ToTargetDiskJson(data)}\n", data.RealId);
     }

@@ -53,7 +53,7 @@ public class YouTubeUploader : DataModel, WithModelId<YouTubeUploader> {
     public string GetUploaderFolder()
         => $"{Name.Checked().NormalizeFileName().Choppable()}.{Id}.youtube";
 
-    public override SortedSet<string> GetVirtualItems() {
+    public override SortedSet<string> GetVirtualLinks() {
         var items = new SortedSet<string>();
 
         if (!string.IsNullOrEmpty(ChannelId)) {

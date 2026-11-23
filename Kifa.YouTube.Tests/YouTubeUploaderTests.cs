@@ -26,7 +26,7 @@ public class YouTubeUploaderTests {
         uploader.RefreshInterval.Should().Be(TimeSpan.FromDays(30));
         uploader.GetUploaderFolder().NormalizeFilePath()
             .Should().Be("Test Channel.@TestChannel.youtube");
-        uploader.GetVirtualItems().Should().BeEquivalentTo([
+        uploader.GetVirtualLinks().Should().BeEquivalentTo([
             "/$/UC1234567890abcdefghij",
             "/$/TestChannel",
             "/$/Test Channel",

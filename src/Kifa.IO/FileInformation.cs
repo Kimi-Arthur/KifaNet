@@ -78,7 +78,7 @@ public class FileInformation : DataModel, WithModelId<FileInformation> {
     public static string GetMd5VirtualId(string md5)
         => $"{VirtualItemPrefix}md5/{md5[..2]}/{md5[2..4]}/{md5}";
 
-    public override SortedSet<string> GetVirtualItems() {
+    public override SortedSet<string> GetVirtualLinks() {
         var items = new SortedSet<string>();
         if (Sha256 != null) {
             items.Add(GetSha256VirtualId(Sha256));

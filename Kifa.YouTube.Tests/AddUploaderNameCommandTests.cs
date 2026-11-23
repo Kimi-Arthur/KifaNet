@@ -39,7 +39,7 @@ public class AddUploaderNameCommandTests : IDisposable {
 
         public override KifaActionResult Set(YouTubeUploader item) {
             data[item.Id!] = item.Clone();
-            foreach (var virtualItem in item.GetVirtualItems()) {
+            foreach (var virtualItem in item.GetVirtualLinks()) {
                 data[virtualItem] = new YouTubeUploader {
                     Id = virtualItem,
                     Metadata = new DataMetadata {

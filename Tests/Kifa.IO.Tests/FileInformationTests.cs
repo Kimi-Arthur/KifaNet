@@ -124,22 +124,22 @@ public class FileInformationTests {
     }
 
     [Fact]
-    public void GetVirtualItemsTest() {
+    public void GetVirtualLinksTest() {
         var info = new FileInformation();
-        Assert.Empty(info.GetVirtualItems());
+        Assert.Empty(info.GetVirtualLinks());
 
         info.Sha256 = "8A863B145DC6E4ED7AC41C08F7536C476EBAC7509E028ED2B49F8BD5A3562B9F";
         Assert.Equal(["/$/sha256/8A/86/8A863B145DC6E4ED7AC41C08F7536C476EBAC7509E028ED2B49F8BD5A3562B9F"],
-            info.GetVirtualItems());
+            info.GetVirtualLinks());
 
         info.Md5 = "E1B849F9631FFC1829B2E31402373E3C";
         Assert.Equal([
             "/$/md5/E1/B8/E1B849F9631FFC1829B2E31402373E3C",
             "/$/sha256/8A/86/8A863B145DC6E4ED7AC41C08F7536C476EBAC7509E028ED2B49F8BD5A3562B9F"
-        ], info.GetVirtualItems());
+        ], info.GetVirtualLinks());
 
         info.Sha256 = null;
-        Assert.Equal(["/$/md5/E1/B8/E1B849F9631FFC1829B2E31402373E3C"], info.GetVirtualItems());
+        Assert.Equal(["/$/md5/E1/B8/E1B849F9631FFC1829B2E31402373E3C"], info.GetVirtualLinks());
     }
 
     [Fact]
