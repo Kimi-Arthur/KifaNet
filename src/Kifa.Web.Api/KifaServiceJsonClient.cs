@@ -456,47 +456,67 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     }
 
     void WriteVirtualLinks(TDataModel data, SortedSet<string> originalVirtualLinks,
-        bool checkAllVirtualLinks = false) {
+        bool checkAllLinks = false) {
         var virtualLinks = data.GetVirtualLinks();
         if (virtualLinks.Count == 0 && originalVirtualLinks.Count == 0) {
             return;
         }
 
+        if (virtualLinks.Contains(data.RealId)) {
+            throw new VirtualLinkAlreadyExistsException(
+                $"Virtual links for {data.RealId} cannot contain its own canonical ID.");
+        }
+
+        if (!TDataModel.HasFirstClassVirtualLinks) {
+            var directLinks = virtualLinks
+                .Where(item => !item.StartsWith(DataModel.VirtualLinkPrefix)).ToList();
+            if (directLinks.Count > 0) {
+                throw new InvalidOperationException(
+                    $"Model {ModelId} does not enable first-class virtual links and cannot use non-prefixed virtual links: {directLinks.JoinBy(", ")}. Set HasFirstClassVirtualLinks => true to allow them.");
+            }
+        }
+
         using (AcquireLocks(virtualLinks.Union(originalVirtualLinks))) {
+            var linksToCheck = checkAllLinks
+                ? virtualLinks.ToList()
+                : virtualLinks.Except(originalVirtualLinks).ToList();
+
+            var states = linksToCheck
+                .Select(item => (Item: item, Existing: Read(item)))
+                .ToList();
+
+            // Make sure each virtual link does not already exist as another item or link to another target.
+            var alreadyLinkedItems = states
+                .Where(item => item.Existing != null &&
+                               item.Existing.Metadata?.Linking?.Target != data.RealId)
+                .ToList();
+            if (alreadyLinkedItems.Count > 0) {
+                throw new VirtualLinkAlreadyExistsException(
+                    $"Some virtual links already exist, but not for {data.RealId}: {alreadyLinkedItems.Select(item => $"{item.Item} => {item.Existing?.RealId}").JoinBy(", ")}");
+            }
+
             var toRemoveLinks = originalVirtualLinks.Except(virtualLinks);
             toRemoveLinks.ForEach(Remove);
 
-            IEnumerable<string> linksToCheck = checkAllVirtualLinks
-                ? virtualLinks
-                : virtualLinks.Except(originalVirtualLinks);
-
-            // We should make sure each virtual link only links to one item.
-            var alreadyLinkedItems = linksToCheck
-                .Select(item => (Item: item, Target: Read(item)?.Metadata?.Linking?.Target))
-                .Where(item => item.Target != null && item.Target != data.RealId).ToList();
-            if (alreadyLinkedItems.Count > 0) {
-                throw new VirtualLinkAlreadyExistsException(
-                    $"Some virtual links already exist, but not for {data.RealId}: {alreadyLinkedItems.Select(item => $"{item.Item} => {item.Target}").JoinBy(", ")}");
-            }
-
-            var toWriteLinks = checkAllVirtualLinks
-                ? virtualLinks.Where(item => Read(item)?.Metadata?.Linking?.Target != data.RealId)
-                    .ToList()
-                : virtualLinks.Except(originalVirtualLinks).ToList();
-
-            toWriteLinks.ForEach(item => Write(new TDataModel {
-                Id = item,
-                Metadata = new DataMetadata {
-                    Linking = new LinkingMetadata {
-                        Target = data.RealId
-                    }
+            foreach (var (item, existing) in states) {
+                if (existing == null) {
+                    Write(new TDataModel {
+                        Id = item,
+                        Metadata = new DataMetadata {
+                            Linking = new LinkingMetadata {
+                                Target = data.RealId
+                            }
+                        }
+                    });
                 }
-            }));
+            }
 
             if (virtualLinks.Count > 0) {
                 data.Metadata ??= new DataMetadata();
                 data.Metadata.Linking ??= new LinkingMetadata();
                 data.Metadata.Linking.VirtualLinks = virtualLinks;
+            } else if (data.Metadata?.Linking != null) {
+                data.Metadata.Linking.VirtualLinks = null;
             }
         }
     }
@@ -711,7 +731,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             if (item.Metadata?.Linking != null) {
                 var linking = item.Metadata.Linking;
                 if (linking.Target == null) {
-                    if (linking.Links != null) {
+                    if (linking.Links is { Count: > 0 }) {
                         // It means there are still real items.
                         var nextItem = Retrieve(linking.Links!.First());
                         linking = nextItem!.Metadata!.Linking!;
@@ -760,6 +780,14 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     }
 
     public override KifaActionResult Link(string targetId, string linkId) {
+        if (TDataModel.HasFirstClassVirtualLinks) {
+            return LogAndReturn(new KifaActionResult {
+                Status = KifaActionStatus.BadRequest,
+                Message =
+                    $"Manual links are not allowed for {ModelId} because it uses first-class virtual links."
+            });
+        }
+
         if (targetId.TryParseTranslationId(out _, out _) ||
             linkId.TryParseTranslationId(out _, out _)) {
             return LogAndReturn(new KifaActionResult {

@@ -25,6 +25,8 @@ public class TestDataModelWithVirtualLinks : DataModel, WithModelId<TestDataMode
 
     public string? OtherProp { get; set; }
 
+    public List<string>? DirectVirtualLinks { get; set; }
+
     public List<Link<TestDataModelWithVirtualLinks>>? Peers { get; set; }
 
     public List<TestSubContainer>? SubItems { get; set; }
@@ -48,24 +50,62 @@ public class TestDataModelWithVirtualLinks : DataModel, WithModelId<TestDataMode
         throw new NoNeedToFillException();
     }
 
-    public override SortedSet<string> GetVirtualLinks()
-        => Data == null
-            ? new SortedSet<string>()
-            : new SortedSet<string> {
-                VirtualLinkPrefix + Data
-            };
+    public override SortedSet<string> GetVirtualLinks() {
+        var links = new SortedSet<string>();
+        if (Data != null) {
+            links.Add(VirtualLinkPrefix + Data);
+        }
+
+        if (DirectVirtualLinks != null) {
+            links.UnionWith(DirectVirtualLinks);
+        }
+
+        return links;
+    }
+}
+
+public class TestDataModelWithDirectVirtualLinks
+    : DataModel, WithModelId<TestDataModelWithDirectVirtualLinks> {
+    public static string ModelId => "direct_link_tests";
+
+    public static bool HasFirstClassVirtualLinks => true;
+
+    public static KifaServiceClient<TestDataModelWithDirectVirtualLinks> Client { get; set; } =
+        new KifaServiceRestClient<TestDataModelWithDirectVirtualLinks>();
+
+    public string? Data { get; set; }
+
+    public List<string>? DirectVirtualLinks { get; set; }
+
+    public override TimeSpan? RefreshInterval => RefreshIntervals.Infinity;
+
+    public override SortedSet<string> GetVirtualLinks() {
+        var links = new SortedSet<string>();
+        if (Data != null) {
+            links.Add(VirtualLinkPrefix + Data);
+        }
+
+        if (DirectVirtualLinks != null) {
+            links.UnionWith(DirectVirtualLinks);
+        }
+
+        return links;
+    }
 }
 
 public class LinkTests : IDisposable {
     readonly string folder;
     readonly KifaServiceJsonClient<TestDataModelWithVirtualLinks> client = new();
+    readonly KifaServiceJsonClient<TestDataModelWithDirectVirtualLinks> directClient = new();
 
     public LinkTests() {
         folder =
             $"{Path.GetTempPath()}/{nameof(LinkTest)}_{DateTime.UtcNow:yyyyMMddHHmmssfff}_{Guid.NewGuid():N}";
 
         client.DataFolder = folder;
+        directClient.DataFolder = folder;
         TestDataModelWithVirtualLinks.Client = client;
+        TestDataModelWithDirectVirtualLinks.Client = directClient;
     }
 
     [Fact]
@@ -623,6 +663,133 @@ public class LinkTests : IDisposable {
             LinkedFields = [""]
         });
         emptyField.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void DirectVirtualLinksAreFirstClassSkipExistingRemoveStaleAndRepairOnFixLinks() {
+        const string rootId = "direct_root";
+        directClient.Set(new TestDataModelWithDirectVirtualLinks {
+            Id = rootId,
+            Data = "root data",
+            DirectVirtualLinks = ["alias_a", "alias_b"]
+        }).Status.Should().Be(KifaActionStatus.OK);
+
+        var root = directClient.Get(rootId)!;
+        root.IsVirtualLink().Should().BeFalse();
+        root.Metadata!.Linking!.VirtualLinks.Should()
+            .BeEquivalentTo(["/$/root data", "alias_a", "alias_b"]);
+        root.Metadata.Linking.Links.Should().BeNull();
+
+        // Manual Link() is always rejected for types with HasFirstClassVirtualLinks => true.
+        var manualLinkResult = directClient.Link(rootId, "manual_alias");
+        manualLinkResult.Status.Should().Be(KifaActionStatus.BadRequest);
+        manualLinkResult.Message.Should().Contain("Manual links are not allowed");
+
+        // Non-/$/ virtual links resolve as first-class items and appear in List(), while /$/ stays hidden.
+        var aliasA = directClient.Get("alias_a")!;
+        aliasA.IsVirtualLink().Should().BeTrue();
+        aliasA.Id.Should().Be("alias_a");
+        aliasA.RealId.Should().Be(rootId);
+        aliasA.Data.Should().Be("root data");
+
+        var list = directClient.List();
+        list.Keys.Should().BeEquivalentTo([rootId, "alias_a", "alias_b"]);
+
+        // Remove alias_a file directly on disk; normal Update skips rewriting alias_a
+        // because it is already listed in Metadata.Linking.VirtualLinks, removes stale alias_b,
+        // and writes new alias_c.
+        var aliasAPath = $"{folder}/direct_link_tests/alias_a.json";
+        File.Delete(aliasAPath);
+        directClient.Update(new TestDataModelWithDirectVirtualLinks {
+            Id = rootId,
+            Data = "root data",
+            DirectVirtualLinks = ["alias_a", "alias_c"]
+        }).Status.Should().Be(KifaActionStatus.OK);
+
+        File.Exists(aliasAPath).Should().BeFalse();
+        directClient.Get("alias_b").Should().BeNull();
+        directClient.Get("alias_c")!.RealId.Should().Be(rootId);
+        directClient.Get(rootId)!.Metadata!.Linking!.VirtualLinks.Should()
+            .BeEquivalentTo(["/$/root data", "alias_a", "alias_c"]);
+
+        // Explicit repair via FixLinks recreates the missing file.
+        directClient.FixLinks(new FixOptions()).Status.Should().Be(KifaActionStatus.OK);
+        File.Exists(aliasAPath).Should().BeTrue();
+        directClient.Get("alias_a")!.RealId.Should().Be(rootId);
+
+        // Clearing DirectVirtualLinks removes all stale direct virtual links.
+        directClient.Set(new TestDataModelWithDirectVirtualLinks {
+            Id = rootId,
+            Data = "root data"
+        }).Status.Should().Be(KifaActionStatus.OK);
+        directClient.Get("alias_a").Should().BeNull();
+        directClient.Get("alias_c").Should().BeNull();
+        directClient.Get(rootId)!.Metadata!.Linking!.VirtualLinks.Should()
+            .BeEquivalentTo(["/$/root data"]);
+    }
+
+    [Fact]
+    public void DirectVirtualLinksThrowOnStandaloneConflictOrSelfCanonicalIdWithoutPartialWrites() {
+        // Types with HasFirstClassVirtualLinks => false reject non-/$/ virtual links.
+        var disallowedResult = client.Set(new TestDataModelWithVirtualLinks {
+            Id = "disallowed_root",
+            DirectVirtualLinks = ["not_prefixed"]
+        });
+        disallowedResult.Status.Should().Be(KifaActionStatus.Error);
+        disallowedResult.Message.Should().Contain("HasFirstClassVirtualLinks");
+
+        directClient.Set(new TestDataModelWithDirectVirtualLinks {
+            Id = "existing_item",
+            Data = "keep me"
+        }).Status.Should().Be(KifaActionStatus.OK);
+
+        var result = directClient.Set(new TestDataModelWithDirectVirtualLinks {
+            Id = "root_conflict",
+            Data = "new root",
+            DirectVirtualLinks = ["free_alias", "existing_item"]
+        });
+        result.Status.Should().Be(KifaActionStatus.Error);
+        result.Message.Should().Contain(nameof(VirtualLinkAlreadyExistsException))
+            .And.Contain("existing_item => existing_item");
+
+        // Atomic: neither existing_item, free_alias, nor root_conflict should be modified/written.
+        var existing = directClient.Get("existing_item")!;
+        existing.RealId.Should().Be("existing_item");
+        existing.Data.Should().Be("keep me");
+        directClient.Get("free_alias").Should().BeNull();
+        directClient.Get("root_conflict").Should().BeNull();
+
+        // Virtual links must not include the canonical item's own ID.
+        var selfResult = directClient.Set(new TestDataModelWithDirectVirtualLinks {
+            Id = "self_root",
+            Data = "self data",
+            DirectVirtualLinks = ["self_root", "other_alias"]
+        });
+        selfResult.Status.Should().Be(KifaActionStatus.Error);
+        selfResult.Message.Should().Contain(nameof(VirtualLinkAlreadyExistsException))
+            .And.Contain("self_root")
+            .And.Contain("canonical ID");
+        directClient.Get("self_root").Should().BeNull();
+        directClient.Get("other_alias").Should().BeNull();
+    }
+
+    [Fact]
+    public void DeleteDirectVirtualLinkRejectedAndDeletingTargetRemovesIt() {
+        directClient.Set(new TestDataModelWithDirectVirtualLinks {
+            Id = "root_del",
+            Data = "del data",
+            DirectVirtualLinks = ["del_alias"]
+        }).Status.Should().Be(KifaActionStatus.OK);
+
+        var deleteLinkResult = directClient.Delete("del_alias");
+        deleteLinkResult.Status.Should().Be(KifaActionStatus.BadRequest);
+        deleteLinkResult.Message.Should().Contain("root_del");
+        directClient.Get("del_alias")!.RealId.Should().Be("root_del");
+
+        directClient.Delete("root_del").Status.Should().Be(KifaActionStatus.OK);
+        directClient.Get("root_del").Should().BeNull();
+        directClient.Get("del_alias").Should().BeNull();
+        directClient.Get("/$/del data").Should().BeNull();
     }
 
     public void Dispose() {

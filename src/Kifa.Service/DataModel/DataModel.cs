@@ -13,6 +13,10 @@ public interface WithModelId<T> where T : DataModel, WithModelId<T> {
     // Default translation language of the base model file (e.g., Language.English for GermanWord).
     public static virtual Language? DefaultLanguage => null;
 
+    // When true, VirtualLinks may use first-class (non-/$/-prefixed) IDs owned by the canonical
+    // target, and manual Link() is disabled for this model.
+    public static virtual bool HasFirstClassVirtualLinks => false;
+
     // This is a useful fallback used in Link.Data.get.
     public static virtual KifaServiceClient<T> Client { get; set; } =
         new KifaServiceRestClient<T>();
@@ -118,7 +122,7 @@ public abstract class DataModel : IEquatable<DataModel> {
     public void Fill() => Fill(new FillContext());
 
     public virtual SortedSet<string> GetVirtualLinks() => new();
-    public bool IsVirtualLink() => Id.StartsWith(VirtualLinkPrefix);
+    public bool IsVirtualLink() => Metadata?.Linking?.VirtualLinks?.Contains(Id) == true;
 
     public void ClearFillErrors() {
         if (Metadata?.FillErrors != null) {
