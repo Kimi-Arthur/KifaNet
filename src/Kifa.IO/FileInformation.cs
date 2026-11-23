@@ -73,10 +73,10 @@ public class FileInformation : DataModel, WithModelId<FileInformation> {
     public SortedDictionary<string, DateTime?> Locations { get; set; } = new();
 
     public static string GetSha256VirtualId(string sha256)
-        => $"{VirtualItemPrefix}sha256/{sha256[..2]}/{sha256[2..4]}/{sha256}";
+        => $"{VirtualLinkPrefix}sha256/{sha256[..2]}/{sha256[2..4]}/{sha256}";
 
     public static string GetMd5VirtualId(string md5)
-        => $"{VirtualItemPrefix}md5/{md5[..2]}/{md5[2..4]}/{md5}";
+        => $"{VirtualLinkPrefix}md5/{md5[..2]}/{md5[2..4]}/{md5}";
 
     public override SortedSet<string> GetVirtualLinks() {
         var items = new SortedSet<string>();
@@ -107,8 +107,8 @@ public class FileInformation : DataModel, WithModelId<FileInformation> {
         }
 
         var rawId = fileMatch.Groups[1].Value;
-        if (rawId.StartsWith(VirtualItemPrefix)) {
-            var subPath = rawId[VirtualItemPrefix.Length..];
+        if (rawId.StartsWith(VirtualLinkPrefix)) {
+            var subPath = rawId[VirtualLinkPrefix.Length..];
             if (subPath.Length == 64 && !subPath.Contains('/')) {
                 return GetSha256VirtualId(subPath);
             }

@@ -347,7 +347,7 @@ public class RetrieveCommandTests : IDisposable {
             => new(data);
 
         public override FileInformation? Get(string id, KifaDataOptions? options = null) {
-            if (id.StartsWith(FileInformation.VirtualItemPrefix + "md5/")) {
+            if (id.StartsWith(FileInformation.VirtualLinkPrefix + "md5/")) {
                 var md5 = id.Split('/').Last();
                 var found = data.Values.FirstOrDefault(f
                     => string.Equals(f.Md5, md5, StringComparison.OrdinalIgnoreCase));

@@ -52,7 +52,7 @@ public class TestDataModelWithVirtualLinks : DataModel, WithModelId<TestDataMode
         => Data == null
             ? new SortedSet<string>()
             : new SortedSet<string> {
-                VirtualItemPrefix + Data
+                VirtualLinkPrefix + Data
             };
 }
 

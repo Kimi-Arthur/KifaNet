@@ -55,7 +55,7 @@ public interface WithModelId<T> where T : DataModel, WithModelId<T> {
 
 // When used, specify a public const string field named ModelId.
 public abstract class DataModel : IEquatable<DataModel> {
-    public const string VirtualItemPrefix = "/$/";
+    public const string VirtualLinkPrefix = "/$/";
 
     [YamlMember(Order = -1)]
     [JsonProperty(Order = -2)]
@@ -118,7 +118,7 @@ public abstract class DataModel : IEquatable<DataModel> {
     public void Fill() => Fill(new FillContext());
 
     public virtual SortedSet<string> GetVirtualLinks() => new();
-    public bool IsVirtualItem() => Id.StartsWith(VirtualItemPrefix);
+    public bool IsVirtualLink() => Id.StartsWith(VirtualLinkPrefix);
 
     public void ClearFillErrors() {
         if (Metadata?.FillErrors != null) {

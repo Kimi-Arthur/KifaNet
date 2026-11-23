@@ -125,7 +125,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         // No data is gonna change. With no locking, the worst case is data not consistent.
         var prefix = $"{DataFolder}/{ModelId}";
         var subFolder = $"{prefix}/{folder.Trim('/')}";
-        var virtualItemPrefix = $"{prefix}{DataModel.VirtualItemPrefix}";
+        var virtualItemPrefix = $"{prefix}{DataModel.VirtualLinkPrefix}";
         if (File.Exists(subFolder + ".json")) {
             Logger.Trace($"{subFolder} is actually a file. Return one element instead.");
             var data = Get(subFolder[prefix.Length..], options);
@@ -154,7 +154,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             .Where(p => folder != "" || !p.FullName.StartsWith(virtualItemPrefix)).AsParallel()
             .Select(i => Read(i.FullName[prefix.Length..^5], checkId: false,
                 language: options?.Translated)).ExceptNull()
-            .Where(i => folder != "" || !i.Id.StartsWith(DataModel.VirtualItemPrefix))
+            .Where(i => folder != "" || !i.Id.StartsWith(DataModel.VirtualLinkPrefix))
             .Where(i => i.Metadata?.Status != DataStatus.NotFound)
             .ToDictionary(i => i.Id, i => i);
 
@@ -700,7 +700,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 });
             }
 
-            if (item.IsVirtualItem()) {
+            if (item.IsVirtualLink()) {
                 return LogAndReturn(new KifaActionResult {
                     Status = KifaActionStatus.BadRequest,
                     Message =

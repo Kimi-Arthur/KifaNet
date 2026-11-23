@@ -25,8 +25,8 @@ public class YouTubeUploader : DataModel, WithModelId<YouTubeUploader> {
             return uploader;
         }
 
-        if (!id.StartsWith(VirtualItemPrefix)) {
-            uploader = Client.Get(VirtualItemPrefix + id, options);
+        if (!id.StartsWith(VirtualLinkPrefix)) {
+            uploader = Client.Get(VirtualLinkPrefix + id, options);
             if (uploader != null) {
                 uploader.Id = uploader.RealId;
                 return uploader;
@@ -57,12 +57,12 @@ public class YouTubeUploader : DataModel, WithModelId<YouTubeUploader> {
         var items = new SortedSet<string>();
 
         if (!string.IsNullOrEmpty(ChannelId)) {
-            items.Add(VirtualItemPrefix + ChannelId);
+            items.Add(VirtualLinkPrefix + ChannelId);
         }
 
         var bareHandle = Id?.TrimStart('@');
         if (!string.IsNullOrEmpty(bareHandle) && bareHandle != Id) {
-            items.Add(VirtualItemPrefix + bareHandle);
+            items.Add(VirtualLinkPrefix + bareHandle);
         }
 
         var allNames = new HashSet<string>(NameAliases);
@@ -72,7 +72,7 @@ public class YouTubeUploader : DataModel, WithModelId<YouTubeUploader> {
 
         foreach (var name in allNames) {
             if (!string.IsNullOrEmpty(name) && name != Id && name != bareHandle && name != ChannelId) {
-                items.Add(VirtualItemPrefix + name);
+                items.Add(VirtualLinkPrefix + name);
             }
         }
 

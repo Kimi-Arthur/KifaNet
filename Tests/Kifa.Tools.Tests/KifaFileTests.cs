@@ -992,7 +992,7 @@ public class KifaFileTests : IDisposable {
                 return info.Clone();
             }
 
-            if (id.StartsWith(FileInformation.VirtualItemPrefix + "md5/")) {
+            if (id.StartsWith(FileInformation.VirtualLinkPrefix + "md5/")) {
                 var md5 = id.Split('/').Last();
                 var found = data.Values.FirstOrDefault(f =>
                     string.Equals(f.Md5, md5, StringComparison.OrdinalIgnoreCase));
@@ -1009,7 +1009,7 @@ public class KifaFileTests : IDisposable {
                 return clone;
             }
 
-            if (id.StartsWith(FileInformation.VirtualItemPrefix + "sha256/")) {
+            if (id.StartsWith(FileInformation.VirtualLinkPrefix + "sha256/")) {
                 var sha256 = id.Split('/').Last();
                 var found = data.Values.FirstOrDefault(f =>
                     string.Equals(f.Sha256, sha256, StringComparison.OrdinalIgnoreCase));
