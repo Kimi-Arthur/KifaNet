@@ -73,11 +73,32 @@ public class TestDataModelWithDirectVirtualLinks
     public static KifaServiceClient<TestDataModelWithDirectVirtualLinks> Client { get; set; } =
         new KifaServiceRestClient<TestDataModelWithDirectVirtualLinks>();
 
+    public static Dictionary<string, (string TargetId, string? Input)> Redirects { get; } = new();
+    public static int RemoteFetchCount { get; set; }
+
     public string? Data { get; set; }
 
     public List<string>? DirectVirtualLinks { get; set; }
 
     public override TimeSpan? RefreshInterval => RefreshIntervals.Infinity;
+
+    public override void Fill(FillContext context) {
+        if (!string.IsNullOrEmpty(context.Input)) {
+            var parts = context.Input.Split('|');
+            Data = parts[0];
+            DirectVirtualLinks = parts.Length > 1 && parts[1].Length > 0
+                ? parts[1].Split(',').ToList()
+                : null;
+            return;
+        }
+
+        if (RealId != null && Redirects.TryGetValue(RealId, out var redirect)) {
+            RemoteFetchCount++;
+            throw new DataIsLinkedException(redirect.TargetId, redirect.Input);
+        }
+
+        throw new NoNeedToFillException();
+    }
 
     public override SortedSet<string> GetVirtualLinks() {
         var links = new SortedSet<string>();
@@ -790,6 +811,39 @@ public class LinkTests : IDisposable {
         directClient.Get("root_del").Should().BeNull();
         directClient.Get("del_alias").Should().BeNull();
         directClient.Get("/$/del data").Should().BeNull();
+    }
+
+    [Fact]
+    public void DataIsLinkedExceptionPipesInputAndResolvesFirstClassVirtualLinkOnFirstGet() {
+        TestDataModelWithDirectVirtualLinks.Redirects.Clear();
+        TestDataModelWithDirectVirtualLinks.RemoteFetchCount = 0;
+        try {
+            TestDataModelWithDirectVirtualLinks.Redirects["alias_2"] =
+                ("canonical_root", "piped_data|alias_1,alias_2");
+
+            // First Get("alias_2") before canonical_root exists pipes Input to canonical_root
+            // (no second remote fetch), writes virtual links, and returns alias_2 immediately.
+            var alias2 = directClient.Get("alias_2");
+            alias2.Should().NotBeNull();
+            alias2!.Id.Should().Be("alias_2");
+            alias2.RealId.Should().Be("canonical_root");
+            alias2.Data.Should().Be("piped_data");
+            alias2.IsVirtualLink().Should().BeTrue();
+            TestDataModelWithDirectVirtualLinks.RemoteFetchCount.Should().Be(1);
+
+            var alias1 = directClient.Get("alias_1");
+            alias1.Should().NotBeNull();
+            alias1!.RealId.Should().Be("canonical_root");
+            alias1.IsVirtualLink().Should().BeTrue();
+
+            // Redirect for an ID not present in canonical_root's VirtualLinks must not create a manual link.
+            TestDataModelWithDirectVirtualLinks.Redirects["stray_alias"] = ("canonical_root", null);
+            directClient.Get("stray_alias").Should().BeNull();
+            directClient.Get("canonical_root")!.Metadata!.Linking!.Links.Should().BeNull();
+        } finally {
+            TestDataModelWithDirectVirtualLinks.Redirects.Clear();
+            TestDataModelWithDirectVirtualLinks.RemoteFetchCount = 0;
+        }
     }
 
     public void Dispose() {

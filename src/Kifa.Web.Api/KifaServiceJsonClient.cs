@@ -318,15 +318,22 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                     return false;
                 }
 
-                Get(ex.TargetId, options);
-                if (Link(ex.TargetId, data.Id).Status != KifaActionStatus.OK) {
+                var targetOptions = options;
+                if (ex.Input != null) {
+                    targetOptions = options?.Clone() ?? new KifaDataOptions();
+                    targetOptions.FillInput = ex.Input;
+                }
+
+                Get(ex.TargetId, targetOptions);
+                if (!TDataModel.HasFirstClassVirtualLinks &&
+                    Link(ex.TargetId, data.Id).Status != KifaActionStatus.OK) {
                     data = originalContent;
                     return false;
                 }
 
                 data = Retrieve(data.Id);
 
-                // New data is written in Link. No need to save more.
+                // New data is written in Get/Link. No need to save more.
                 return false;
             } catch (NoNeedToFillException) {
                 data = originalContent;

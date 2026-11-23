@@ -21,9 +21,12 @@ public class NoNeedToFillException : DataFillException {
 // Thrown when the target data is linked/aliased to another ID.
 public class DataIsLinkedException : DataFillException {
     public string TargetId { get; }
+    public string? Input { get; }
 
-    public DataIsLinkedException(string targetId) : base($"Data is linked to {targetId}.") {
+    public DataIsLinkedException(string targetId, string? input = null)
+        : base($"Data is linked to {targetId}.") {
         TargetId = targetId;
+        Input = input;
     }
 }
 
