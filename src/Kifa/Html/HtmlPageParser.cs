@@ -7,18 +7,25 @@ using AngleSharp.Dom;
 namespace Kifa.Html;
 
 public class HtmlPageParser {
-    static readonly Regex SimpleIdRegex = new(@"^[A-Za-z][A-Za-z0-9_-]*$", RegexOptions.Compiled);
     static readonly Regex WhitespaceRegex = new(@"\s+", RegexOptions.Compiled);
 
     readonly HashSet<IElement> consumed = new(ReferenceEqualityComparer.Instance);
     readonly HashSet<IElement> consumedOwnText = new(ReferenceEqualityComparer.Instance);
+    readonly HashSet<string> anchorClasses;
+
+    Dictionary<string, int>? idCounts;
+    Dictionary<(string Tag, string ClassAttr), List<IElement>>? anchorGroups;
 
     public IDocument Document { get; }
 
-    public HtmlPageParser(string html) : this(html.GetDocument()) { }
+    public HtmlPageParser(string html, IEnumerable<string>? anchorClasses = null)
+        : this(html.GetDocument(), anchorClasses) { }
 
-    public HtmlPageParser(IDocument document) {
+    public HtmlPageParser(IDocument document, IEnumerable<string>? anchorClasses = null) {
         Document = document;
+        this.anchorClasses = anchorClasses != null
+            ? new HashSet<string>(anchorClasses, StringComparer.Ordinal)
+            : [];
     }
 
     public T? Consume<T>(T? element) where T : class, IElement {
@@ -112,16 +119,33 @@ public class HtmlPageParser {
         return string.IsNullOrEmpty(classes) ? tag : $"{tag}.{classes}";
     }
 
-    public static string GetXPath(IElement el) {
+    public string GetXPath(IElement el) {
+        EnsureXPathIndex();
+
         var segments = new List<string>();
         var current = el;
         while (current != null) {
             var id = current.Id;
-            if (!string.IsNullOrEmpty(id) && SimpleIdRegex.IsMatch(id) &&
-                current.Owner?.QuerySelectorAll($"[id='{id}']").Length == 1) {
+            if (!string.IsNullOrEmpty(id) && idCounts != null &&
+                idCounts.TryGetValue(id, out var idCount) && idCount == 1) {
                 segments.Add($"//*[@id='{id}']");
                 segments.Reverse();
                 return string.Join("/", segments);
+            }
+
+            if (anchorClasses.Count > 0 && anchorGroups != null) {
+                var classAttr = current.GetAttribute("class");
+                if (!string.IsNullOrEmpty(classAttr) &&
+                    anchorGroups.TryGetValue((current.TagName, classAttr), out var group)) {
+                    var idx = group.IndexOf(current);
+                    if (idx >= 0) {
+                        var tagName = current.TagName.ToLowerInvariant();
+                        var expr = $"//{tagName}[@class='{classAttr}']";
+                        segments.Add(group.Count == 1 ? expr : $"({expr})[{idx + 1}]");
+                        segments.Reverse();
+                        return string.Join("/", segments);
+                    }
+                }
             }
 
             var tag = current.TagName.ToLowerInvariant();
@@ -143,6 +167,40 @@ public class HtmlPageParser {
         segments.Reverse();
         return "/" + string.Join("/", segments);
     }
+
+    void EnsureXPathIndex() {
+        if (idCounts != null) {
+            return;
+        }
+
+        idCounts = new Dictionary<string, int>(StringComparer.Ordinal);
+        if (anchorClasses.Count > 0) {
+            anchorGroups = [];
+        }
+
+        foreach (var node in Document.All) {
+            var id = node.Id;
+            if (IsSafeXPathId(id)) {
+                idCounts[id!] = idCounts.GetValueOrDefault(id!) + 1;
+            }
+
+            if (anchorGroups != null && node.ClassList.Any(anchorClasses.Contains)) {
+                var classAttr = node.GetAttribute("class");
+                if (!string.IsNullOrEmpty(classAttr) && !classAttr.Contains('\'')) {
+                    var key = (node.TagName, classAttr);
+                    if (!anchorGroups.TryGetValue(key, out var list)) {
+                        list = [];
+                        anchorGroups[key] = list;
+                    }
+
+                    list.Add(node);
+                }
+            }
+        }
+    }
+
+    static bool IsSafeXPathId(string? id)
+        => !string.IsNullOrEmpty(id) && !id.Contains('\'') && !id.Any(char.IsWhiteSpace);
 
     public static string GetSnippet(IElement el, int maxLength = 80) {
         var normalized = WhitespaceRegex.Replace(el.OuterHtml, " ").Trim();

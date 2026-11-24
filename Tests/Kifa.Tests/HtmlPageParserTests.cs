@@ -101,19 +101,49 @@ public class HtmlPageParserTests {
     }
 
     [Fact]
-    public void GetXPathAndSnippet_AnchorAtUniqueIdAndTruncateSnippet() {
+    public void GetXPathAndSnippet_AnchorAtUniqueIdIncludingNumericAndTruncateSnippet() {
         var parser = new HtmlPageParser("""
             <html><body>
-              <div id="d-1-1">
-                <div class="def"><span>ok</span></div>
-                <div class="extra"><b>first</b><b>second</b></div>
+              <div id="1">
+                <div id="d-1-1">
+                  <div class="def"><span>ok</span></div>
+                  <div class="extra"><b>first</b><b>second</b></div>
+                </div>
+                <p>header</p>
               </div>
             </body></html>
             """);
 
         var secondB = parser.Document.QuerySelectorAll("b")[1];
-        HtmlPageParser.GetXPath(secondB).Should().Be("//*[@id='d-1-1']/div[2]/b[2]");
+        parser.GetXPath(secondB).Should().Be("//*[@id='d-1-1']/div[2]/b[2]");
         HtmlPageParser.GetSnippet(secondB).Should().Be("<b>second</b>");
         HtmlPageParser.GetSnippet(secondB, 8).Should().Be("<b>seco…");
+
+        var headerP = parser.Document.QuerySelector("p").Checked();
+        parser.GetXPath(headerP).Should().Be("//*[@id='1']/p");
+    }
+
+    [Fact]
+    public void GetXPath_AnchorClassesSupportSingleAndMultiClassElements() {
+        var parser = new HtmlPageParser("""
+            <html><body>
+              <main>
+                <div class="article"><div class="ft new-ft"><b>first</b></div></div>
+                <div class="article"><div class="ft new-ft"><b>second</b></div></div>
+              </main>
+            </body></html>
+            """, anchorClasses: ["ft"]);
+
+        var bolds = parser.Document.QuerySelectorAll("b");
+        parser.GetXPath(bolds[0]).Should().Be("(//div[@class='ft new-ft'])[1]/b");
+        parser.GetXPath(bolds[1]).Should().Be("(//div[@class='ft new-ft'])[2]/b");
+
+        var singleParser = new HtmlPageParser("""
+            <html><body>
+              <main><div class="article"><b>only</b></div></main>
+            </body></html>
+            """, anchorClasses: ["article"]);
+        var onlyB = singleParser.Document.QuerySelector("b").Checked();
+        singleParser.GetXPath(onlyB).Should().Be("//div[@class='article']/b");
     }
 }
