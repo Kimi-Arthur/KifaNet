@@ -99,4 +99,21 @@ public class HtmlPageParserTests {
         var unconsumed = parser.GetUnconsumedElements(article);
         unconsumed.Select(HtmlPageParser.DescribeElement).Should().Equal("div.pic", "div.freq-bar");
     }
+
+    [Fact]
+    public void GetXPathAndSnippet_AnchorAtUniqueIdAndTruncateSnippet() {
+        var parser = new HtmlPageParser("""
+            <html><body>
+              <div id="d-1-1">
+                <div class="def"><span>ok</span></div>
+                <div class="extra"><b>first</b><b>second</b></div>
+              </div>
+            </body></html>
+            """);
+
+        var secondB = parser.Document.QuerySelectorAll("b")[1];
+        HtmlPageParser.GetXPath(secondB).Should().Be("//*[@id='d-1-1']/div[2]/b[2]");
+        HtmlPageParser.GetSnippet(secondB).Should().Be("<b>second</b>");
+        HtmlPageParser.GetSnippet(secondB, 8).Should().Be("<b>seco…");
+    }
 }

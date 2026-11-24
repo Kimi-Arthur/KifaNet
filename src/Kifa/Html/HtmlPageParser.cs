@@ -1,11 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using AngleSharp.Dom;
 
 namespace Kifa.Html;
 
 public class HtmlPageParser {
+    static readonly Regex SimpleIdRegex = new(@"^[A-Za-z][A-Za-z0-9_-]*$", RegexOptions.Compiled);
+    static readonly Regex WhitespaceRegex = new(@"\s+", RegexOptions.Compiled);
+
     readonly HashSet<IElement> consumed = new(ReferenceEqualityComparer.Instance);
     readonly HashSet<IElement> consumedOwnText = new(ReferenceEqualityComparer.Instance);
 
@@ -106,5 +110,44 @@ public class HtmlPageParser {
         var classes = string.Join(".", el.ClassList);
         var tag = el.TagName.ToLowerInvariant();
         return string.IsNullOrEmpty(classes) ? tag : $"{tag}.{classes}";
+    }
+
+    public static string GetXPath(IElement el) {
+        var segments = new List<string>();
+        var current = el;
+        while (current != null) {
+            var id = current.Id;
+            if (!string.IsNullOrEmpty(id) && SimpleIdRegex.IsMatch(id) &&
+                current.Owner?.QuerySelectorAll($"[id='{id}']").Length == 1) {
+                segments.Add($"//*[@id='{id}']");
+                segments.Reverse();
+                return string.Join("/", segments);
+            }
+
+            var tag = current.TagName.ToLowerInvariant();
+            var parent = current.ParentElement;
+            if (parent != null) {
+                var sameTagSiblings = parent.Children
+                    .Where(c => c.TagName == current.TagName)
+                    .ToList();
+                if (sameTagSiblings.Count > 1) {
+                    var index = sameTagSiblings.IndexOf(current) + 1;
+                    tag = $"{tag}[{index}]";
+                }
+            }
+
+            segments.Add(tag);
+            current = parent;
+        }
+
+        segments.Reverse();
+        return "/" + string.Join("/", segments);
+    }
+
+    public static string GetSnippet(IElement el, int maxLength = 80) {
+        var normalized = WhitespaceRegex.Replace(el.OuterHtml, " ").Trim();
+        return normalized.Length <= maxLength
+            ? normalized
+            : normalized[..(maxLength - 1)] + "…";
     }
 }
