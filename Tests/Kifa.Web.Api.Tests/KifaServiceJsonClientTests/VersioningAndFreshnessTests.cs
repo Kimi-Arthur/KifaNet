@@ -23,7 +23,7 @@ public class TestFillDataModel : DataModel, WithModelId<TestFillDataModel> {
     public static string? LastFillId { get; set; }
     public static int GlobalRemoteFetchCount { get; set; }
     public static Dictionary<string, string> UpstreamLinks { get; } = new();
-    public static List<string> FillErrorsToRecord { get; } = [];
+    public static List<FillError> FillErrorsToRecord { get; } = [];
     public static bool GlobalShortCircuitFill { get; set; }
 
     public string? Content { get; set; }
@@ -1094,11 +1094,12 @@ public class VersioningAndFreshnessTests : IDisposable {
     [Fact]
     public void FillErrorsPreserveOrderAndDuplicatesPersistOnDiskAndClearOnCleanRefresh() {
         const string id = nameof(FillErrorsPreserveOrderAndDuplicatesPersistOnDiskAndClearOnCleanRefresh);
-        TestFillDataModel.FillErrorsToRecord.AddRange([
-            "UnknownSection: Foo",
-            "DuplicateKey: Bar",
-            "UnknownSection: Foo"
-        ]);
+        var expectedErrors = new List<FillError> {
+            new() { Type = "UnknownSection", Target = "Foo" },
+            new() { Type = "DuplicateKey", Target = "Bar", Detail = "duplicate" },
+            new() { Type = "UnknownSection", Target = "Foo" }
+        };
+        TestFillDataModel.FillErrorsToRecord.AddRange(expectedErrors);
 
         client.Set(new TestFillDataModel {
             Id = id,
@@ -1106,27 +1107,19 @@ public class VersioningAndFreshnessTests : IDisposable {
         });
 
         var first = client.Get(id)!;
-        first.Metadata!.FillErrors.Should().Equal([
-            "UnknownSection: Foo",
-            "DuplicateKey: Bar",
-            "UnknownSection: Foo"
-        ]);
+        first.Metadata!.FillErrors.Should().Equal(expectedErrors);
 
         var filePath = $"{folder}/test_fills/{id}.json";
         var jsonWithErrors = File.ReadAllText(filePath);
         jsonWithErrors.Should().Contain("\"fill_errors\":");
-        jsonWithErrors.Should().Contain("UnknownSection: Foo");
+        jsonWithErrors.Should().Contain("\"type\": \"UnknownSection\"");
 
         // A short-circuiting refresh (without re-parsing) preserves existing FillErrors.
         TestFillDataModel.GlobalShortCircuitFill = true;
         var shortCircuited = client.Get(id, new KifaDataOptions {
             Refresh = true
         })!;
-        shortCircuited.Metadata!.FillErrors.Should().Equal([
-            "UnknownSection: Foo",
-            "DuplicateKey: Bar",
-            "UnknownSection: Foo"
-        ]);
+        shortCircuited.Metadata!.FillErrors.Should().Equal(expectedErrors);
         TestFillDataModel.GlobalShortCircuitFill = false;
 
         // A failed refresh restores the original item and preserves existing FillErrors.
@@ -1134,11 +1127,7 @@ public class VersioningAndFreshnessTests : IDisposable {
         var failed = client.Get(id, new KifaDataOptions {
             Refresh = true
         })!;
-        failed.Metadata!.FillErrors.Should().Equal([
-            "UnknownSection: Foo",
-            "DuplicateKey: Bar",
-            "UnknownSection: Foo"
-        ]);
+        failed.Metadata!.FillErrors.Should().Equal(expectedErrors);
         TestFillDataModel.GlobalShouldThrowFailedToFill = false;
 
         // Next clean refresh clears FillErrors and omits the field from disk JSON even when Version is unchanged.
@@ -1164,10 +1153,10 @@ public class VersioningAndFreshnessTests : IDisposable {
         model.AddFillError("   ");
         model.Metadata.Should().BeNull();
 
-        model.AddFillError("UnknownKey: Foo");
+        model.AddFillError("UnknownKey", target: "Foo", context: "bar");
         model.Metadata.Should().NotBeNull();
         model.Metadata!.ShouldSerialize().Should().BeTrue();
-        model.ToJson().Should().Contain("\"fill_errors\":[\"UnknownKey: Foo\"]");
+        model.ToJson().Should().Contain("\"fill_errors\":[{\"type\":\"UnknownKey\",\"target\":\"Foo\",\"context\":\"bar\"}]");
 
         model.ClearFillErrors();
         model.Metadata.FillErrors.Should().BeNull();

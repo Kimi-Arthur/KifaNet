@@ -36,7 +36,7 @@ public class DataMetadata {
     public Language? Translated { get; set; }
 
     // Non-fatal parser/fill errors encountered during Fill, in encounter order (omitted when empty).
-    public List<string>? FillErrors { get; set; }
+    public List<FillError>? FillErrors { get; set; }
 
     public bool ShouldSerializeFillErrors() => FillErrors != null && FillErrors.Count > 0;
 
@@ -44,6 +44,14 @@ public class DataMetadata {
         => ShouldSerializeLinking() || Status != DataStatus.OK || Version != null ||
            ShouldSerializeLastRefreshed() || Overrides.Count > 0 ||
            ShouldSerializeTranslations() || Translated != null || ShouldSerializeFillErrors();
+}
+
+public record FillError {
+    public required string Type { get; set; }
+    public string? Target { get; set; }
+    public string? Location { get; set; }
+    public string? Context { get; set; }
+    public string? Detail { get; set; }
 }
 
 public class LinkingMetadata {

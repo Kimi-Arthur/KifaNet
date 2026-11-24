@@ -130,8 +130,8 @@ public abstract class DataModel : IEquatable<DataModel> {
         }
     }
 
-    public void AddFillError(string error) {
-        if (string.IsNullOrWhiteSpace(error)) {
+    public void AddFillError(FillError error) {
+        if (string.IsNullOrWhiteSpace(error.Type)) {
             return;
         }
 
@@ -139,6 +139,16 @@ public abstract class DataModel : IEquatable<DataModel> {
         Metadata.FillErrors ??= [];
         Metadata.FillErrors.Add(error);
     }
+
+    public void AddFillError(string type, string? target = null, string? location = null,
+        string? context = null, string? detail = null)
+        => AddFillError(new FillError {
+            Type = type,
+            Target = target,
+            Location = location,
+            Context = context,
+            Detail = detail
+        });
 
     public SortedSet<string> GetAllLinks()
         => Metadata?.Linking?.Links == null ? [RealId] : [..Metadata.Linking.Links, RealId];
