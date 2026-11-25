@@ -1,10 +1,12 @@
 <Solution>
   <Folder Name="/Core/">
     <Project Path="Kifa.Threading\Kifa.Threading.csproj" Type="Classic C#" />
+    <Project Path="src\Kifa.AI\Kifa.AI.csproj" />
     <Project Path="src\Kifa.Configs\Kifa.Configs.csproj" Type="Classic C#" />
     <Project Path="src\Kifa.Cryptography\Kifa.Cryptography.csproj" />
     <Project Path="src\Kifa.Service\Kifa.Service.csproj" />
     <Project Path="src\Kifa\Kifa.csproj" />
+    <Project Path="Tests\Kifa.AI.Tests\Kifa.AI.Tests.csproj" />
     <Project Path="Tests\Kifa.Configs.Tests\Kifa.Configs.Tests.csproj" Type="Classic C#" />
     <Project Path="Tests\Kifa.Cryptography.Tests\Kifa.Cryptography.Tests.csproj" Type="Classic C#" />
     <Project Path="Tests\Kifa.Service.Tests\Kifa.Service.Tests.csproj" Type="Classic C#" />

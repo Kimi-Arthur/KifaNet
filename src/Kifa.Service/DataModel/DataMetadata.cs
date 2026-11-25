@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Kifa.AI;
 
 namespace Kifa.Service;
 
@@ -40,10 +41,16 @@ public class DataMetadata {
 
     public bool ShouldSerializeFillErrors() => FillErrors != null && FillErrors.Count > 0;
 
+    // Cached semantic decisions keyed by question ID.
+    public SortedDictionary<string, FillDecision>? Decisions { get; set; }
+
+    public bool ShouldSerializeDecisions() => Decisions != null && Decisions.Count > 0;
+
     public bool ShouldSerialize()
         => ShouldSerializeLinking() || Status != DataStatus.OK || Version != null ||
            ShouldSerializeLastRefreshed() || Overrides.Count > 0 ||
-           ShouldSerializeTranslations() || Translated != null || ShouldSerializeFillErrors();
+           ShouldSerializeTranslations() || Translated != null || ShouldSerializeFillErrors() ||
+           ShouldSerializeDecisions();
 }
 
 public record FillError {
@@ -52,6 +59,13 @@ public record FillError {
     public string? Location { get; set; }
     public string? Context { get; set; }
     public string? Detail { get; set; }
+}
+
+public record FillDecision {
+    public Dictionary<string, object> Inputs { get; set; } = new();
+    public bool ShouldSerializeInputs() => Inputs.Count > 0;
+    public required string Value { get; set; }
+    public LlmInfo? Llm { get; set; }
 }
 
 public class LinkingMetadata {

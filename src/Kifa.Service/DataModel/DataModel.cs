@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Kifa.AI;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using YamlDotNet.Serialization;
 
 namespace Kifa.Service;
@@ -149,6 +151,46 @@ public abstract class DataModel : IEquatable<DataModel> {
             Context = context,
             Detail = detail
         });
+
+    public FillDecision? FindFillDecision(string key, Dictionary<string, object> inputs) {
+        if (Metadata?.Decisions == null || !Metadata.Decisions.TryGetValue(key, out var decision)) {
+            return null;
+        }
+
+        return JToken.DeepEquals(JToken.FromObject(decision.Inputs), JToken.FromObject(inputs))
+            ? decision
+            : null;
+    }
+
+    public void SetFillDecision(string key, FillDecision decision) {
+        Metadata ??= new DataMetadata();
+        Metadata.Decisions ??= new SortedDictionary<string, FillDecision>(StringComparer.Ordinal);
+        Metadata.Decisions[key] = decision;
+    }
+
+    public string? ResolveDecision(FillDecisionQuestion question, LlmClient? llm = null) {
+        var inputs = question.BuildInputs();
+        var cached = FindFillDecision(question.Key, inputs);
+        if (cached != null && question.Choices.Contains(cached.Value, StringComparer.Ordinal)) {
+            return cached.Value;
+        }
+
+        if (llm == null) {
+            return null;
+        }
+
+        var result = llm.Choose(question.BuildPrompt(), question.Choices);
+        if (result == null || !question.Choices.Contains(result.Value, StringComparer.Ordinal)) {
+            return null;
+        }
+
+        SetFillDecision(question.Key, new FillDecision {
+            Inputs = inputs,
+            Value = result.Value,
+            Llm = result.Info
+        });
+        return result.Value;
+    }
 
     public SortedSet<string> GetAllLinks()
         => Metadata?.Linking?.Links == null ? [RealId] : [..Metadata.Linking.Links, RealId];
