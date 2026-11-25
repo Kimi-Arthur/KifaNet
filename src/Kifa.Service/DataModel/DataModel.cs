@@ -171,7 +171,8 @@ public abstract class DataModel : IEquatable<DataModel> {
     public string? ResolveDecision(FillDecisionQuestion question, LlmClient? llm = null) {
         var inputs = question.BuildInputs();
         var cached = FindFillDecision(question.Key, inputs);
-        if (cached != null && question.Choices.Contains(cached.Value, StringComparer.Ordinal)) {
+        if (cached != null &&
+            (cached.Value == null || question.Choices.Contains(cached.Value, StringComparer.Ordinal))) {
             return cached.Value;
         }
 
@@ -180,7 +181,8 @@ public abstract class DataModel : IEquatable<DataModel> {
         }
 
         var result = llm.Choose(question.BuildPrompt(), question.Choices);
-        if (result == null || !question.Choices.Contains(result.Value, StringComparer.Ordinal)) {
+        if (result == null || (result.Value != null &&
+            !question.Choices.Contains(result.Value, StringComparer.Ordinal))) {
             return null;
         }
 

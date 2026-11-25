@@ -184,4 +184,25 @@ public class LlmClientTests {
         capturedBody.Should().Contain("\"responseJsonSchema\"");
         capturedBody.Should().Contain("\"system_instruction\"");
     }
+
+    [Fact]
+    public void ChooseSupportsNullWhenNoCandidateMatches() {
+        using var httpClient = new HttpClient(new StubHttpHandler((_, _) =>
+            new HttpResponseMessage(HttpStatusCode.OK) {
+                Content = new StringContent(
+                    "{\"choices\":[{\"message\":{\"content\":\"{\\\"choice\\\":null,\\\"confidence\\\":\\\"high\\\",\\\"reason\\\":\\\"None of the candidates match.\\\"}\"}}]}",
+                    Encoding.UTF8, "application/json")
+            }));
+
+        LlmClient client = new OpenAiLlmClient(httpClient) {
+            Endpoint = "http://localhost:11434/v1",
+            Model = "qwen3:4b"
+        };
+
+        var result = client.Choose("Pick one.", ["übersetzen#1", "übersetzen#2"]);
+        result.Should().NotBeNull();
+        result!.Value.Should().BeNull();
+        result.Info.Confidence.Should().Be(LlmConfidence.High);
+        result.Info.Reason.Should().Be("None of the candidates match.");
+    }
 }

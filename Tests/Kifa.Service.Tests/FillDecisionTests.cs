@@ -86,4 +86,26 @@ public class FillDecisionTests {
         model.ResolveDecision(question, llm).Should().Be("übersetzen#1");
         llm.CallCount.Should().Be(1);
     }
+
+    [Fact]
+    public void ResolveDecisionCachesNullNoMatchAndReusesOnSubsequentCalls() {
+        var model = new TestModel { Id = "übersetzen" };
+        var llm = new StubLlmClient(_ => new LlmResponse(
+            "{\"choice\":null,\"confidence\":\"high\",\"reason\":\"None of the candidates match.\"}",
+            "gemini:gemini-3.5-flash-lite"));
+        var question = new TestQuestion("Pick one.", ["wrong#1", "wrong#2"]);
+
+        model.ResolveDecision(question, llm).Should().BeNull();
+        llm.CallCount.Should().Be(1);
+
+        var cached = model.Metadata!.Decisions![question.Key];
+        cached.Value.Should().BeNull();
+        cached.Llm.Should().NotBeNull();
+        cached.Llm!.Confidence.Should().Be(LlmConfidence.High);
+        cached.Llm.Reason.Should().Be("None of the candidates match.");
+
+        // Second call hits the cached negative decision with 0 extra LLM calls.
+        model.ResolveDecision(question, llm).Should().BeNull();
+        llm.CallCount.Should().Be(1);
+    }
 }

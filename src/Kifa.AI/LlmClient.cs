@@ -4,10 +4,11 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 
 namespace Kifa.AI;
 
-[JsonConverter(typeof(StringEnumConverter))]
+[JsonConverter(typeof(StringEnumConverter), typeof(SnakeCaseNamingStrategy))]
 public enum LlmConfidence {
     Low,
     Medium,
@@ -22,7 +23,7 @@ public record LlmInfo {
     public string? Reason { get; init; }
 }
 
-public record LlmChoice(string Value, LlmInfo Info);
+public record LlmChoice(string? Value, LlmInfo Info);
 
 public interface LlmClient {
     LlmResponse? Ask(string prompt, string? jsonSchema = null, string? systemPrompt = null);
@@ -33,7 +34,7 @@ public interface LlmClient {
         }
 
         var response = Ask(prompt, BuildChoiceSchema(choices),
-            "Select the single best matching choice from the allowed list and respond with JSON {\"choice\": \"...\", \"confidence\": \"high\"|\"medium\"|\"low\", \"reason\": \"brief 1-sentence reason\"}.");
+            "Select the single best matching choice from the allowed list and respond with JSON {\"choice\": \"...\" | null, \"confidence\": \"high\"|\"medium\"|\"low\", \"reason\": \"brief 1-sentence reason\"}. If none of the choices match, set \"choice\" to null and explain why in \"reason\".");
         if (response == null) {
             return null;
         }
@@ -55,8 +56,15 @@ public interface LlmClient {
             ["type"] = "object",
             ["properties"] = new JObject {
                 ["choice"] = new JObject {
-                    ["type"] = "string",
-                    ["enum"] = new JArray(choices)
+                    ["anyOf"] = new JArray {
+                        new JObject {
+                            ["type"] = "string",
+                            ["enum"] = new JArray(choices)
+                        },
+                        new JObject {
+                            ["type"] = "null"
+                        }
+                    }
                 },
                 ["confidence"] = new JObject {
                     ["type"] = "string",
@@ -72,7 +80,7 @@ public interface LlmClient {
         return schema.ToString(Formatting.None);
     }
 
-    internal static (string Choice, LlmConfidence? Confidence, string? Reason)? ExtractValidChoice(
+    internal static (string? Choice, LlmConfidence? Confidence, string? Reason)? ExtractValidChoice(
         string? raw, List<string> choices) {
         if (string.IsNullOrWhiteSpace(raw)) {
             return null;
@@ -86,16 +94,26 @@ public interface LlmClient {
         try {
             var token = JToken.Parse(trimmed);
             if (token is JObject obj) {
-                var direct = obj["choice"]?.Value<string>();
-                if (!string.IsNullOrEmpty(direct) &&
-                    choices.Contains(direct, StringComparer.Ordinal)) {
+                if (obj.TryGetValue("choice", out var choiceToken)) {
                     LlmConfidence? confidence =
                         Enum.TryParse<LlmConfidence>(obj["confidence"]?.Value<string>(),
                             ignoreCase: true, out var parsedConfidence)
                             ? parsedConfidence
                             : null;
                     var reason = obj["reason"]?.Value<string>()?.Trim();
-                    return (direct, confidence, string.IsNullOrEmpty(reason) ? null : reason);
+                    var cleanReason = string.IsNullOrEmpty(reason) ? null : reason;
+
+                    if (choiceToken.Type == JTokenType.Null) {
+                        return (null, confidence, cleanReason);
+                    }
+
+                    var direct = choiceToken.Value<string>();
+                    if (!string.IsNullOrEmpty(direct) &&
+                        choices.Contains(direct, StringComparer.Ordinal)) {
+                        return (direct, confidence, cleanReason);
+                    }
+
+                    return null;
                 }
 
                 var nested = obj["result"]?.Value<string>();

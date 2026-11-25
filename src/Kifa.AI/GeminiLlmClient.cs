@@ -16,7 +16,7 @@ public class GeminiLlmClient : LlmClient {
     public static string DefaultEndpoint { get; set; } =
         "https://generativelanguage.googleapis.com/v1beta";
 
-    public static string DefaultModel { get; set; } = "gemini-2.5-flash";
+    public static string DefaultModel { get; set; } = "gemini-3.5-flash-lite";
     public static string? DefaultApiKey { get; set; }
 
     public string Endpoint { get; set; } = DefaultEndpoint;

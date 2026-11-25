@@ -64,7 +64,7 @@ public record FillError {
 public record FillDecision {
     public Dictionary<string, object> Inputs { get; set; } = new();
     public bool ShouldSerializeInputs() => Inputs.Count > 0;
-    public required string Value { get; set; }
+    public string? Value { get; set; }
     public LlmInfo? Llm { get; set; }
 }
 
