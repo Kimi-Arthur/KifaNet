@@ -25,10 +25,6 @@ public record LlmInfo {
 public record LlmChoice(string Value, LlmInfo Info);
 
 public interface LlmClient {
-    // Optional default client used when callers don't pass an explicit LlmClient.
-    // Null by default so unit tests and offline runs stay deterministic unless configured.
-    public static LlmClient? Default { get; set; }
-
     LlmResponse? Ask(string prompt, string? jsonSchema = null, string? systemPrompt = null);
 
     LlmChoice? Choose(string prompt, List<string> choices) {
