@@ -19,6 +19,15 @@ public class DownloadSubcatCommand : KifaCommand {
     [Option('f', "force", HelpText = "Try to get the subtitle even if it exists.")]
     public bool Force { get; set; }
 
+    [Option('o', "original-only",
+        HelpText = "Download only the original subtitle without machine translation.")]
+    public bool OriginalOnly { get; set; }
+
+    [Option("sources-only",
+        HelpText =
+            "Save raw subtitle files under /Sources/.../subcat only without importing to the live folder.")]
+    public bool SourcesOnly { get; set; }
+
     [Option('l', "languages", Separator = ',',
         HelpText = "Languages to download. Default is 'zh'.")]
     public IEnumerable<string> Languages { get; set; } = ["zh"];
@@ -73,41 +82,63 @@ public class DownloadSubcatCommand : KifaCommand {
 
         foreach (var choice in selected.Value) {
             var sourcesPath = SubcatClient.GetSourcesPath(videoFile.ParentPath);
-            var (origContent, origFilename) = SubcatClient.DownloadOriginal(choice);
+            var (originalContent, originalFilename) = SubcatClient.DownloadOriginal(choice);
 
-            // Save original subtitle
-            var origTarget = new KifaFile($"{KifaFile.SubtitlesHost}{sourcesPath}/{origFilename}");
-            if (origTarget.Exists()) {
-                if (Force && Confirm($"Subtitle file {origTarget} already exists. Replace it?")) {
-                    origTarget.Write(origContent);
-                    downloadedCount++;
-                    totalBytes += origContent.Length;
-                } else {
-                    Logger.Info($"Skipped already downloaded subtitle {origTarget}.");
+            // Save untouched raw original subtitle under /Sources/.../subcat
+            var originalTarget =
+                new KifaFile($"{KifaFile.SubtitlesHost}{sourcesPath}/{originalFilename}");
+            TryWriteSubtitleFile(originalTarget, originalContent, ref downloadedCount,
+                ref totalBytes);
+
+            var originalLanguage = SubcatClient.ResolveSourceLanguage(choice);
+
+            if (OriginalOnly) {
+                if (!SourcesOnly) {
+                    var liveLanguageCode =
+                        originalLanguage != null && originalLanguage != Language.Unknown
+                            ? originalLanguage.Code
+                            : Confirm($"Confirm language code for {choice.Title}:", "en") ??
+                              "original";
+                    var liveTarget = videoFile.GetSubtitleFile($"subcat.{liveLanguageCode}.srt");
+                    TryWriteSubtitleFile(liveTarget, SubcatClient.CleanSrt(originalContent),
+                        ref downloadedCount, ref totalBytes);
                 }
-            } else {
-                origTarget.Write(origContent);
-                downloadedCount++;
-                totalBytes += origContent.Length;
+
+                continue;
             }
 
-            // Translate locally and save target language subtitles
+            // Translate locally (or reuse original when language already matches) and save both raw + live subtitles
             foreach (var lang in TargetLanguages) {
-                var langSubcatCode = SubcatClient.GetSubcatLanguage(lang);
                 var langFilename = SubcatClient.GetSubtitleFileName(choice.OriginalLink, lang);
-                var langTarget = new KifaFile($"{KifaFile.SubtitlesHost}{sourcesPath}/{langFilename}");
+                var langSourceTarget =
+                    new KifaFile($"{KifaFile.SubtitlesHost}{sourcesPath}/{langFilename}");
+                var liveTarget = videoFile.GetSubtitleFile($"subcat.{lang.Code}.srt");
 
-                if (langTarget.Exists()) {
-                    if (!Force || !Confirm($"Subtitle file {langTarget} already exists. Replace it?")) {
-                        Logger.Info($"Skipped already downloaded subtitle {langTarget}.");
-                        continue;
-                    }
+                var needSource = !langSourceTarget.Exists() || Force;
+                var needLive = !SourcesOnly && (!liveTarget.Exists() || Force);
+                if (!needSource && !needLive) {
+                    Logger.Info(
+                        $"Skipped already existing subtitle {langSourceTarget} and {liveTarget}.");
+                    continue;
                 }
 
-                var (translatedContent, _) = SubcatClient.TranslateSrt(origContent, langSubcatCode);
-                langTarget.Write(translatedContent);
-                downloadedCount++;
-                totalBytes += translatedContent.Length;
+                string rawLangContent;
+                if (originalLanguage == lang) {
+                    Logger.Debug(
+                        $"Reusing original subtitle directly for '{lang.Code}' without machine translation.");
+                    rawLangContent = originalContent;
+                } else {
+                    var langSubcatCode = SubcatClient.GetSubcatLanguage(lang);
+                    (rawLangContent, _) = SubcatClient.TranslateSrt(originalContent, langSubcatCode);
+                }
+
+                TryWriteSubtitleFile(langSourceTarget, rawLangContent, ref downloadedCount,
+                    ref totalBytes);
+
+                if (!SourcesOnly) {
+                    TryWriteSubtitleFile(liveTarget, SubcatClient.CleanSrt(rawLangContent),
+                        ref downloadedCount, ref totalBytes);
+                }
             }
         }
 
@@ -123,5 +154,20 @@ public class DownloadSubcatCommand : KifaCommand {
             Message =
                 $"Successfully written {totalBytes} bytes to {downloadedCount} subtitle file(s)."
         };
+    }
+
+    bool TryWriteSubtitleFile(KifaFile target, string content, ref int downloadedCount,
+        ref long totalBytes) {
+        if (target.Exists()) {
+            if (!Force || !Confirm($"Subtitle file {target} already exists. Replace it?")) {
+                Logger.Info($"Skipped already downloaded subtitle {target}.");
+                return false;
+            }
+        }
+
+        target.Write(content);
+        downloadedCount++;
+        totalBytes += content.Length;
+        return true;
     }
 }

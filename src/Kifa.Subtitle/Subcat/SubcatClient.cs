@@ -181,6 +181,51 @@ public static class SubcatClient {
     static string NormalizeSrtLine(string line)
         => FontTagRegex.Replace(line, "").Replace("&", "and");
 
+    public static string CleanSrt(string srtContent) {
+        var cleaned = FontTagRegex.Replace(srtContent, "");
+        var lines = new List<string>();
+        using var sr = new StringReader(cleaned);
+        while (sr.ReadLine() is { } line) {
+            lines.Add(line);
+        }
+
+        return string.Join("\n", lines) + "\n";
+    }
+
+    static readonly Regex TitleLangSuffixRegex =
+        new(@"(?:[._\-])(eng|en|chi|chs|cht|zho|zh|jpn|ja|fre|fra|fr|ger|deu|de|spa|es)(?:\d*)$",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    public static Language? ResolveSourceLanguage(SubcatChoice choice) {
+        if (choice.SourceLanguage != null) {
+            var match = Language.All.FirstOrDefault(kv
+                => string.Equals(kv.Key, choice.SourceLanguage.Trim(),
+                    StringComparison.OrdinalIgnoreCase));
+            if (match.Value != null && match.Value != Language.Unknown) {
+                return match.Value;
+            }
+        }
+
+        var suffixMatch = TitleLangSuffixRegex.Match(choice.Title);
+        if (suffixMatch.Success) {
+            var token = suffixMatch.Groups[1].Value.ToLowerInvariant();
+            if (token is "chs") {
+                return Language.Chinese;
+            }
+
+            if (token is "cht") {
+                return Language.TraditionalChinese;
+            }
+
+            var byToken = (Language) token;
+            if (byToken != Language.Unknown) {
+                return byToken;
+            }
+        }
+
+        return null;
+    }
+
     public static (string Content, string DetectedSourceLanguage) TranslateSrt(string srtContent,
         string targetLang) {
         var srtDoc = SrtDocument.Parse(srtContent);
@@ -275,7 +320,8 @@ public static class SubcatClient {
     public static string GetSubcatLanguage(Language lang)
         => lang.Code == "zh" ? "zh-CN" : lang.Code;
 
-    public static string GetSourcesPath(string videoParentPath) => $"/Sources{videoParentPath}";
+    public static string GetSourcesPath(string videoParentPath)
+        => $"/Sources{videoParentPath}/subcat";
 
     static readonly Regex SubcatUrlRegex =
         new(

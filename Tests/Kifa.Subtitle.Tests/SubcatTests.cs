@@ -105,7 +105,7 @@ public class SubcatTests {
 
     [Fact]
     public void GetSourcesPathTest() {
-        Assert.Equal("/Sources/TV/Growing Pains/Season 3",
+        Assert.Equal("/Sources/TV/Growing Pains/Season 3/subcat",
             SubcatClient.GetSourcesPath("/TV/Growing Pains/Season 3"));
     }
 
@@ -115,7 +115,7 @@ public class SubcatTests {
             "https://www.subtitlecat.com/subs/1133/growing_pains_s03e02_aloha_2.html", "zh");
 
         Assert.Equal(
-            "/Sources/TV/Growing Pains/Season 3/growing_pains_s03e02_aloha_2.1133.subcat.zh.srt",
+            "/Sources/TV/Growing Pains/Season 3/subcat/growing_pains_s03e02_aloha_2.1133.subcat.zh.srt",
             targetPath);
     }
 
@@ -126,7 +126,7 @@ public class SubcatTests {
             "zh");
 
         Assert.Equal(
-            "/Sources/TV/Growing Pains/Season 3/Life on Top 1x11 - Growing Pains.1509.subcat.zh.srt",
+            "/Sources/TV/Growing Pains/Season 3/subcat/Life on Top 1x11 - Growing Pains.1509.subcat.zh.srt",
             targetPath);
     }
 
@@ -150,7 +150,33 @@ public class SubcatTests {
             "https://www.subtitlecat.com/subs/1133/growing_pains_s03e02_aloha_2-orig.srt", "orig");
 
         Assert.Equal(
-            "/Sources/TV/Growing Pains/Season 3/growing_pains_s03e02_aloha_2.1133.subcat.orig.srt",
+            "/Sources/TV/Growing Pains/Season 3/subcat/growing_pains_s03e02_aloha_2.1133.subcat.orig.srt",
             targetPath);
+    }
+
+    [Fact]
+    public void CleanSrtTest() {
+        var raw = "1\r\n00:00:01,000 --> 00:00:03,000\r\n<font color=\"#ffff00\">Hello & Welcome!</font>\r\n";
+        Assert.Equal("1\n00:00:01,000 --> 00:00:03,000\nHello & Welcome!\n",
+            SubcatClient.CleanSrt(raw));
+    }
+
+    [Fact]
+    public void ResolveSourceLanguageTest() {
+        var labeled = new SubcatChoice {
+            OriginalLink = "https://www.subtitlecat.com/subs/1133/growing_pains_s01e01_pilot-orig.srt",
+            SourceLanguage = "English"
+        };
+        Assert.Equal(Language.English, SubcatClient.ResolveSourceLanguage(labeled));
+
+        var byTitleSuffix = new SubcatChoice {
+            OriginalLink = "https://www.subtitlecat.com/subs/270/S03E05%20Growing%20Pains.eng1-orig.srt"
+        };
+        Assert.Equal(Language.English, SubcatClient.ResolveSourceLanguage(byTitleSuffix));
+
+        var unlabeled = new SubcatChoice {
+            OriginalLink = "https://www.subtitlecat.com/subs/1133/growing_pains_s01e01_pilot-orig.srt"
+        };
+        Assert.Null(SubcatClient.ResolveSourceLanguage(unlabeled));
     }
 }
