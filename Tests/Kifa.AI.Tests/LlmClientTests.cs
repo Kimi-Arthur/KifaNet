@@ -128,4 +128,60 @@ public class LlmClientTests {
         result!.Value.Should().Be("42");
         result.Source.Should().Be("agy:gemini-3.8-flash-low");
     }
+
+    [Fact]
+    public void GeminiLlmClientChooseSendsNativeSchemaAndUsesModelVersion() {
+        string? capturedUrl = null;
+        string? capturedKey = null;
+        string? capturedBody = null;
+        using var httpClient = new HttpClient(new StubHttpHandler((req, body) => {
+            capturedUrl = req.RequestUri?.ToString();
+            capturedKey = req.Headers.TryGetValues("x-goog-api-key", out var vals)
+                ? string.Join(",", vals)
+                : null;
+            capturedBody = body;
+            var responseJson = new JObject {
+                ["modelVersion"] = "gemini-2.5-flash-001",
+                ["candidates"] = new JArray {
+                    new JObject {
+                        ["content"] = new JObject {
+                            ["parts"] = new JArray {
+                                new JObject {
+                                    ["thought"] = true,
+                                    ["text"] = "Thinking..."
+                                },
+                                new JObject {
+                                    ["text"] =
+                                        "{\"choice\":\"übersetzen#1\",\"confidence\":\"high\",\"reason\":\"Ferrying sense.\"}"
+                                }
+                            }
+                        }
+                    }
+                }
+            }.ToString(Formatting.None);
+            return new HttpResponseMessage(HttpStatusCode.OK) {
+                Content = new StringContent(responseJson, Encoding.UTF8, "application/json")
+            };
+        }));
+
+        LlmClient client = new GeminiLlmClient(httpClient) {
+            Model = "gemini-2.5-flash",
+            ApiKey = "test-gemini-key"
+        };
+
+        var result = client.Choose("Pick the matching etymology word.",
+            ["übersetzen#1", "übersetzen#2"]);
+
+        result.Should().NotBeNull();
+        result!.Value.Should().Be("übersetzen#1");
+        result.Info.Source.Should().Be("gemini:gemini-2.5-flash-001");
+        result.Info.Confidence.Should().Be(LlmConfidence.High);
+        result.Info.Reason.Should().Be("Ferrying sense.");
+        capturedUrl.Should()
+            .Be("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent");
+        capturedKey.Should().Be("test-gemini-key");
+        capturedBody.Should().Contain("\"responseMimeType\":\"application/json\"");
+        capturedBody.Should().Contain("\"responseJsonSchema\"");
+        capturedBody.Should().Contain("\"system_instruction\"");
+    }
 }
